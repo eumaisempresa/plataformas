@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Avaliação de Desempenho & PDI</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white py-6 px-8 shadow-md border-b-4 border-sky-500">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold">Avaliação de Desempenho & PDI</h1>
+                <p class="text-slate-400 text-sm">Plataforma de Preenchimento e Alinhamento Conjunto</p>
+            </div>
+            <div class="w-64">
+                <label class="block text-xs uppercase tracking-wider text-slate-400 font-bold mb-1">Selecionar Colaborador</label>
+                <select id="selectColaborador" onchange="carregarDadosColaborador()" class="w-full bg-slate-800 text-white text-sm border border-slate-700 rounded p-2 focus:ring-2 focus:ring-sky-500 outline-none">
+                    <option value="">Carregando lista...</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-6xl mx-auto my-8 px-4">
+        
+        <!-- Status & Meta Grid -->
+        <div id="metaContainer" class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 mb-6 grid grid-cols-1 md:grid-cols-4 gap-4 hidden">
+            <div>
+                <span class="text-xs font-semibold text-slate-400 uppercase">Cargo</span>
+                <p id="metaCargo" class="font-bold text-slate-700">-</p>
+            </div>
+            <div>
+                <span class="text-xs font-semibold text-slate-400 uppercase">Experiência</span>
+                <p id="metaExp" class="text-slate-700">-</p>
+            </div>
+            <div>
+                <span class="text-xs font-semibold text-slate-400 uppercase">Gestor</span>
+                <p id="metaGestor" class="text-slate-700">-</p>
+            </div>
+            <div>
+                <span class="text-xs font-semibold text-slate-400 uppercase">Status</span>
+                <span id="metaStatus" class="inline-block mt-1 px-3 py-1 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-full">Pronto</span>
+            </div>
+        </div>
+
+        <!-- Formulário Dinâmico -->
+        <form id="formAvaliacao" class="space-y-6 hidden" onsubmit="salvarFormulario(event)">
+            
+            <!-- 1. Perfil & Diagnóstico -->
+            <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold text-slate-900 border-l-4 border-sky-600 pl-3 mb-4 uppercase">1. Diagnóstico e Perfil Comportamental</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block font-medium text-sm mb-1">Resumo do Perfil & Potencial</label>
+                        <textarea id="resumoPerfil" rows="3" class="w-full p-3 border border-slate-300 rounded focus:ring-2 focus:ring-sky-500 outline-none" placeholder="Descreva o perfil comportamental e histórico..."></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-medium text-sm mb-1 text-emerald-700">Pontos Fortes e Destaques</label>
+                            <textarea id="pontosFortes" rows="4" class="w-full p-3 border border-slate-300 rounded focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Pontos fortes com marcadores (•)..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block font-medium text-sm mb-1 text-amber-700">Gargalos e Pontos de Atenção</label>
+                            <textarea id="gargalos" rows="4" class="w-full p-3 border border-slate-300 rounded focus:ring-2 focus:ring-amber-500 outline-none" placeholder="Gargalos observados com marcadores (•)..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Roteiro do Feedback -->
+            <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold text-slate-900 border-l-4 border-sky-600 pl-3 mb-4 uppercase">2. Roteiro e Script de Condução do Feedback</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block font-medium text-sm mb-1">Abertura: Cadeira e Expectativa do Nível Executivo</label>
+                        <textarea id="scriptAbertura" rows="2" class="w-full p-3 bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-sky-500 outline-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block font-medium text-sm mb-1">Apresentação dos Fatos: O Ciclo de Execução Ponta a Ponta</label>
+                        <textarea id="scriptFatos" rows="2" class="w-full p-3 bg-slate-50 border border-slate-300 rounded focus:ring-2 focus:ring-sky-500 outline-none"></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Botão de Ação -->
+            <div class="flex justify-end gap-4">
+                <button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-8 rounded shadow transition">
+                    Salvar Avaliação & Atualizar Banco de Dados
+                </button>
+            </div>
+
+        </form>
+
+        <div id="loading" class="text-center py-12 text-slate-500 font-medium">
+            Selecione um colaborador no menu superior para iniciar a avaliação.
+        </div>
+
+    </main>
+
+    <script>
+        // COLE AQUI A URL DO SEU GOOGLE APPS SCRIPT PUBLICADO COMO WEB APP
+        const API_URL = "URL_DO_SEU_WEB_APP_AQUI"; 
+
+        document.addEventListener("DOMContentLoaded", carregarListaColaboradores);
+
+        async function carregarListaColaboradores() {
+            try {
+                const res = await fetch(`${API_URL}?action=getColaboradores`);
+                const json = await res.json();
+                
+                if (json.success) {
+                    const select = document.getElementById("selectColaborador");
+                    select.innerHTML = `<option value="">-- Escolha o Colaborador --</option>`;
+                    json.data.forEach(c => {
+                        select.innerHTML += `<option value="${c.ID_COLABORADOR}">${c.NOME} (${c.CARGO})</option>`;
+                    });
+                }
+            } catch (err) {
+                alert("Erro ao conectar com a API do Apps Script: " + err);
+            }
+        }
+
+        async function carregarDadosColaborador() {
+            const idColab = document.getElementById("selectColaborador").value;
+            if (!idColab) return;
+
+            document.getElementById("loading").innerText = "Carregando dados da planilha...";
+            document.getElementById("loading").classList.remove("hidden");
+            document.getElementById("formAvaliacao").classList.add("hidden");
+
+            try {
+                const res = await fetch(`${API_URL}?action=getAvaliacao&idColaborador=${idColab}`);
+                const json = await res.json();
+
+                if (json.success && json.data) {
+                    const data = json.data;
+                    
+                    // Preencher Form
+                    document.getElementById("resumoPerfil").value = data.RESUMO_PERFIL || "";
+                    document.getElementById("pontosFortes").value = data.PONTOS_FORTES_TEXTO || "";
+                    document.getElementById("gargalos").value = data.GARGALOS_DESENVOLVIMENTO_TEXTO || "";
+                    document.getElementById("scriptAbertura").value = data.SCRIPT_FEEDBACK_ABERTURA || "";
+                    document.getElementById("scriptFatos").value = data.SCRIPT_FEEDBACK_FATOS || "";
+
+                    document.getElementById("loading").classList.add("hidden");
+                    document.getElementById("metaContainer").classList.remove("hidden");
+                    document.getElementById("formAvaliacao").classList.remove("hidden");
+                } else {
+                    document.getElementById("loading").innerText = "Nenhuma avaliação anterior encontrada. Preencha os dados abaixo para iniciar uma nova.";
+                    document.getElementById("formAvaliacao").classList.remove("hidden");
+                }
+            } catch (err) {
+                document.getElementById("loading").innerText = "Erro ao carregar os dados do colaborador.";
+            }
+        }
+
+        async function salvarFormulario(e) {
+            e.preventDefault();
+            const idColab = document.getElementById("selectColaborador").value;
+            
+            const payload = {
+                action: "saveAvaliacao",
+                data: {
+                    idColaborador: idColab,
+                    periodoAnalise: "Ciclo Anual de Desempenho",
+                    resumoPerfil: document.getElementById("resumoPerfil").value,
+                    pontosFortes: document.getElementById("pontosFortes").value,
+                    gargalos: document.getElementById("gargalos").value,
+                    scriptAbertura: document.getElementById("scriptAbertura").value,
+                    scriptFatos: document.getElementById("scriptFatos").value,
+                    status: "Concluído"
+                }
+            };
+
+            const btn = e.target.querySelector("button");
+            btn.innerText = "Salvando...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+
+                if (json.success) {
+                    alert("✅ Avaliação salva com sucesso no Google Sheets!");
+                } else {
+                    alert("Erro ao salvar: " + json.message);
+                }
+            } catch (err) {
+                alert("Erro ao enviar dados para a API.");
+            } finally {
+                btn.innerText = "Salvar Avaliação & Atualizar Banco de Dados";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
