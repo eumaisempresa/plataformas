@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Avaliação Inteligente & PDI</title>
+  <style>
+    :root { --primary: #0f172a; --accent: #0284c7; --bg: #f8fafc; --card: #ffffff; --border: #e2e8f0; }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    body { background: var(--bg); color: #334155; margin: 0; }
+
+    #loginModal, #ensinoModal {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15,23,42,0.85); display: flex; align-items: center; justify-content: center; z-index: 999;
+    }
+    .modal-box { background: white; padding: 30px; border-radius: 8px; width: 450px; }
+
+    header { background: var(--primary); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+    .actions { display: flex; gap: 10px; align-items: center; }
+
+    .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+    .card { background: var(--card); padding: 20px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px; }
+    
+    .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
+    .info-item label { font-size: 0.75rem; color: #64748b; font-weight: bold; display: block; }
+    .info-item span { font-weight: 600; font-size: 0.95rem; }
+
+    h2.title { font-size: 1.1rem; border-bottom: 2px solid var(--accent); padding-bottom: 5px; color: var(--primary); margin-top: 0; }
+    textarea, input, select { width: 100%; border: 1px solid var(--border); border-radius: 4px; padding: 8px; margin-top: 5px; font-size: 0.9rem; }
+    
+    button { padding: 8px 16px; border-radius: 4px; border: none; font-weight: bold; cursor: pointer; }
+    .btn-ai { background: #7c3aed; color: white; }
+    .btn-ai:hover { background: #6d28d9; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-success { background: #10b981; color: white; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid var(--border); padding: 8px; text-align: left; font-size: 0.85rem; }
+    th { background: #f1f5f9; }
+
+    .loader { display: none; font-weight: bold; color: #7c3aed; margin-top: 10px; }
+
+    @media print {
+      .no-print { display: none !important; }
+      .card { border: none; padding: 0; }
+      textarea { border: none; background: transparent; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Modal Autenticação -->
+  <div id="loginModal">
+    <div class="modal-box" style="text-align: center;">
+      <h3>Painel do Gestor</h3>
+      <input type="password" id="inputSenha" placeholder="Digite a Senha do Gestor">
+      <button class="btn-primary" style="margin-top:15px; width:100%;" onclick="autenticar()">Entrar</button>
+      <p id="loginError" style="color:red; display:none; font-size:0.8rem; margin-top:10px;"></p>
+    </div>
+  </div>
+
+  <!-- Modal Ensino de Cultura para IA -->
+  <div id="ensinoModal" style="display:none;">
+    <div class="modal-box">
+      <h3>Ensino de Cultura / Diretrizes para a IA</h3>
+      <label>Categoria</label>
+      <select id="ensinoCategoria">
+        <option value="Postura Esperada">Postura Esperada</option>
+        <option value="Comunicação">Comunicação</option>
+        <option value="Processos/Qualidade">Processos / Qualidade</option>
+      </select>
+      <label style="margin-top:10px; display:block;">Diretriz / Valor da Empresa</label>
+      <textarea id="ensinoDiretriz" rows="4" placeholder="Ex: Diante de impasses com clientes, o colaborador deve registrar o caso e sugerir 2 alternativas de solução ao gestor."></textarea>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px;">
+        <button onclick="fecharModalEnsino()">Cancelar</button>
+        <button class="btn-ai" onclick="salvarEnsinoIA()">Salvar Aprendizado</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="no-print">
+    <div>
+      <h1 style="margin:0; font-size:1.3rem;">Painel de Avaliação & PDI Inteligente</h1>
+      <small style="color:#94a3b8">Especialista Executivo em Gestão de Pessoas</small>
+    </div>
+    <div class="actions">
+      <button class="btn-ai" onclick="abrirModalEnsino()">🧠 Ensinar IA (Cultura)</button>
+      <select id="selectColaborador" onchange="trocarColaborador()"></select>
+      <select id="selectHistorico" onchange="carregarCicloSelecionado()"></select>
+      <button class="btn-primary" onclick="window.print()">🖨️ PDF</button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <div class="card">
+      <div class="info-grid">
+        <div class="info-item"><label>Colaborador</label><span id="infoNome">-</span></div>
+        <div class="info-item"><label>Cargo</label><span id="infoCargo">-</span></div>
+        <div class="info-item"><label>Tempo de Casa</label><span id="infoExperiencia">-</span></div>
+        <div class="info-item"><label>Gestor</label><span id="infoGestor">-</span></div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 1: INPUTS DO GESTOR -->
+    <div class="card">
+      <h2 class="title">1. Diagnóstico do Gestor (Perguntas Norteadoras)</h2>
+      
+      <label><b>1. Qual o Resumo do Perfil e Potencial do Colaborador no ciclo atual?</b></label>
+      <textarea id="resumoPerfil" rows="3"></textarea>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:10px;">
+        <div>
+          <label style="color:green;"><b>2. Quais são os Pontos Fortes e Destaques?</b></label>
+          <textarea id="pontosFortes" rows="4"></textarea>
+        </div>
+        <div>
+          <label style="color:#d97706;"><b>3. Quais foram as Falhas, Gargalos ou Fatos Críticos?</b></label>
+          <textarea id="gargalos" rows="4"></textarea>
+        </div>
+      </div>
+
+      <div class="no-print" style="margin-top:15px; text-align:right;">
+        <span class="loader" id="loaderIA">⏳ O Módulo Especialista de IA está gerando a análise...</span>
+        <button class="btn-ai" id="btnGerarIA" onclick="processarComIA()">✨ Processar e Gerar Seções 2, 3 e 4 com IA</button>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2: MATRIZ DE EVIDÊNCIAS -->
+    <div class="card">
+      <h2 class="title">2. Matriz de Evidências Práticas (Gerada por IA)</h2>
+      <table id="tabelaEvidencias">
+        <thead>
+          <tr><th>Acontecimento / Fato</th><th>Comportamento Observado</th><th>Impacto no Negócio</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- SEÇÃO 3: SCRIPT DE FEEDBACK -->
+    <div class="card">
+      <h2 class="title">3. Guia de Condução da Conversa de Feedback (Gerada por IA)</h2>
+      <label><b>[Abertura - Reconhecimento e Valorização]</b></label>
+      <textarea id="scriptAbertura" rows="3"></textarea>
+      
+      <label style="margin-top:10px; display:block;"><b>[Alinhamento de Pontos de Melhoria - Foco em Fatos]</b></label>
+      <textarea id="scriptFatos" rows="3"></textarea>
+
+      <label style="margin-top:10px; display:block;"><b>[Fechamento e Compromisso Futuro]</b></label>
+      <textarea id="scriptPostura" rows="3"></textarea>
+    </div>
+
+    <!-- SEÇÃO 4: PDI -->
+    <div class="card">
+      <h2 class="title">4. Plano de Desenvolvimento Individual - PDI (Gerado por IA)</h2>
+      <table id="tabelaPDI">
+        <thead>
+          <tr><th>Ação de Desenvolvimento</th><th>Detalhamento / Método</th><th>Frequência / Prazo</th><th>Indicador de Sucesso</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="no-print" style="text-align:right; margin-bottom:40px;">
+      <button class="btn-success" style="padding:12px 24px;" onclick="salvarNovoCicloAvaliacao()">💾 Salvar Novo Ciclo de Avaliação</button>
+    </div>
+
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzF4uDI8EvM8kgazdGqZxxt3lsjZPaJA4vdPZygiGdXVDDs2OLXgzAfXXUkhQMkmpQT/exec";
+    let colaboradoresCache = [];
+    let colaboradorAtual = null;
+    let dadosIAGerados = null;
+
+    async function autenticar() {
+      const senha = document.getElementById("inputSenha").value;
+      const res = await fetch(SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "validarSenha", senha: senha })
+      });
+      const data = await res.json();
+      if(data.success) {
+        document.getElementById("loginModal").style.display = "none";
+        carregarColaboradores();
+      } else {
+        document.getElementById("loginError").style.display = "block";
+        document.getElementById("loginError").innerText = "Senha Incorreta!";
+      }
+    }
+
+    async function carregarColaboradores() {
+      const res = await fetch(`${SCRIPT_URL}?action=getColaboradores`);
+      const json = await res.json();
+      if(json.success) {
+        colaboradoresCache = json.data;
+        const select = document.getElementById("selectColaborador");
+        select.innerHTML = "";
+        colaboradoresCache.forEach(c => {
+          select.innerHTML += `<option value="${c.ID_COLABORADOR}">${c.NOME} (${c.CARGO})</option>`;
+        });
+        trocarColaborador();
+      }
+    }
+
+    async function trocarColaborador() {
+      const id = document.getElementById("selectColaborador").value;
+      colaboradorAtual = colaboradoresCache.find(c => c.ID_COLABORADOR === id);
+      
+      document.getElementById("infoNome").innerText = colaboradorAtual.NOME;
+      document.getElementById("infoCargo").innerText = colaboradorAtual.CARGO;
+      document.getElementById("infoExperiencia").innerText = colaboradorAtual.TEMPO_EXPERIENCIA;
+      document.getElementById("infoGestor").innerText = colaboradorAtual.GESTOR;
+
+      const res = await fetch(`${SCRIPT_URL}?action=getHistoricoAvaliacoes&idColaborador=${id}`);
+      const json = await res.json();
+      const selectHist = document.getElementById("selectHistorico");
+      selectHist.innerHTML = `<option value="NOVO">+ Nova Avaliação (Ciclo Atual)</option>`;
+      
+      if(json.success) {
+        json.data.forEach(h => {
+          selectHist.innerHTML += `<option value="${h.idAvaliacao}">Ciclo: ${h.dataAvaliacao}</option>`;
+        });
+      }
+      limparFormulario();
+    }
+
+    async function carregarCicloSelecionado() {
+      const idAvaliacao = document.getElementById("selectHistorico").value;
+      if(idAvaliacao === "NOVO") {
+        limparFormulario();
+        return;
+      }
+
+      const res = await fetch(`${SCRIPT_URL}?action=getAvaliacaoPorId&idAvaliacao=${idAvaliacao}`);
+      const json = await res.json();
+      if(json.success && json.data) {
+        const data = json.data;
+        document.getElementById("resumoPerfil").value = data.resumoPerfil || "";
+        document.getElementById("pontosFortes").value = data.pontosFortes || "";
+        document.getElementById("gargalos").value = data.gargalos || "";
+        document.getElementById("scriptAbertura").value = data.scriptAbertura || "";
+        document.getElementById("scriptFatos").value = data.scriptFatos || "";
+        document.getElementById("scriptPostura").value = data.scriptPostura || "";
+        renderTabelas(data.evidencias, data.pdi);
+      }
+    }
+
+    async function processarComIA() {
+      const diagnostico = {
+        resumoPerfil: document.getElementById("resumoPerfil").value,
+        pontosFortes: document.getElementById("pontosFortes").value,
+        gargalos: document.getElementById("gargalos").value
+      };
+
+      if(!diagnostico.resumoPerfil || !diagnostico.gargalos) {
+        alert("Preencha o diagnóstico da Seção 1 antes de executar a IA.");
+        return;
+      }
+
+      document.getElementById("loaderIA").style.display = "inline";
+      document.getElementById("btnGerarIA").disabled = true;
+
+      const res = await fetch(SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "gerarAnaliseIA",
+          idColaborador: colaboradorAtual.ID_COLABORADOR,
+          diagnostico: diagnostico
+        })
+      });
+
+      const json = await res.json();
+      document.getElementById("loaderIA").style.display = "none";
+      document.getElementById("btnGerarIA").disabled = false;
+
+      if(json.success) {
+        dadosIAGerados = json.data;
+        document.getElementById("scriptAbertura").value = json.data.script.abertura;
+        document.getElementById("scriptFatos").value = json.data.script.fatos;
+        document.getElementById("scriptPostura").value = json.data.script.postura;
+        renderTabelas(json.data.evidencias, json.data.pdi);
+      } else {
+        alert("Erro na IA: " + json.error);
+      }
+    }
+
+    function renderTabelas(evidencias, pdi) {
+      const tbEvid = document.querySelector("#tabelaEvidencias tbody");
+      tbEvid.innerHTML = "";
+      (evidencias || []).forEach(e => {
+        tbEvid.innerHTML += `<tr><td>${e.fato}</td><td>${e.comportamento}</td><td>${e.impacto}</td></tr>`;
+      });
+
+      const tbPDI = document.querySelector("#tabelaPDI tbody");
+      tbPDI.innerHTML = "";
+      (pdi || []).forEach(p => {
+        tbPDI.innerHTML += `<tr><td>${p.acao}</td><td>${p.detalhamento}</td><td>${p.prazo}</td><td>${p.indicador}</td></tr>`;
+      });
+    }
+
+    async function salvarNovoCicloAvaliacao() {
+      const payload = {
+        action: "salvarAvaliacaoCompleta",
+        data: {
+          idColaborador: colaboradorAtual.ID_COLABORADOR,
+          resumoPerfil: document.getElementById("resumoPerfil").value,
+          pontosFortes: document.getElementById("pontosFortes").value,
+          gargalos: document.getElementById("gargalos").value,
+          scriptAbertura: document.getElementById("scriptAbertura").value,
+          scriptFatos: document.getElementById("scriptFatos").value,
+          scriptPostura: document.getElementById("scriptPostura").value,
+          evidencias: dadosIAGerados ? dadosIAGerados.evidencias : [],
+          pdi: dadosIAGerados ? dadosIAGerados.pdi : []
+        }
+      };
+
+      const res = await fetch(SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+
+      const json = await res.json();
+      if(json.success) {
+        alert("Nova Avaliação registrada com sucesso!");
+        trocarColaborador();
+      }
+    }
+
+    function abrirModalEnsino() { document.getElementById("ensinoModal").style.display = "flex"; }
+    function fecharModalEnsino() { document.getElementById("ensinoModal").style.display = "none"; }
+
+    async function salvarEnsinoIA() {
+      const cat = document.getElementById("ensinoCategoria").value;
+      const dir = document.getElementById("ensinoDiretriz").value;
+      if(!dir) return;
+
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "registrarEnsinoIA", categoria: cat, diretriz: dir, gestor: colaboradorAtual ? colaboradorAtual.GESTOR : "Gestor" })
+      });
+
+      alert("Ensino de cultura registrado na matriz!");
+      fecharModalEnsino();
+      document.getElementById("ensinoDiretriz").value = "";
+    }
+
+    function limparFormulario() {
+      document.getElementById("resumoPerfil").value = "";
+      document.getElementById("pontosFortes").value = "";
+      document.getElementById("gargalos").value = "";
+      document.getElementById("scriptAbertura").value = "";
+      document.getElementById("scriptFatos").value = "";
+      document.getElementById("scriptPostura").value = "";
+      renderTabelas([], []);
+    }
+  </script>
+</body>
+</html>
