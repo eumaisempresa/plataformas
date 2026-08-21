@@ -3,196 +3,307 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Controle de Projetos e AILs | EU+</title>
+  <title>Controle de Projetos e AILs · EU⁺ Executivo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #1a73e8;
-      --primary-dark: #1557b0;
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #1e293b;
-      --muted: #64748b;
-      --border: #e2e8f0;
+      --bg-primary: #060E18;
+      --bg-secondary: #0A1624;
+      --bg-tertiary: #0E1E30;
+      --gold: #C4974A;
+      --gold-light: #D4AA62;
+      --text-primary: #EEF0F2;
+      --text-secondary: #7A8FA3;
+      --border: rgba(196,151,74,0.18);
       --success: #10b981;
       --warning: #f59e0b;
-      --danger: #ef4444;
+      --danger: #C44A4A;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
     }
 
+    h1, h2, h3, .title-font {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    /* Header */
     header {
-      background: linear-gradient(135deg, #1a73e8, #0f172a);
-      color: white;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
       padding: 1.25rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
-    header h1 { font-size: 1.4rem; font-weight: 600; }
-    header .subtitle { font-size: 0.85rem; opacity: 0.85; }
+    header h1 {
+      font-size: 1.6rem;
+      color: var(--text-primary);
+    }
+
+    header h1 span { color: var(--gold); }
+
+    header .subtitle {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .btn {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 10px 20px;
+      border-radius: 4px;
+      border: 1px solid var(--gold);
+      background: transparent;
+      color: var(--gold);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      background: var(--gold);
+      color: var(--bg-primary);
+    }
+
+    .btn-secondary {
+      border-color: var(--text-secondary);
+      color: var(--text-secondary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--text-secondary);
+      color: var(--bg-primary);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 11px;
+    }
 
     .container {
-      max-width: 1400px;
+      max-width: 1280px;
       margin: 0 auto;
-      padding: 1.5rem;
+      padding: 1.75rem 1.5rem;
     }
 
     /* Login */
     #login-screen {
-      max-width: 400px;
-      margin: 8rem auto;
-      background: var(--card);
-      padding: 2.5rem;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      max-width: 420px;
+      margin: 10rem auto;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      padding: 2.75rem;
+      border-radius: 8px;
       text-align: center;
     }
 
-    #login-screen h2 { margin-bottom: 0.5rem; }
-    #login-screen p { color: var(--muted); margin-bottom: 1.5rem; font-size: 0.95rem; }
+    #login-screen h2 {
+      font-size: 1.8rem;
+      margin-bottom: 0.4rem;
+    }
 
-    input[type="password"], input[type="text"], select, textarea {
+    #login-screen p {
+      color: var(--text-secondary);
+      margin-bottom: 1.75rem;
+      font-size: 0.9rem;
+    }
+
+    input, select, textarea {
       width: 100%;
-      padding: 0.75rem 1rem;
+      padding: 0.7rem 1rem;
+      background: var(--bg-tertiary);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 1rem;
+      border-radius: 4px;
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
       margin-bottom: 1rem;
-      transition: border 0.2s;
     }
 
     input:focus, select:focus, textarea:focus {
       outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+      border-color: var(--gold);
     }
 
-    button {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s;
+    /* KPIs */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
     }
 
-    button:hover { background: var(--primary-dark); }
-    button.secondary { background: #64748b; }
-    button.secondary:hover { background: #475569; }
-    button.danger { background: var(--danger); }
+    .kpi {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem 0.9rem;
+      text-align: center;
+    }
+
+    .kpi .number {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.7rem;
+      font-weight: 600;
+      color: var(--gold);
+    }
+
+    .kpi .label {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
 
     /* Filters */
     .filters {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.75rem;
+      gap: 0.6rem;
       margin-bottom: 1.25rem;
-      background: var(--card);
-      padding: 1rem;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      align-items: center;
     }
 
-    .filters select, .filters input {
+    .filters input, .filters select {
       width: auto;
       min-width: 140px;
       margin: 0;
+      background: var(--bg-secondary);
     }
 
-    .stats {
+    /* Accordion */
+    .accordion {
       display: flex;
-      gap: 1rem;
-      margin-bottom: 1.25rem;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 0.6rem;
     }
 
-    .stat-card {
-      background: var(--card);
-      padding: 1rem 1.25rem;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      min-width: 120px;
+    .acc-group {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
     }
 
-    .stat-card .number { font-size: 1.5rem; font-weight: 700; }
-    .stat-card .label { font-size: 0.8rem; color: var(--muted); }
-
-    /* Table */
-    .table-wrapper {
-      background: var(--card);
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      overflow: auto;
+    .acc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.9rem 1.1rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    .acc-header:hover { background: var(--bg-tertiary); }
+
+    .acc-header h3 {
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .acc-header .count {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .acc-header .chevron {
+      color: var(--gold);
+      transition: transform 0.25s;
       font-size: 0.9rem;
     }
 
-    th {
-      background: #f1f5f9;
-      padding: 0.85rem 1rem;
-      text-align: left;
-      font-weight: 600;
-      position: sticky;
-      top: 0;
-      white-space: nowrap;
-    }
+    .acc-group.open .chevron { transform: rotate(180deg); }
 
-    td {
-      padding: 0.75rem 1rem;
+    .acc-body {
+      display: none;
       border-top: 1px solid var(--border);
-      vertical-align: middle;
     }
 
-    tr:hover { background: #f8fafc; }
+    .acc-group.open .acc-body { display: block; }
+
+    .item-row {
+      display: grid;
+      grid-template-columns: 1.8fr 0.9fr 0.8fr 0.6fr 1.4fr 1.6fr 1fr 0.7fr;
+      gap: 0.6rem;
+      padding: 0.75rem 1.1rem;
+      border-bottom: 1px solid rgba(196,151,74,0.08);
+      font-size: 0.85rem;
+      align-items: start;
+    }
+
+    .item-row:last-child { border-bottom: none; }
+    .item-row:hover { background: rgba(196,151,74,0.04); }
+
+    .item-row .nome {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .item-row .obs {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
 
     .badge {
       display: inline-block;
-      padding: 0.25rem 0.6rem;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.3px;
     }
 
-    .badge-ativo { background: #d1fae5; color: #065f46; }
-    .badge-desacelerando { background: #fef3c7; color: #92400e; }
-    .badge-pausado { background: #ffedd5; color: #9a3412; }
-    .badge-concluido { background: #dbeafe; color: #1e40af; }
-    .badge-arquivado { background: #e2e8f0; color: #475569; }
+    .badge-ativo { background: rgba(16,185,129,0.15); color: #34d399; }
+    .badge-desacelerando { background: rgba(245,158,11,0.15); color: #fbbf24; }
+    .badge-pausado { background: rgba(196,74,74,0.15); color: #f87171; }
+    .badge-concluido { background: rgba(59,130,246,0.15); color: #60a5fa; }
+    .badge-arquivado { background: rgba(122,143,163,0.15); color: #94a3b8; }
 
-    .actions button {
-      padding: 0.35rem 0.7rem;
-      font-size: 0.8rem;
-      margin-right: 0.3rem;
+    .link-btn {
+      color: var(--gold);
+      text-decoration: none;
+      font-size: 0.78rem;
+      border-bottom: 1px solid transparent;
     }
+    .link-btn:hover { border-bottom-color: var(--gold); }
 
     /* Modal */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.6);
+      background: rgba(6,14,24,0.85);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 100;
       opacity: 0;
       visibility: hidden;
-      transition: all 0.2s;
+      transition: all 0.3s;
     }
 
     .modal-overlay.active {
@@ -201,56 +312,88 @@
     }
 
     .modal {
-      background: white;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
       width: 95%;
-      max-width: 560px;
-      border-radius: 16px;
+      max-width: 520px;
+      border-radius: 8px;
       padding: 1.75rem;
       max-height: 90vh;
       overflow-y: auto;
-      transform: translateY(20px);
-      transition: transform 0.2s;
     }
 
-    .modal-overlay.active .modal { transform: translateY(0); }
-
-    .modal h3 { margin-bottom: 1.25rem; font-size: 1.25rem; }
+    .modal h3 {
+      font-size: 1.4rem;
+      margin-bottom: 1.25rem;
+      color: var(--gold-light);
+    }
 
     .form-group { margin-bottom: 1rem; }
     .form-group label {
       display: block;
-      font-size: 0.85rem;
-      font-weight: 500;
-      margin-bottom: 0.35rem;
-      color: var(--muted);
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .modal-actions {
       display: flex;
       justify-content: flex-end;
-      gap: 0.75rem;
+      gap: 0.7rem;
       margin-top: 1.5rem;
     }
 
-    .loading {
+    .loading, .empty {
       text-align: center;
       padding: 3rem;
-      color: var(--muted);
+      color: var(--text-secondary);
     }
 
     .error-msg {
-      background: #fef2f2;
-      color: #b91c1c;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
+      background: rgba(196,74,74,0.12);
+      color: #f87171;
+      padding: 0.7rem 1rem;
+      border-radius: 4px;
       margin-bottom: 1rem;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
 
-    @media (max-width: 768px) {
-      header { flex-direction: column; gap: 0.5rem; text-align: center; }
-      .filters { flex-direction: column; }
-      .filters select, .filters input { width: 100%; }
+    .top-actions {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 1.25rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      border-top: 1px solid var(--border);
+      margin-top: 2rem;
+    }
+
+    footer .slogan {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      color: var(--gold);
+      margin-bottom: 0.4rem;
+    }
+
+    @media (max-width: 900px) {
+      .item-row {
+        grid-template-columns: 1fr;
+        gap: 0.3rem;
+      }
+      .item-row > div::before {
+        content: attr(data-label);
+        font-size: 0.7rem;
+        color: var(--text-secondary);
+        display: block;
+        margin-bottom: 1px;
+      }
     }
   </style>
 </head>
@@ -258,40 +401,34 @@
 
   <!-- LOGIN -->
   <div id="login-screen">
-    <h2>Controle de Projetos e AILs</h2>
-    <p>EU+ · Central do Conhecimento</p>
+    <h2>EU<span style="color:var(--gold)">⁺</span> Executivo</h2>
+    <p>Controle de Projetos e AILs</p>
     <div id="login-error" class="error-msg" style="display:none;"></div>
     <input type="password" id="password" placeholder="Senha de acesso" autofocus />
-    <button onclick="login()" style="width:100%;">Entrar</button>
+    <button class="btn" style="width:100%;" onclick="login()">Entrar</button>
   </div>
 
   <!-- APP -->
   <div id="app" style="display:none;">
     <header>
       <div>
-        <h1>Controle de Projetos e AILs</h1>
-        <div class="subtitle">EU+ · 43 registros sincronizados</div>
+        <h1>EU<span>⁺</span> Executivo</h1>
+        <div class="subtitle">Controle de Projetos e AILs · Central do Conhecimento</div>
       </div>
-      <button class="secondary" onclick="logout()">Sair</button>
+      <div style="display:flex;gap:0.6rem;">
+        <button class="btn btn-sm" onclick="openAgentModal()">+ Agente</button>
+        <button class="btn btn-secondary btn-sm" onclick="logout()">Sair</button>
+      </div>
     </header>
 
     <div class="container">
-      <!-- Stats -->
-      <div class="stats" id="stats"></div>
+      <!-- KPIs -->
+      <div class="kpis" id="kpis"></div>
 
-      <!-- Filters -->
+      <!-- Filters + Actions -->
       <div class="filters">
-        <input type="text" id="search" placeholder="Buscar por nome..." oninput="renderTable()" />
-        <select id="filter-fase" onchange="renderTable()">
-          <option value="">Todas as Fases</option>
-          <option>Ideação</option>
-          <option>Laboratório</option>
-          <option>Construção</option>
-          <option>Escalonamento</option>
-          <option>Operação</option>
-          <option>Arquivo / Hibernação</option>
-        </select>
-        <select id="filter-status" onchange="renderTable()">
+        <input type="text" id="search" placeholder="Buscar por nome..." oninput="renderAccordion()" />
+        <select id="filter-status" onchange="renderAccordion()">
           <option value="">Todos Status</option>
           <option>Ativo</option>
           <option>Desacelerando</option>
@@ -299,42 +436,29 @@
           <option>Concluído</option>
           <option>Arquivado</option>
         </select>
-        <select id="filter-tipo" onchange="renderTable()">
-          <option value="">Todos Tipos</option>
+        <select id="filter-tipo" onchange="renderAccordion()">
+          <option value="">Projetos + Produtos</option>
           <option>Projeto</option>
           <option>Produto (AIL)</option>
         </select>
-        <button onclick="loadData()">🔄 Atualizar</button>
+        <button class="btn btn-sm" onclick="loadData()">Atualizar</button>
       </div>
 
-      <!-- Table -->
-      <div class="table-wrapper">
-        <div id="loading" class="loading">Carregando dados...</div>
-        <table id="table" style="display:none;">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nome</th>
-              <th>Tipo</th>
-              <th>Fase</th>
-              <th>Status</th>
-              <th>Prioridade</th>
-              <th>Dias Parado</th>
-              <th>Agente</th>
-              <th>LLM</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
+      <!-- Accordion -->
+      <div id="loading" class="loading">Carregando...</div>
+      <div class="accordion" id="accordion" style="display:none;"></div>
     </div>
+
+    <footer>
+      <div class="slogan">“Você é o EU. Nós somos o + que soma com você.”</div>
+      <div>Ecossistema EU⁺ › EU⁺ Empresa › EU⁺ Executivo › Controle de Projetos e AILs</div>
+    </footer>
   </div>
 
-  <!-- MODAL EDIT -->
-  <div class="modal-overlay" id="modal">
+  <!-- MODAL EDIT PROJECT -->
+  <div class="modal-overlay" id="modal-edit">
     <div class="modal">
-      <h3 id="modal-title">Editar Projeto</h3>
+      <h3 id="modal-title">Editar</h3>
       <div id="modal-error" class="error-msg" style="display:none;"></div>
 
       <div class="form-group">
@@ -347,7 +471,6 @@
           <option>Arquivado</option>
         </select>
       </div>
-
       <div class="form-group">
         <label>Prioridade</label>
         <select id="edit-prioridade">
@@ -356,59 +479,87 @@
           <option>Baixa</option>
         </select>
       </div>
-
       <div class="form-group">
         <label>Próxima Ação</label>
         <input type="text" id="edit-proxima" />
       </div>
-
       <div class="form-group">
         <label>Observações / Histórico</label>
         <textarea id="edit-obs" rows="4"></textarea>
       </div>
-
       <div class="form-group">
         <label>Agente</label>
-        <input type="text" id="edit-agente" />
+        <input type="text" id="edit-agente" list="lista-agentes" />
+        <datalist id="lista-agentes"></datalist>
       </div>
-
       <div class="form-group">
         <label>LLM</label>
-        <input type="text" id="edit-llm" placeholder="Ex: Grok 4, Llama 3.3..." />
+        <input type="text" id="edit-llm" />
       </div>
-
       <div class="form-group">
         <label>Conta Email LLM</label>
         <input type="text" id="edit-email" />
       </div>
 
       <div class="modal-actions">
-        <button class="secondary" onclick="closeModal()">Cancelar</button>
-        <button onclick="saveEdit()">Salvar</button>
+        <button class="btn btn-secondary" onclick="closeModal('modal-edit')">Cancelar</button>
+        <button class="btn" onclick="saveEdit()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL NEW AGENT -->
+  <div class="modal-overlay" id="modal-agent">
+    <div class="modal">
+      <h3>Novo Agente</h3>
+      <div id="agent-error" class="error-msg" style="display:none;"></div>
+
+      <div class="form-group">
+        <label>Nome do Agente *</label>
+        <input type="text" id="agent-nome" placeholder="Ex: Assistente de Ideação" />
+      </div>
+      <div class="form-group">
+        <label>Função / Papel *</label>
+        <input type="text" id="agent-funcao" placeholder="O que ele faz" />
+      </div>
+      <div class="form-group">
+        <label>LLM *</label>
+        <input type="text" id="agent-llm" placeholder="Grok 4, Llama 3.3..." />
+      </div>
+      <div class="form-group">
+        <label>Conta Email LLM *</label>
+        <input type="text" id="agent-email" />
+      </div>
+      <div class="form-group">
+        <label>ID / Nome do Prompt</label>
+        <input type="text" id="agent-prompt" />
+      </div>
+      <div class="form-group">
+        <label>Observações</label>
+        <textarea id="agent-obs" rows="3"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modal-agent')">Cancelar</button>
+        <button class="btn" onclick="saveAgent()">Cadastrar Agente</button>
       </div>
     </div>
   </div>
 
   <script>
-    // =====================================================
-    // CONFIGURAÇÃO
-    // =====================================================
     const API_URL = 'https://script.google.com/macros/s/AKfycbw4uSf-JLJ2nPV5i9gIwa0aAoCGNwJbSjS6NBbirSq8_eaPl8zqxUO9aaAszg1Vki-4/exec';
     
     let password = localStorage.getItem('eu_plus_password') || '';
     let allData = [];
     let currentRow = null;
+    let agents = []; // futuro: carregar da planilha de agentes
 
-    // =====================================================
-    // LOGIN
-    // =====================================================
+    // ===== LOGIN =====
     function login() {
       const pass = document.getElementById('password').value.trim();
       if (!pass) return;
-
       password = pass;
       localStorage.setItem('eu_plus_password', password);
-      
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').style.display = 'block';
       loadData();
@@ -422,24 +573,20 @@
       document.getElementById('password').value = '';
     }
 
-    // Auto-login se já tiver senha salva
     if (password) {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').style.display = 'block';
       loadData();
     }
 
-    // Enter no campo de senha
-    document.getElementById('password').addEventListener('keypress', (e) => {
+    document.getElementById('password').addEventListener('keypress', e => {
       if (e.key === 'Enter') login();
     });
 
-    // =====================================================
-    // CARREGAR DADOS
-    // =====================================================
+    // ===== DATA =====
     async function loadData() {
       document.getElementById('loading').style.display = 'block';
-      document.getElementById('table').style.display = 'none';
+      document.getElementById('accordion').style.display = 'none';
 
       try {
         const res = await fetch(`${API_URL}?action=list&password=${encodeURIComponent(password)}`);
@@ -456,73 +603,104 @@
         }
 
         allData = json.data || [];
-        renderStats();
-        renderTable();
-
+        renderKPIs();
+        renderAccordion();
         document.getElementById('loading').style.display = 'none';
-        document.getElementById('table').style.display = 'table';
-
+        document.getElementById('accordion').style.display = 'flex';
       } catch (err) {
-        document.getElementById('loading').innerHTML = `❌ Erro: ${err.message}`;
+        document.getElementById('loading').innerHTML = `Erro: ${err.message}`;
       }
     }
 
-    // =====================================================
-    // RENDER
-    // =====================================================
-    function renderStats() {
+    // ===== KPIs =====
+    function renderKPIs() {
       const total = allData.length;
       const ativo = allData.filter(d => d.Status === 'Ativo').length;
       const desacel = allData.filter(d => d.Status === 'Desacelerando').length;
       const pausado = allData.filter(d => d.Status === 'Pausado').length;
+      const projetos = allData.filter(d => (d.Tipo || '').includes('Projeto')).length;
+      const produtos = allData.filter(d => (d.Tipo || '').includes('Produto')).length;
 
-      document.getElementById('stats').innerHTML = `
-        <div class="stat-card"><div class="number">${total}</div><div class="label">Total</div></div>
-        <div class="stat-card"><div class="number" style="color:#059669">${ativo}</div><div class="label">Ativos</div></div>
-        <div class="stat-card"><div class="number" style="color:#d97706">${desacel}</div><div class="label">Desacelerando</div></div>
-        <div class="stat-card"><div class="number" style="color:#ea580c">${pausado}</div><div class="label">Pausados</div></div>
+      const fases = ['Ideação','Laboratório','Construção','Escalonamento','Operação','Arquivo / Hibernação'];
+      let faseHtml = fases.map(f => {
+        const qtd = allData.filter(d => d['Fase Atual'] === f).length;
+        return `<div class="kpi"><div class="number">${qtd}</div><div class="label">${f.split(' ')[0]}</div></div>`;
+      }).join('');
+
+      document.getElementById('kpis').innerHTML = `
+        <div class="kpi"><div class="number">${total}</div><div class="label">Total</div></div>
+        <div class="kpi"><div class="number">${ativo}</div><div class="label">Ativos</div></div>
+        <div class="kpi"><div class="number">${desacel}</div><div class="label">Desacelerando</div></div>
+        <div class="kpi"><div class="number">${pausado}</div><div class="label">Pausados</div></div>
+        <div class="kpi"><div class="number">${projetos}</div><div class="label">Projetos</div></div>
+        <div class="kpi"><div class="number">${produtos}</div><div class="label">Produtos</div></div>
+        ${faseHtml}
       `;
     }
 
-    function renderTable() {
+    // ===== ACCORDION =====
+    function renderAccordion() {
       const search = document.getElementById('search').value.toLowerCase();
-      const fase = document.getElementById('filter-fase').value;
       const status = document.getElementById('filter-status').value;
       const tipo = document.getElementById('filter-tipo').value;
 
       const filtered = allData.filter(item => {
         if (search && !(item.Nome || '').toLowerCase().includes(search)) return false;
-        if (fase && item['Fase Atual'] !== fase) return false;
         if (status && item.Status !== status) return false;
         if (tipo && item.Tipo !== tipo) return false;
         return true;
       });
 
-      const tbody = document.getElementById('tbody');
-      tbody.innerHTML = filtered.map(item => `
-        <tr>
-          <td><strong>${item.ID || ''}</strong></td>
-          <td>${item.Nome || ''}</td>
-          <td>${item.Tipo || ''}</td>
-          <td>${item['Fase Atual'] || ''}</td>
-          <td><span class="badge badge-${(item.Status || '').toLowerCase().replace(' ', '').replace('ç', 'c')}">${item.Status || ''}</span></td>
-          <td>${item.Prioridade || ''}</td>
-          <td>${item['Dias Parado'] ?? ''}</td>
-          <td>${item.Agente || '—'}</td>
-          <td>${item.LLM || '—'}</td>
-          <td class="actions">
-            <button onclick='openEdit(${JSON.stringify(item).replace(/'/g, "&#39;")})'>Editar</button>
-          </td>
-        </tr>
-      `).join('');
+      const fasesOrder = ['Ideação','Laboratório','Construção','Escalonamento','Operação','Arquivo / Hibernação','Não classificado'];
+      const grouped = {};
+      filtered.forEach(item => {
+        const f = item['Fase Atual'] || 'Não classificado';
+        if (!grouped[f]) grouped[f] = [];
+        grouped[f].push(item);
+      });
+
+      let html = '';
+      fasesOrder.forEach(fase => {
+        if (!grouped[fase] || grouped[fase].length === 0) return;
+        const items = grouped[fase];
+        html += `
+          <div class="acc-group open" data-fase="${fase}">
+            <div class="acc-header" onclick="toggleAcc(this)">
+              <h3>${fase} <span class="count">(${items.length})</span></h3>
+              <span class="chevron">▼</span>
+            </div>
+            <div class="acc-body">
+              ${items.map(item => `
+                <div class="item-row">
+                  <div class="nome" data-label="Nome">${item.Nome || '—'}</div>
+                  <div data-label="Status"><span class="badge badge-${(item.Status||'').toLowerCase().replace(/ /g,'').replace('ç','c')}">${item.Status || '—'}</span></div>
+                  <div data-label="Prioridade">${item.Prioridade || '—'}</div>
+                  <div data-label="Dias">${item['Dias Parado'] ?? '—'}</div>
+                  <div data-label="Próxima Ação">${item['Próxima Ação'] || '—'}</div>
+                  <div class="obs" data-label="Observações">${item['Observações / Histórico'] || '—'}</div>
+                  <div data-label="Email LLM">${item['Conta Email LLM'] || '—'}</div>
+                  <div data-label="Ações">
+                    ${item['Link da Pasta'] ? `<a class="link-btn" href="${item['Link da Pasta']}" target="_blank">Abrir</a>` : ''}
+                    <button class="btn btn-sm" style="margin-top:4px;" onclick='openEdit(${JSON.stringify(item).replace(/'/g,"&#39;")})'>Editar</button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      });
+
+      document.getElementById('accordion').innerHTML = html || '<div class="empty">Nenhum registro encontrado</div>';
     }
 
-    // =====================================================
-    // MODAL
-    // =====================================================
+    function toggleAcc(el) {
+      el.parentElement.classList.toggle('open');
+    }
+
+    // ===== MODALS =====
     function openEdit(item) {
       currentRow = item._row;
-      document.getElementById('modal-title').textContent = `Editar: ${item.Nome}`;
+      document.getElementById('modal-title').textContent = item.Nome || 'Editar';
       document.getElementById('edit-status').value = item.Status || 'Ativo';
       document.getElementById('edit-prioridade').value = item.Prioridade || 'Média';
       document.getElementById('edit-proxima').value = item['Próxima Ação'] || '';
@@ -531,18 +709,22 @@
       document.getElementById('edit-llm').value = item.LLM || '';
       document.getElementById('edit-email').value = item['Conta Email LLM'] || '';
       document.getElementById('modal-error').style.display = 'none';
-      document.getElementById('modal').classList.add('active');
+      document.getElementById('modal-edit').classList.add('active');
     }
 
-    function closeModal() {
-      document.getElementById('modal').classList.remove('active');
-      currentRow = null;
+    function openAgentModal() {
+      document.getElementById('agent-error').style.display = 'none';
+      document.getElementById('modal-agent').classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
     }
 
     async function saveEdit() {
       const payload = {
         action: 'update',
-        password: password,
+        password,
         row: currentRow,
         'Status': document.getElementById('edit-status').value,
         'Prioridade': document.getElementById('edit-prioridade').value,
@@ -554,29 +736,39 @@
       };
 
       try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
         const json = await res.json();
-
         if (!json.success) {
           document.getElementById('modal-error').style.display = 'block';
           document.getElementById('modal-error').textContent = json.error || 'Erro ao salvar';
           return;
         }
-
-        closeModal();
-        loadData(); // recarrega
+        closeModal('modal-edit');
+        loadData();
       } catch (err) {
         document.getElementById('modal-error').style.display = 'block';
         document.getElementById('modal-error').textContent = err.message;
       }
     }
 
-    // Fechar modal com ESC
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
+    function saveAgent() {
+      // Por enquanto só feedback visual.
+      // Próximo passo: criar aba "Agentes" e endpoint no Apps Script.
+      const nome = document.getElementById('agent-nome').value.trim();
+      if (!nome) {
+        document.getElementById('agent-error').style.display = 'block';
+        document.getElementById('agent-error').textContent = 'Nome do agente é obrigatório';
+        return;
+      }
+      alert('Cadastro de agentes será conectado à planilha na próxima etapa.\n\nAgente: ' + nome);
+      closeModal('modal-agent');
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        closeModal('modal-edit');
+        closeModal('modal-agent');
+      }
     });
   </script>
 </body>
