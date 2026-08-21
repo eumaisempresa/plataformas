@@ -1,363 +1,583 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Avaliação Inteligente & PDI</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Controle de Projetos e AILs | EU+</title>
   <style>
-    :root { --primary: #0f172a; --accent: #0284c7; --bg: #f8fafc; --card: #ffffff; --border: #e2e8f0; }
-    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
-    body { background: var(--bg); color: #334155; margin: 0; }
-
-    #loginModal, #ensinoModal {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(15,23,42,0.85); display: flex; align-items: center; justify-content: center; z-index: 999;
+    :root {
+      --primary: #1a73e8;
+      --primary-dark: #1557b0;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
     }
-    .modal-box { background: white; padding: 30px; border-radius: 8px; width: 450px; }
 
-    header { background: var(--primary); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
-    .actions { display: flex; gap: 10px; align-items: center; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
-    .card { background: var(--card); padding: 20px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px; }
-    
-    .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
-    .info-item label { font-size: 0.75rem; color: #64748b; font-weight: bold; display: block; }
-    .info-item span { font-weight: 600; font-size: 0.95rem; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
 
-    h2.title { font-size: 1.1rem; border-bottom: 2px solid var(--accent); padding-bottom: 5px; color: var(--primary); margin-top: 0; }
-    textarea, input, select { width: 100%; border: 1px solid var(--border); border-radius: 4px; padding: 8px; margin-top: 5px; font-size: 0.9rem; }
-    
-    button { padding: 8px 16px; border-radius: 4px; border: none; font-weight: bold; cursor: pointer; }
-    .btn-ai { background: #7c3aed; color: white; }
-    .btn-ai:hover { background: #6d28d9; }
-    .btn-primary { background: var(--accent); color: white; }
-    .btn-success { background: #10b981; color: white; }
+    header {
+      background: linear-gradient(135deg, #1a73e8, #0f172a);
+      color: white;
+      padding: 1.25rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid var(--border); padding: 8px; text-align: left; font-size: 0.85rem; }
-    th { background: #f1f5f9; }
+    header h1 { font-size: 1.4rem; font-weight: 600; }
+    header .subtitle { font-size: 0.85rem; opacity: 0.85; }
 
-    .loader { display: none; font-weight: bold; color: #7c3aed; margin-top: 10px; }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
 
-    @media print {
-      .no-print { display: none !important; }
-      .card { border: none; padding: 0; }
-      textarea { border: none; background: transparent; }
+    /* Login */
+    #login-screen {
+      max-width: 400px;
+      margin: 8rem auto;
+      background: var(--card);
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+
+    #login-screen h2 { margin-bottom: 0.5rem; }
+    #login-screen p { color: var(--muted); margin-bottom: 1.5rem; font-size: 0.95rem; }
+
+    input[type="password"], input[type="text"], select, textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      transition: border 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: var(--primary-dark); }
+    button.secondary { background: #64748b; }
+    button.secondary:hover { background: #475569; }
+    button.danger { background: var(--danger); }
+
+    /* Filters */
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      background: var(--card);
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .filters select, .filters input {
+      width: auto;
+      min-width: 140px;
+      margin: 0;
+    }
+
+    .stats {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .stat-card {
+      background: var(--card);
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      min-width: 120px;
+    }
+
+    .stat-card .number { font-size: 1.5rem; font-weight: 700; }
+    .stat-card .label { font-size: 0.8rem; color: var(--muted); }
+
+    /* Table */
+    .table-wrapper {
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: #f1f5f9;
+      padding: 0.85rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:hover { background: #f8fafc; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-ativo { background: #d1fae5; color: #065f46; }
+    .badge-desacelerando { background: #fef3c7; color: #92400e; }
+    .badge-pausado { background: #ffedd5; color: #9a3412; }
+    .badge-concluido { background: #dbeafe; color: #1e40af; }
+    .badge-arquivado { background: #e2e8f0; color: #475569; }
+
+    .actions button {
+      padding: 0.35rem 0.7rem;
+      font-size: 0.8rem;
+      margin-right: 0.3rem;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: white;
+      width: 95%;
+      max-width: 560px;
+      border-radius: 16px;
+      padding: 1.75rem;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(20px);
+      transition: transform 0.2s;
+    }
+
+    .modal-overlay.active .modal { transform: translateY(0); }
+
+    .modal h3 { margin-bottom: 1.25rem; font-size: 1.25rem; }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 0.35rem;
+      color: var(--muted);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+    }
+
+    .error-msg {
+      background: #fef2f2;
+      color: #b91c1c;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      header { flex-direction: column; gap: 0.5rem; text-align: center; }
+      .filters { flex-direction: column; }
+      .filters select, .filters input { width: 100%; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Modal Autenticação -->
-  <div id="loginModal">
-    <div class="modal-box" style="text-align: center;">
-      <h3>Painel do Gestor</h3>
-      <input type="password" id="inputSenha" placeholder="Digite a Senha do Gestor">
-      <button class="btn-primary" style="margin-top:15px; width:100%;" onclick="autenticar()">Entrar</button>
-      <p id="loginError" style="color:red; display:none; font-size:0.8rem; margin-top:10px;"></p>
+  <!-- LOGIN -->
+  <div id="login-screen">
+    <h2>Controle de Projetos e AILs</h2>
+    <p>EU+ · Central do Conhecimento</p>
+    <div id="login-error" class="error-msg" style="display:none;"></div>
+    <input type="password" id="password" placeholder="Senha de acesso" autofocus />
+    <button onclick="login()" style="width:100%;">Entrar</button>
+  </div>
+
+  <!-- APP -->
+  <div id="app" style="display:none;">
+    <header>
+      <div>
+        <h1>Controle de Projetos e AILs</h1>
+        <div class="subtitle">EU+ · 43 registros sincronizados</div>
+      </div>
+      <button class="secondary" onclick="logout()">Sair</button>
+    </header>
+
+    <div class="container">
+      <!-- Stats -->
+      <div class="stats" id="stats"></div>
+
+      <!-- Filters -->
+      <div class="filters">
+        <input type="text" id="search" placeholder="Buscar por nome..." oninput="renderTable()" />
+        <select id="filter-fase" onchange="renderTable()">
+          <option value="">Todas as Fases</option>
+          <option>Ideação</option>
+          <option>Laboratório</option>
+          <option>Construção</option>
+          <option>Escalonamento</option>
+          <option>Operação</option>
+          <option>Arquivo / Hibernação</option>
+        </select>
+        <select id="filter-status" onchange="renderTable()">
+          <option value="">Todos Status</option>
+          <option>Ativo</option>
+          <option>Desacelerando</option>
+          <option>Pausado</option>
+          <option>Concluído</option>
+          <option>Arquivado</option>
+        </select>
+        <select id="filter-tipo" onchange="renderTable()">
+          <option value="">Todos Tipos</option>
+          <option>Projeto</option>
+          <option>Produto (AIL)</option>
+        </select>
+        <button onclick="loadData()">🔄 Atualizar</button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrapper">
+        <div id="loading" class="loading">Carregando dados...</div>
+        <table id="table" style="display:none;">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>Tipo</th>
+              <th>Fase</th>
+              <th>Status</th>
+              <th>Prioridade</th>
+              <th>Dias Parado</th>
+              <th>Agente</th>
+              <th>LLM</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
-  <!-- Modal Ensino de Cultura para IA -->
-  <div id="ensinoModal" style="display:none;">
-    <div class="modal-box">
-      <h3>Ensino de Cultura / Diretrizes para a IA</h3>
-      <label>Categoria</label>
-      <select id="ensinoCategoria">
-        <option value="Postura Esperada">Postura Esperada</option>
-        <option value="Comunicação">Comunicação</option>
-        <option value="Processos/Qualidade">Processos / Qualidade</option>
-      </select>
-      <label style="margin-top:10px; display:block;">Diretriz / Valor da Empresa</label>
-      <textarea id="ensinoDiretriz" rows="4" placeholder="Ex: Diante de impasses com clientes, o colaborador deve registrar o caso e sugerir 2 alternativas de solução ao gestor."></textarea>
-      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px;">
-        <button onclick="fecharModalEnsino()">Cancelar</button>
-        <button class="btn-ai" onclick="salvarEnsinoIA()">Salvar Aprendizado</button>
-      </div>
-    </div>
-  </div>
+  <!-- MODAL EDIT -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <h3 id="modal-title">Editar Projeto</h3>
+      <div id="modal-error" class="error-msg" style="display:none;"></div>
 
-  <header class="no-print">
-    <div>
-      <h1 style="margin:0; font-size:1.3rem;">Painel de Avaliação & PDI Inteligente</h1>
-      <small style="color:#94a3b8">Especialista Executivo em Gestão de Pessoas</small>
-    </div>
-    <div class="actions">
-      <button class="btn-ai" onclick="abrirModalEnsino()">🧠 Ensinar IA (Cultura)</button>
-      <select id="selectColaborador" onchange="trocarColaborador()"></select>
-      <select id="selectHistorico" onchange="carregarCicloSelecionado()"></select>
-      <button class="btn-primary" onclick="window.print()">🖨️ PDF</button>
-    </div>
-  </header>
-
-  <div class="container">
-
-    <div class="card">
-      <div class="info-grid">
-        <div class="info-item"><label>Colaborador</label><span id="infoNome">-</span></div>
-        <div class="info-item"><label>Cargo</label><span id="infoCargo">-</span></div>
-        <div class="info-item"><label>Tempo de Casa</label><span id="infoExperiencia">-</span></div>
-        <div class="info-item"><label>Gestor</label><span id="infoGestor">-</span></div>
-      </div>
-    </div>
-
-    <!-- SEÇÃO 1: INPUTS DO GESTOR -->
-    <div class="card">
-      <h2 class="title">1. Diagnóstico do Gestor (Perguntas Norteadoras)</h2>
-      
-      <label><b>1. Qual o Resumo do Perfil e Potencial do Colaborador no ciclo atual?</b></label>
-      <textarea id="resumoPerfil" rows="3"></textarea>
-
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:10px;">
-        <div>
-          <label style="color:green;"><b>2. Quais são os Pontos Fortes e Destaques?</b></label>
-          <textarea id="pontosFortes" rows="4"></textarea>
-        </div>
-        <div>
-          <label style="color:#d97706;"><b>3. Quais foram as Falhas, Gargalos ou Fatos Críticos?</b></label>
-          <textarea id="gargalos" rows="4"></textarea>
-        </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="edit-status">
+          <option>Ativo</option>
+          <option>Desacelerando</option>
+          <option>Pausado</option>
+          <option>Concluído</option>
+          <option>Arquivado</option>
+        </select>
       </div>
 
-      <div class="no-print" style="margin-top:15px; text-align:right;">
-        <span class="loader" id="loaderIA">⏳ O Módulo Especialista de IA está gerando a análise...</span>
-        <button class="btn-ai" id="btnGerarIA" onclick="processarComIA()">✨ Processar e Gerar Seções 2, 3 e 4 com IA</button>
+      <div class="form-group">
+        <label>Prioridade</label>
+        <select id="edit-prioridade">
+          <option>Alta</option>
+          <option>Média</option>
+          <option>Baixa</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Próxima Ação</label>
+        <input type="text" id="edit-proxima" />
+      </div>
+
+      <div class="form-group">
+        <label>Observações / Histórico</label>
+        <textarea id="edit-obs" rows="4"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Agente</label>
+        <input type="text" id="edit-agente" />
+      </div>
+
+      <div class="form-group">
+        <label>LLM</label>
+        <input type="text" id="edit-llm" placeholder="Ex: Grok 4, Llama 3.3..." />
+      </div>
+
+      <div class="form-group">
+        <label>Conta Email LLM</label>
+        <input type="text" id="edit-email" />
+      </div>
+
+      <div class="modal-actions">
+        <button class="secondary" onclick="closeModal()">Cancelar</button>
+        <button onclick="saveEdit()">Salvar</button>
       </div>
     </div>
-
-    <!-- SEÇÃO 2: MATRIZ DE EVIDÊNCIAS -->
-    <div class="card">
-      <h2 class="title">2. Matriz de Evidências Práticas (Gerada por IA)</h2>
-      <table id="tabelaEvidencias">
-        <thead>
-          <tr><th>Acontecimento / Fato</th><th>Comportamento Observado</th><th>Impacto no Negócio</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <!-- SEÇÃO 3: SCRIPT DE FEEDBACK -->
-    <div class="card">
-      <h2 class="title">3. Guia de Condução da Conversa de Feedback (Gerada por IA)</h2>
-      <label><b>[Abertura - Reconhecimento e Valorização]</b></label>
-      <textarea id="scriptAbertura" rows="3" readonly></textarea>
-      
-      <label style="margin-top:10px; display:block;"><b>[Alinhamento de Pontos de Melhoria - Foco em Fatos]</b></label>
-      <textarea id="scriptFatos" rows="3" readonly></textarea>
-
-      <label style="margin-top:10px; display:block;"><b>[Fechamento e Compromisso Futuro]</b></label>
-      <textarea id="scriptPostura" rows="3" readonly></textarea>
-    </div>
-
-    <!-- SEÇÃO 4: PDI -->
-    <div class="card">
-      <h2 class="title">4. Plano de Desenvolvimento Individual - PDI (Gerado por IA)</h2>
-      <table id="tabelaPDI">
-        <thead>
-          <tr><th>Ação de Desenvolvimento</th><th>Detalhamento / Método</th><th>Frequência / Prazo</th><th>Indicador de Sucesso</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <div class="no-print" style="text-align:right; margin-bottom:40px;">
-      <button class="btn-success" style="padding:12px 24px;" onclick="salvarNovoCicloAvaliacao()">💾 Salvar Novo Ciclo de Avaliação</button>
-    </div>
-
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzF4uDI8EvM8kgazdGqZxxt3lsjZPaJA4vdPZygiGdXVDDs2OLXgzAfXXUkhQMkmpQT/exec";
-    let colaboradoresCache = [];
-    let colaboradorAtual = null;
-    let dadosIAGerados = null;
+    // =====================================================
+    // CONFIGURAÇÃO
+    // =====================================================
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw4uSf-JLJ2nPV5i9gIwa0aAoCGNwJbSjS6NBbirSq8_eaPl8zqxUO9aaAszg1Vki-4/exec';
+    
+    let password = localStorage.getItem('eu_plus_password') || '';
+    let allData = [];
+    let currentRow = null;
 
-    async function autenticar() {
-      const senha = document.getElementById("inputSenha").value;
-      const res = await fetch(SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "validarSenha", senha: senha })
-      });
-      const data = await res.json();
-      if(data.success) {
-        document.getElementById("loginModal").style.display = "none";
-        carregarColaboradores();
-      } else {
-        document.getElementById("loginError").style.display = "block";
-        document.getElementById("loginError").innerText = "Senha Incorreta!";
-      }
-    }
+    // =====================================================
+    // LOGIN
+    // =====================================================
+    function login() {
+      const pass = document.getElementById('password').value.trim();
+      if (!pass) return;
 
-    async function carregarColaboradores() {
-      const res = await fetch(`${SCRIPT_URL}?action=getColaboradores`);
-      const json = await res.json();
-      if(json.success) {
-        colaboradoresCache = json.data;
-        const select = document.getElementById("selectColaborador");
-        select.innerHTML = "";
-        colaboradoresCache.forEach(c => {
-          select.innerHTML += `<option value="${c.ID_COLABORADOR}">${c.NOME} (${c.CARGO})</option>`;
-        });
-        trocarColaborador();
-      }
-    }
-
-    async function trocarColaborador() {
-      const id = document.getElementById("selectColaborador").value;
-      colaboradorAtual = colaboradoresCache.find(c => c.ID_COLABORADOR === id);
+      password = pass;
+      localStorage.setItem('eu_plus_password', password);
       
-      document.getElementById("infoNome").innerText = colaboradorAtual.NOME;
-      document.getElementById("infoCargo").innerText = colaboradorAtual.CARGO;
-      document.getElementById("infoExperiencia").innerText = colaboradorAtual.TEMPO_EXPERIENCIA;
-      document.getElementById("infoGestor").innerText = colaboradorAtual.GESTOR;
-
-      const res = await fetch(`${SCRIPT_URL}?action=getHistoricoAvaliacoes&idColaborador=${id}`);
-      const json = await res.json();
-      const selectHist = document.getElementById("selectHistorico");
-      selectHist.innerHTML = `<option value="NOVO">+ Nova Avaliação (Ciclo Atual)</option>`;
-      
-      if(json.success) {
-        json.data.forEach(h => {
-          selectHist.innerHTML += `<option value="${h.idAvaliacao}">Ciclo: ${h.dataAvaliacao}</option>`;
-        });
-      }
-      limparFormulario();
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      loadData();
     }
 
-    async function carregarCicloSelecionado() {
-      const idAvaliacao = document.getElementById("selectHistorico").value;
-      if(idAvaliacao === "NOVO") {
-        limparFormulario();
-        return;
-      }
-
-      const res = await fetch(`${SCRIPT_URL}?action=getAvaliacaoPorId&idAvaliacao=${idAvaliacao}`);
-      const json = await res.json();
-      if(json.success && json.data) {
-        const data = json.data;
-        document.getElementById("resumoPerfil").value = data.resumoPerfil || "";
-        document.getElementById("pontosFortes").value = data.pontosFortes || "";
-        document.getElementById("gargalos").value = data.gargalos || "";
-        document.getElementById("scriptAbertura").value = data.scriptAbertura || "";
-        document.getElementById("scriptFatos").value = data.scriptFatos || "";
-        document.getElementById("scriptPostura").value = data.scriptPostura || "";
-        renderTabelas(data.evidencias, data.pdi);
-      }
+    function logout() {
+      localStorage.removeItem('eu_plus_password');
+      password = '';
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'block';
+      document.getElementById('password').value = '';
     }
 
-    async function processarComIA() {
-      const diagnostico = {
-        resumoPerfil: document.getElementById("resumoPerfil").value,
-        pontosFortes: document.getElementById("pontosFortes").value,
-        gargalos: document.getElementById("gargalos").value
-      };
-
-      if(!diagnostico.resumoPerfil || !diagnostico.gargalos) {
-        alert("Preencha o diagnóstico da Seção 1 antes de executar a IA.");
-        return;
-      }
-
-      document.getElementById("loaderIA").style.display = "inline";
-      document.getElementById("btnGerarIA").disabled = true;
-
-      const res = await fetch(SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({
-          action: "gerarAnaliseIA",
-          idColaborador: colaboradorAtual.ID_COLABORADOR,
-          diagnostico: diagnostico
-        })
-      });
-
-      const json = await res.json();
-      document.getElementById("loaderIA").style.display = "none";
-      document.getElementById("btnGerarIA").disabled = false;
-
-      if(json.success) {
-        dadosIAGerados = json.data;
-        document.getElementById("scriptAbertura").value = json.data.script.abertura;
-        document.getElementById("scriptFatos").value = json.data.script.fatos;
-        document.getElementById("scriptPostura").value = json.data.script.postura;
-        renderTabelas(json.data.evidencias, json.data.pdi);
-      } else {
-        alert("Erro na IA: " + json.error);
-      }
+    // Auto-login se já tiver senha salva
+    if (password) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      loadData();
     }
 
-    function renderTabelas(evidencias, pdi) {
-      const tbEvid = document.querySelector("#tabelaEvidencias tbody");
-      tbEvid.innerHTML = "";
-      (evidencias || []).forEach(e => {
-        tbEvid.innerHTML += `<tr><td>${e.fato}</td><td>${e.comportamento}</td><td>${e.impacto}</td></tr>`;
-      });
+    // Enter no campo de senha
+    document.getElementById('password').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') login();
+    });
 
-      const tbPDI = document.querySelector("#tabelaPDI tbody");
-      tbPDI.innerHTML = "";
-      (pdi || []).forEach(p => {
-        tbPDI.innerHTML += `<tr><td>${p.acao}</td><td>${p.detalhamento}</td><td>${p.prazo}</td><td>${p.indicador}</td></tr>`;
-      });
-    }
+    // =====================================================
+    // CARREGAR DADOS
+    // =====================================================
+    async function loadData() {
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('table').style.display = 'none';
 
-    async function salvarNovoCicloAvaliacao() {
-      const payload = {
-        action: "salvarAvaliacaoCompleta",
-        data: {
-          idColaborador: colaboradorAtual.ID_COLABORADOR,
-          resumoPerfil: document.getElementById("resumoPerfil").value,
-          pontosFortes: document.getElementById("pontosFortes").value,
-          gargalos: document.getElementById("gargalos").value,
-          scriptAbertura: document.getElementById("scriptAbertura").value,
-          scriptFatos: document.getElementById("scriptFatos").value,
-          scriptPostura: document.getElementById("scriptPostura").value,
-          evidencias: dadosIAGerados ? dadosIAGerados.evidencias : [],
-          pdi: dadosIAGerados ? dadosIAGerados.pdi : []
+      try {
+        const res = await fetch(`${API_URL}?action=list&password=${encodeURIComponent(password)}`);
+        const json = await res.json();
+
+        if (!json.success) {
+          if (json.error === 'Senha inválida') {
+            logout();
+            document.getElementById('login-error').style.display = 'block';
+            document.getElementById('login-error').textContent = 'Senha inválida';
+            return;
+          }
+          throw new Error(json.error || 'Erro ao carregar');
         }
-      };
 
-      const res = await fetch(SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
-      });
+        allData = json.data || [];
+        renderStats();
+        renderTable();
 
-      const json = await res.json();
-      if(json.success) {
-        alert("Nova Avaliação registrada com sucesso!");
-        trocarColaborador();
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('table').style.display = 'table';
+
+      } catch (err) {
+        document.getElementById('loading').innerHTML = `❌ Erro: ${err.message}`;
       }
     }
 
-    function abrirModalEnsino() { document.getElementById("ensinoModal").style.display = "flex"; }
-    function fecharModalEnsino() { document.getElementById("ensinoModal").style.display = "none"; }
+    // =====================================================
+    // RENDER
+    // =====================================================
+    function renderStats() {
+      const total = allData.length;
+      const ativo = allData.filter(d => d.Status === 'Ativo').length;
+      const desacel = allData.filter(d => d.Status === 'Desacelerando').length;
+      const pausado = allData.filter(d => d.Status === 'Pausado').length;
 
-    async function salvarEnsinoIA() {
-      const cat = document.getElementById("ensinoCategoria").value;
-      const dir = document.getElementById("ensinoDiretriz").value;
-      if(!dir) return;
+      document.getElementById('stats').innerHTML = `
+        <div class="stat-card"><div class="number">${total}</div><div class="label">Total</div></div>
+        <div class="stat-card"><div class="number" style="color:#059669">${ativo}</div><div class="label">Ativos</div></div>
+        <div class="stat-card"><div class="number" style="color:#d97706">${desacel}</div><div class="label">Desacelerando</div></div>
+        <div class="stat-card"><div class="number" style="color:#ea580c">${pausado}</div><div class="label">Pausados</div></div>
+      `;
+    }
 
-      await fetch(SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "registrarEnsinoIA", categoria: cat, diretriz: dir, gestor: colaboradorAtual ? colaboradorAtual.GESTOR : "Gestor" })
+    function renderTable() {
+      const search = document.getElementById('search').value.toLowerCase();
+      const fase = document.getElementById('filter-fase').value;
+      const status = document.getElementById('filter-status').value;
+      const tipo = document.getElementById('filter-tipo').value;
+
+      const filtered = allData.filter(item => {
+        if (search && !(item.Nome || '').toLowerCase().includes(search)) return false;
+        if (fase && item['Fase Atual'] !== fase) return false;
+        if (status && item.Status !== status) return false;
+        if (tipo && item.Tipo !== tipo) return false;
+        return true;
       });
 
-      alert("Ensino de cultura registrado na matriz!");
-      fecharModalEnsino();
-      document.getElementById("ensinoDiretriz").value = "";
+      const tbody = document.getElementById('tbody');
+      tbody.innerHTML = filtered.map(item => `
+        <tr>
+          <td><strong>${item.ID || ''}</strong></td>
+          <td>${item.Nome || ''}</td>
+          <td>${item.Tipo || ''}</td>
+          <td>${item['Fase Atual'] || ''}</td>
+          <td><span class="badge badge-${(item.Status || '').toLowerCase().replace(' ', '').replace('ç', 'c')}">${item.Status || ''}</span></td>
+          <td>${item.Prioridade || ''}</td>
+          <td>${item['Dias Parado'] ?? ''}</td>
+          <td>${item.Agente || '—'}</td>
+          <td>${item.LLM || '—'}</td>
+          <td class="actions">
+            <button onclick='openEdit(${JSON.stringify(item).replace(/'/g, "&#39;")})'>Editar</button>
+          </td>
+        </tr>
+      `).join('');
     }
 
-    function limparFormulario() {
-      document.getElementById("resumoPerfil").value = "";
-      document.getElementById("pontosFortes").value = "";
-      document.getElementById("gargalos").value = "";
-      document.getElementById("scriptAbertura").value = "";
-      document.getElementById("scriptFatos").value = "";
-      document.getElementById("scriptPostura").value = "";
-      renderTabelas([], []);
+    // =====================================================
+    // MODAL
+    // =====================================================
+    function openEdit(item) {
+      currentRow = item._row;
+      document.getElementById('modal-title').textContent = `Editar: ${item.Nome}`;
+      document.getElementById('edit-status').value = item.Status || 'Ativo';
+      document.getElementById('edit-prioridade').value = item.Prioridade || 'Média';
+      document.getElementById('edit-proxima').value = item['Próxima Ação'] || '';
+      document.getElementById('edit-obs').value = item['Observações / Histórico'] || '';
+      document.getElementById('edit-agente').value = item.Agente || '';
+      document.getElementById('edit-llm').value = item.LLM || '';
+      document.getElementById('edit-email').value = item['Conta Email LLM'] || '';
+      document.getElementById('modal-error').style.display = 'none';
+      document.getElementById('modal').classList.add('active');
     }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+      currentRow = null;
+    }
+
+    async function saveEdit() {
+      const payload = {
+        action: 'update',
+        password: password,
+        row: currentRow,
+        'Status': document.getElementById('edit-status').value,
+        'Prioridade': document.getElementById('edit-prioridade').value,
+        'Próxima Ação': document.getElementById('edit-proxima').value,
+        'Observações / Histórico': document.getElementById('edit-obs').value,
+        'Agente': document.getElementById('edit-agente').value,
+        'LLM': document.getElementById('edit-llm').value,
+        'Conta Email LLM': document.getElementById('edit-email').value
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+
+        if (!json.success) {
+          document.getElementById('modal-error').style.display = 'block';
+          document.getElementById('modal-error').textContent = json.error || 'Erro ao salvar';
+          return;
+        }
+
+        closeModal();
+        loadData(); // recarrega
+      } catch (err) {
+        document.getElementById('modal-error').style.display = 'block';
+        document.getElementById('modal-error').textContent = err.message;
+      }
+    }
+
+    // Fechar modal com ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
   </script>
 </body>
 </html>
