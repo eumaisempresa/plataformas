@@ -1398,7 +1398,21 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         var res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(body) });
         var json = await res.json();
         if (loading) loading.remove();
-        appendAI('bot', json.success ? 
-</script>
+        appendAI('bot', json.success ? json.reply : ('Erro: ' + json.error));
+      } catch (err) {
+        if (loading) loading.remove();
+        appendAI('bot', 'Erro: ' + err.message);
+      }
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closeModal('modal-edit');
+        closeModal('modal-agent');
+        closeModal('modal-edit-agent');
+        closeModal('modal-virtual');
+      }
+    });
+  </script>
 </body>
 </html>
