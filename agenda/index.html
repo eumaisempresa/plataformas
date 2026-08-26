@@ -85,6 +85,7 @@
       margin-bottom: 0.9rem;
     }
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--gold); }
+    input[type="checkbox"] { width: auto; margin: 0 0.4rem 0 0; vertical-align: middle; }
     .kpi-section { margin-bottom: 1rem; }
     .kpi-section h3 {
       font-size: 0.8rem;
@@ -95,26 +96,26 @@
     }
     .kpis {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
       gap: 0.45rem;
     }
     .kpi {
       background: var(--bg-secondary);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 0.7rem 0.4rem;
+      padding: 0.65rem 0.35rem;
       text-align: center;
     }
     .kpi .number {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       font-weight: 600;
     }
     .kpi .label {
-      font-size: 0.6rem;
+      font-size: 0.58rem;
       color: var(--text-secondary);
       text-transform: uppercase;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.25px;
       margin-top: 2px;
     }
     .kpi.good .number { color: #34d399; }
@@ -284,11 +285,31 @@
       display: block; font-size: 0.75rem; color: var(--text-secondary);
       margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.4px;
     }
+    .form-group label.inline {
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.88rem;
+      color: var(--text-primary);
+      cursor: pointer;
+    }
+    .box-extra {
+      display: none;
+      border: 1px solid var(--border);
+      padding: 0.75rem;
+      border-radius: 4px;
+      margin-bottom: 0.9rem;
+      background: var(--bg-tertiary);
+    }
     .modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1.25rem; }
     .loading, .empty { text-align: center; padding: 2.5rem; color: #64748b; }
     .error-msg {
       background: rgba(196,74,74,0.12); color: #f87171;
       padding: 0.65rem 0.9rem; border-radius: 4px; margin-bottom: 0.9rem; font-size: 0.85rem;
+    }
+    .sync-hint {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-left: 0.35rem;
     }
     #ai-fab {
       position: fixed; bottom: 24px; right: 24px;
@@ -363,7 +384,7 @@
       <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
         <button class="btn btn-sm" onclick="exportReport()">Relatório PDF</button>
         <button class="btn btn-sm" onclick="openAgentModal()">+ Agente</button>
-        <button class="btn btn-sm" onclick="openVirtualModal()">+ Virtual</button>
+        <button class="btn btn-sm" onclick="openVirtualModal()">+ Manual</button>
         <button class="btn btn-secondary btn-sm" onclick="logout()">Sair</button>
       </div>
     </header>
@@ -378,13 +399,13 @@
         <div class="kpis" id="kpis-agentes"></div>
       </div>
       <div class="kpi-section">
-        <h3>Por Fase</h3>
-        <div class="kpis" id="kpis-fase"></div>
+        <h3>Documentações</h3>
+        <div class="kpis" id="kpis-docs"></div>
       </div>
 
       <div class="tabs">
         <div class="tab active" data-tab="projetos" onclick="switchTab('projetos')">Projetos e Produtos</div>
-        <div class="tab" data-tab="virtuais" onclick="switchTab('virtuais')">Projetos Virtuais</div>
+        <div class="tab" data-tab="virtuais" onclick="switchTab('virtuais')">Inclusão Manual</div>
         <div class="tab" data-tab="agentes" onclick="switchTab('agentes')">Inventário de Agentes</div>
       </div>
 
@@ -401,16 +422,19 @@
               <option value="">Todos Tipos</option>
               <option>Projeto</option>
               <option>Produto (AIL)</option>
+              <option>Documentação</option>
               <option>Projeto Virtual</option>
               <option>Automação</option>
               <option>Prompt</option>
             </select>
             <select id="filter-origem" onchange="renderAccordion()">
-              <option value="">Drive + Virtuais</option>
+              <option value="">Drive + Manuais</option>
               <option value="Drive">Só Drive</option>
-              <option value="Virtual">Só Virtuais</option>
+              <option value="Virtual">Só Manuais</option>
             </select>
-            <button class="btn btn-sm btn-dark" onclick="loadData()">Atualizar</button>
+            <button class="btn btn-sm btn-dark" onclick="loadData(true)">Sincronizar Drive</button>
+            <button class="btn btn-sm btn-dark" onclick="loadData(false)">Atualizar lista</button>
+            <span class="sync-hint" id="sync-hint"></span>
           </div>
           <div id="loading" class="loading">Carregando...</div>
           <div class="accordion" id="accordion" style="display:none;"></div>
@@ -418,8 +442,8 @@
 
         <div id="tab-virtuais" style="display:none;">
           <div class="filters">
-            <button class="btn btn-sm btn-dark" onclick="openVirtualModal()">+ Projeto Virtual</button>
-            <button class="btn btn-secondary btn-sm" onclick="loadData()">Atualizar</button>
+            <button class="btn btn-sm btn-dark" onclick="openVirtualModal()">+ Inclusão Manual</button>
+            <button class="btn btn-secondary btn-sm" onclick="loadData(false)">Atualizar</button>
           </div>
           <div id="virtuais-list" class="accordion"></div>
         </div>
@@ -493,16 +517,34 @@
       <div id="agent-error" class="error-msg" style="display:none;"></div>
       <div class="form-group"><label>Nome do Agente *</label><input type="text" id="agent-nome" /></div>
       <div class="form-group"><label>Função / Papel *</label><input type="text" id="agent-funcao" /></div>
-      <div class="form-group"><label>LLM *</label><input type="text" id="agent-llm" placeholder="gemini-3.6-flash, Grok 4..." /></div>
+      <div class="form-group"><label>LLM *</label><input type="text" id="agent-llm" placeholder="gemini-3.6-flash, Grok..." /></div>
       <div class="form-group"><label>Conta Email LLM *</label><input type="text" id="agent-email" /></div>
       <div class="form-group"><label>ID / Nome do Prompt</label><input type="text" id="agent-prompt" /></div>
       <div class="form-group"><label>System Prompt (resumo)</label><textarea id="agent-system" rows="3"></textarea></div>
       <div class="form-group"><label>Observações</label><textarea id="agent-obs" rows="2"></textarea></div>
       <div class="form-group">
-        <label>Vincular a projeto/produto (opcional)</label>
+        <label>Vincular a projeto existente</label>
         <select id="agent-vincular-projeto">
           <option value="">— Não vincular agora —</option>
         </select>
+      </div>
+      <div class="form-group">
+        <label class="inline">
+          <input type="checkbox" id="agent-criar-proj" onchange="toggleBox('agent-proj-box', this.checked)" />
+          Criar projeto manual junto
+        </label>
+      </div>
+      <div id="agent-proj-box" class="box-extra">
+        <div class="form-group"><label>Nome do projeto</label><input type="text" id="agent-proj-nome" /></div>
+        <div class="form-group">
+          <label>Fase</label>
+          <select id="agent-proj-fase">
+            <option>Ideação</option><option>Laboratório</option><option>Construção</option>
+            <option>Escalonamento</option><option>Operação</option>
+            <option>Arquivo / Hibernação</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Próxima ação</label><input type="text" id="agent-proj-proxima" /></div>
       </div>
       <div class="modal-actions">
         <button class="btn btn-secondary" onclick="closeModal('modal-agent')">Cancelar</button>
@@ -539,10 +581,10 @@
     </div>
   </div>
 
-  <!-- Modal Virtual -->
+  <!-- Modal Inclusão Manual -->
   <div class="modal-overlay" id="modal-virtual">
     <div class="modal">
-      <h3>Novo Projeto Virtual</h3>
+      <h3>Inclusão Manual</h3>
       <div id="virtual-error" class="error-msg" style="display:none;"></div>
       <div class="form-group"><label>Nome *</label><input type="text" id="virt-nome" /></div>
       <div class="form-group">
@@ -577,13 +619,25 @@
       <div class="form-group"><label>Próxima Ação</label><input type="text" id="virt-proxima" /></div>
       <div class="form-group"><label>Observações</label><textarea id="virt-obs" rows="2"></textarea></div>
       <div class="form-group">
-        <label>Agente</label>
+        <label>Agente existente</label>
         <select id="virt-agente" onchange="onVirtAgentSelect()">
           <option value="">— Sem agente —</option>
         </select>
       </div>
       <div class="form-group"><label>LLM</label><input type="text" id="virt-llm" readonly style="opacity:0.85;" /></div>
       <div class="form-group"><label>Conta Email LLM</label><input type="text" id="virt-email" readonly style="opacity:0.85;" /></div>
+      <div class="form-group">
+        <label class="inline">
+          <input type="checkbox" id="virt-criar-ag" onchange="toggleBox('virt-ag-box', this.checked)" />
+          Cadastrar novo agente agora
+        </label>
+      </div>
+      <div id="virt-ag-box" class="box-extra">
+        <div class="form-group"><label>Nome do agente</label><input type="text" id="virt-novo-ag-nome" /></div>
+        <div class="form-group"><label>Função</label><input type="text" id="virt-novo-ag-funcao" /></div>
+        <div class="form-group"><label>LLM</label><input type="text" id="virt-novo-ag-llm" /></div>
+        <div class="form-group"><label>Email LLM</label><input type="text" id="virt-novo-ag-email" /></div>
+      </div>
       <div class="modal-actions">
         <button class="btn btn-secondary" onclick="closeModal('modal-virtual')">Cancelar</button>
         <button class="btn" onclick="saveVirtual()">Cadastrar</button>
@@ -624,8 +678,13 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
 
     var FASES_ORDER = [
       'Ideação', 'Laboratório', 'Construção', 'Escalonamento',
-      'Operação', 'Arquivo / Hibernação', 'Prompts dos Agentes', 'Não classificado'
+      'Operação', 'Arquivo / Hibernação', 'Prompts dos Agentes',
+      'Documentação', 'Não classificado'
     ];
+
+    function toggleBox(id, show) {
+      document.getElementById(id).style.display = show ? 'block' : 'none';
+    }
 
     function login() {
       var pass = document.getElementById('password').value.trim();
@@ -634,7 +693,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       localStorage.setItem('eu_plus_password', password);
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').style.display = 'block';
-      loadData();
+      loadData(false);
       loadAgents();
     }
     function logout() {
@@ -647,7 +706,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
     if (password) {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').style.display = 'block';
-      loadData();
+      loadData(false);
       loadAgents();
     }
     document.getElementById('password').addEventListener('keypress', function (e) {
@@ -664,12 +723,22 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       if (tab === 'agentes') renderAgents();
     }
 
-    async function loadData() {
+    async function loadData(doSync) {
       document.getElementById('loading').style.display = 'block';
       document.getElementById('accordion').style.display = 'none';
+      var hint = document.getElementById('sync-hint');
+      if (hint) hint.textContent = doSync ? 'Sincronizando Drive…' : '';
       try {
-        var res = await fetch(API_URL + '?action=list&password=' + encodeURIComponent(password));
-        var json = await res.json();
+        var res, json;
+        if (doSync) {
+          res = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'sync', password: password })
+          });
+        } else {
+          res = await fetch(API_URL + '?action=list&password=' + encodeURIComponent(password));
+        }
+        json = await res.json();
         if (!json.success) {
           if (json.error === 'Senha inválida') {
             logout();
@@ -687,8 +756,16 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         fillProjectSelects();
         document.getElementById('loading').style.display = 'none';
         document.getElementById('accordion').style.display = 'flex';
+        if (hint) {
+          if (doSync && json.sync) {
+            hint.textContent = 'Sync: +' + (json.sync.criados || 0) + ' novos, ' + (json.sync.atualizados || 0) + ' atualizados';
+          } else {
+            hint.textContent = '';
+          }
+        }
       } catch (err) {
         document.getElementById('loading').innerHTML = 'Erro: ' + err.message;
+        if (hint) hint.textContent = '';
       }
     }
 
@@ -760,61 +837,42 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
     }
 
     function renderKPIs() {
-      var k = lastKpis;
-      if (!k || k.total == null) {
-        k = {
-          total: allData.length,
-          ativos: countStatus('Ativo'),
-          desacelerando: countStatus('Desacelerando'),
-          pausados: countStatus('Pausado'),
-          projetos: allData.filter(function (d) {
-            return String(d.Tipo || '').indexOf('Projeto') !== -1 && String(d.Tipo).indexOf('Virtual') === -1;
-          }).length,
-          produtos: allData.filter(function (d) {
-            return String(d.Tipo || '').indexOf('Produto') !== -1;
-          }).length,
-          virtuais: allData.filter(function (d) {
-            return d.Origem === 'Virtual' || d['Tem Pasta'] === 'Não';
-          }).length,
-          comPasta: allData.filter(function (d) {
-            return d.Origem === 'Drive' || d['Tem Pasta'] === 'Sim';
-          }).length,
-          coberturaAgentes: 0, semAgente: 0,
-          totalAgentes: agents.length, agentesAtivos: 0, agentesSemProjeto: 0,
-          porFase: {}
-        };
-      }
+      var k = lastKpis || {};
+      var pf = k.porFase || {};
+      var d = k.documentacoes || {};
+
       document.getElementById('kpis-geral').innerHTML =
-        kpi('neutral', k.total, 'Total') +
-        kpi('good', k.ativos, 'Ativos') +
-        kpi('warn', k.desacelerando, 'Desacelerando') +
-        kpi('bad', k.pausados, 'Pausados') +
-        kpi('neutral', k.projetos, 'Projetos') +
-        kpi('neutral', k.produtos, 'Produtos') +
-        kpi('neutral', k.virtuais || 0, 'Virtuais') +
-        kpi('neutral', k.comPasta || 0, 'Com pasta');
+        kpi('neutral', k.total != null ? k.total : allData.length, 'Total') +
+        kpi('good', k.ativos || 0, 'Ativos') +
+        kpi('warn', k.desacelerando || 0, 'Desacel.') +
+        kpi('bad', k.pausados || 0, 'Pausados') +
+        kpi('neutral', k.projetos || 0, 'Projetos') +
+        kpi('neutral', k.produtos || 0, 'Produtos') +
+        kpi('neutral', pf['Ideação'] || 0, 'Ideação') +
+        kpi('neutral', pf['Laboratório'] || 0, 'Lab') +
+        kpi('neutral', pf['Construção'] || 0, 'Constr.') +
+        kpi('neutral', pf['Escalonamento'] || 0, 'Escalon.') +
+        kpi('neutral', pf['Operação'] || 0, 'Operação') +
+        kpi('neutral', pf['Arquivo / Hibernação'] || 0, 'Arquivo');
 
       document.getElementById('kpis-agentes').innerHTML =
-        kpi('neutral', k.totalAgentes || agents.length, 'Agentes') +
+        kpi('neutral', k.totalAgentes != null ? k.totalAgentes : agents.length, 'Agentes') +
         kpi('good', k.agentesAtivos || 0, 'Ag. ativos') +
         kpi((k.coberturaAgentes || 0) >= 50 ? 'good' : 'warn', (k.coberturaAgentes || 0) + '%', 'Cobertura') +
         kpi('bad', k.semAgente || 0, 'Sem agente') +
         kpi('warn', k.agentesSemProjeto || 0, 'Ag. ociosos');
 
-      var pf = k.porFase || {};
-      var labels = {
-        'Ideação': 'Ideação', 'Laboratório': 'Lab', 'Construção': 'Constr.',
-        'Escalonamento': 'Escalon.', 'Operação': 'Operação',
-        'Arquivo / Hibernação': 'Arquivo', 'Prompts dos Agentes': 'Prompts'
-      };
-      document.getElementById('kpis-fase').innerHTML = Object.keys(labels).map(function (f) {
-        var q = pf[f] != null ? pf[f] : allData.filter(function (d) { return d['Fase Atual'] === f; }).length;
-        return kpi('neutral', q, labels[f]);
-      }).join('');
+      document.getElementById('kpis-docs').innerHTML =
+        kpi('neutral', d.total || 0, 'Docs') +
+        kpi('neutral', d.cursos || 0, 'Cursos') +
+        kpi('neutral', d.livros || 0, 'Livros') +
+        kpi('neutral', d.publicacoes || 0, 'Public.') +
+        kpi('neutral', d.palestras || 0, 'Palestras') +
+        kpi('neutral', d.prodExecutiva || 0, 'Prod. Exec.') +
+        kpi('neutral', d.prodAcademica || 0, 'Prod. Acad.') +
+        kpi('neutral', d.prodTecnica || 0, 'Prod. Téc.');
     }
-    function countStatus(s) {
-      return allData.filter(function (d) { return d.Status === s; }).length;
-    }
+
     function kpi(cls, num, label) {
       return '<div class="kpi ' + cls + '"><div class="number">' + num + '</div><div class="label">' + label + '</div></div>';
     }
@@ -856,7 +914,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
           '<div>Próxima Ação</div><div>Agente</div><div>Origem</div><div>Ações</div></div>';
         items.forEach(function (item) {
           var origemBadge = (item.Origem === 'Virtual' || item['Tem Pasta'] === 'Não')
-            ? '<span class="badge badge-virtual">Virtual</span>'
+            ? '<span class="badge badge-virtual">Manual</span>'
             : '<span class="badge badge-drive">Drive</span>';
           html += '<div class="item-row">' +
             '<div class="nome">' + (item.Nome || '—') + '</div>' +
@@ -880,15 +938,16 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       var list = allData.filter(function (i) {
         return i.Origem === 'Virtual' || i['Tem Pasta'] === 'Não' ||
           String(i.Tipo || '').indexOf('Virtual') !== -1 ||
-          String(i.Tipo || '') === 'Automação' || String(i.Tipo || '') === 'Prompt';
+          String(i.Tipo || '') === 'Automação' || String(i.Tipo || '') === 'Prompt' ||
+          String(i.Tipo || '') === 'Iniciativa';
       });
       var el = document.getElementById('virtuais-list');
       if (!list.length) {
-        el.innerHTML = '<div class="empty">Nenhum projeto virtual. Clique em + Projeto Virtual.</div>';
+        el.innerHTML = '<div class="empty">Nenhuma inclusão manual. Clique em + Inclusão Manual.</div>';
         return;
       }
       var html = '<div class="acc-group open"><div class="acc-header" onclick="toggleAcc(this)">' +
-        '<h3>Virtuais / Automações / Prompts <span class="count">(' + list.length + ')</span></h3>' +
+        '<h3>Inclusões manuais <span class="count">(' + list.length + ')</span></h3>' +
         '<span class="chevron">▼</span></div><div class="acc-body"><div class="col-headers">' +
         '<div>Nome</div><div>Status</div><div>Tipo</div><div>Fase</div>' +
         '<div>Próxima Ação</div><div>Agente</div><div>Email</div><div>Ações</div></div>';
@@ -979,11 +1038,15 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
 
     function openAgentModal() {
       fillProjectSelects();
+      document.getElementById('agent-criar-proj').checked = false;
+      toggleBox('agent-proj-box', false);
       document.getElementById('agent-error').style.display = 'none';
       document.getElementById('modal-agent').classList.add('active');
     }
     function openVirtualModal() {
       fillAgentSelects();
+      document.getElementById('virt-criar-ag').checked = false;
+      toggleBox('virt-ag-box', false);
       document.getElementById('virtual-error').style.display = 'none';
       document.getElementById('modal-virtual').classList.add('active');
     }
@@ -1027,7 +1090,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
           return;
         }
         closeModal('modal-edit');
-        loadData();
+        loadData(false);
         loadAgents();
       } catch (err) {
         document.getElementById('modal-error').style.display = 'block';
@@ -1062,6 +1125,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       }
       var llm = document.getElementById('agent-llm').value;
       var email = document.getElementById('agent-email').value;
+      var criarProj = document.getElementById('agent-criar-proj').checked;
       var payload = {
         action: 'createAgent', password: password,
         nome: nome,
@@ -1071,7 +1135,11 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         idPrompt: document.getElementById('agent-prompt').value,
         systemPrompt: document.getElementById('agent-system').value,
         observacoes: document.getElementById('agent-obs').value,
-        status: 'Ativo'
+        status: 'Ativo',
+        criarProjeto: criarProj,
+        projetoNome: document.getElementById('agent-proj-nome').value,
+        projetoFase: document.getElementById('agent-proj-fase').value,
+        projetoProxima: document.getElementById('agent-proj-proxima').value
       };
       try {
         var res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
@@ -1084,7 +1152,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         await vincularAgenteAoProjeto(nome, llm, email, 'agent-vincular-projeto');
         closeModal('modal-agent');
         loadAgents();
-        loadData();
+        loadData(false);
         alert('Agente cadastrado: ' + (json.id || nome));
       } catch (err) {
         document.getElementById('agent-error').style.display = 'block';
@@ -1121,7 +1189,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         await vincularAgenteAoProjeto(nome, llm, email, 'ea-vincular-projeto');
         closeModal('modal-edit-agent');
         loadAgents();
-        loadData();
+        loadData(false);
       } catch (err) {
         document.getElementById('edit-agent-error').style.display = 'block';
         document.getElementById('edit-agent-error').textContent = err.message;
@@ -1135,6 +1203,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         document.getElementById('virtual-error').textContent = 'Nome obrigatório';
         return;
       }
+      var criarAg = document.getElementById('virt-criar-ag').checked;
       var payload = {
         action: 'createVirtual', password: password,
         nome: nome,
@@ -1147,7 +1216,12 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         observacoes: document.getElementById('virt-obs').value,
         agente: document.getElementById('virt-agente').value,
         llm: document.getElementById('virt-llm').value,
-        email: document.getElementById('virt-email').value
+        email: document.getElementById('virt-email').value,
+        criarAgente: criarAg,
+        novoAgenteNome: document.getElementById('virt-novo-ag-nome').value,
+        novoAgenteFuncao: document.getElementById('virt-novo-ag-funcao').value,
+        novoAgenteLlm: document.getElementById('virt-novo-ag-llm').value,
+        novoAgenteEmail: document.getElementById('virt-novo-ag-email').value
       };
       try {
         var res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
@@ -1158,8 +1232,9 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
           return;
         }
         closeModal('modal-virtual');
-        loadData();
-        alert('Projeto virtual: ' + (json.id || nome));
+        loadData(false);
+        loadAgents();
+        alert('Inclusão manual: ' + (json.id || nome));
       } catch (err) {
         document.getElementById('virtual-error').style.display = 'block';
         document.getElementById('virtual-error').textContent = err.message;
@@ -1221,7 +1296,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         alocar: { action: 'ai_alocar', label: 'Sugerir alocações' },
         resumo: {
           action: 'ai_chat',
-          message: 'Faça um resumo executivo do portfólio (incluindo virtuais) com riscos e oportunidades.',
+          message: 'Faça um resumo executivo do portfólio (incluindo manuais e documentações) com riscos e oportunidades.',
           label: 'Resumo do portfólio'
         }
       };
