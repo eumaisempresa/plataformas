@@ -159,7 +159,7 @@
       align-items: center;
     }
     .filters input, .filters select { width: auto; min-width: 120px; margin: 0; }
-    .accordion { display: flex; flex-direction: column; gap: 0.5rem; }
+    .accordion { display: flex; flex-direction: column; gap: 0.65rem; }
     .acc-group {
       background: #fff;
       border: 1px solid #e2e8f0;
@@ -191,18 +191,28 @@
     .acc-header .chevron { color: var(--gold); transition: transform 0.25s; font-size: 0.85rem; }
     .acc-group.open .chevron { transform: rotate(180deg); }
     .acc-body { display: none; }
-    .acc-group.open .acc-body { display: block; }
-    .acc-sub {
-      border-top: 1px solid #f1f5f9;
-      padding: 0.5rem 0.75rem 0.5rem 1.25rem;
-      background: #fafafa;
+    .acc-group.open > .acc-body { display: block; }
+    .acc-top > .acc-header {
+      background: #0A1624;
+      border-bottom-color: rgba(196,151,74,0.25);
     }
-    .acc-sub-title {
-      font-size: 0.78rem;
-      color: #64748b;
-      font-weight: 600;
-      margin-bottom: 0.4rem;
+    .acc-top > .acc-header h3 { color: #EEF0F2; }
+    .acc-top > .acc-header .count { color: #7A8FA3; }
+    .acc-top > .acc-header .chevron { color: #C4974A; }
+    .acc-nested {
+      border: none;
+      border-radius: 0;
+      border-top: 1px solid #e2e8f0;
     }
+    .acc-nested > .acc-header {
+      background: #fff;
+      padding-left: 1.35rem;
+    }
+    .acc-nested > .acc-header h3 {
+      font-size: 0.95rem;
+      color: #334155;
+    }
+    .acc-nested > .acc-body { background: #fafafa; }
     .col-headers, .item-row {
       display: grid;
       grid-template-columns: 1.3fr 0.7fr 0.55fr 0.4fr 1fr 0.9fr 0.7fr 0.85fr;
@@ -223,6 +233,7 @@
     .item-row {
       border-bottom: 1px solid #f1f5f9;
       color: #1e293b;
+      background: #fff;
     }
     .item-row:last-child { border-bottom: none; }
     .item-row:hover { background: #f8fafc; }
@@ -265,6 +276,17 @@
       background: #fff;
     }
     .agent-line:last-child { border-bottom: none; }
+    .acc-sub {
+      border-top: 1px solid #f1f5f9;
+      padding: 0.5rem 0.75rem 0.5rem 1.25rem;
+      background: #fafafa;
+    }
+    .acc-sub-title {
+      font-size: 0.78rem;
+      color: #64748b;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
     .modal-overlay {
       position: fixed; inset: 0;
       background: rgba(6,14,24,0.85);
@@ -306,11 +328,7 @@
       background: rgba(196,74,74,0.12); color: #f87171;
       padding: 0.65rem 0.9rem; border-radius: 4px; margin-bottom: 0.9rem; font-size: 0.85rem;
     }
-    .sync-hint {
-      font-size: 0.75rem;
-      color: #64748b;
-      margin-left: 0.35rem;
-    }
+    .sync-hint { font-size: 0.75rem; color: #64748b; margin-left: 0.35rem; }
     #ai-fab {
       position: fixed; bottom: 24px; right: 24px;
       width: 54px; height: 54px; border-radius: 50%;
@@ -465,7 +483,7 @@
     </footer>
   </div>
 
-  <!-- Modal Edit Projeto -->
+  <!-- Modal Edit -->
   <div class="modal-overlay" id="modal-edit">
     <div class="modal">
       <h3 id="modal-title">Editar</h3>
@@ -524,9 +542,7 @@
       <div class="form-group"><label>Observações</label><textarea id="agent-obs" rows="2"></textarea></div>
       <div class="form-group">
         <label>Vincular a projeto existente</label>
-        <select id="agent-vincular-projeto">
-          <option value="">— Não vincular agora —</option>
-        </select>
+        <select id="agent-vincular-projeto"><option value="">— Não vincular agora —</option></select>
       </div>
       <div class="form-group">
         <label class="inline">
@@ -676,14 +692,22 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
     var lastKpis = {};
     var currentEdit = null;
 
-    var FASES_ORDER = [
+    var FASES_PROJETO = [
       'Ideação', 'Laboratório', 'Construção', 'Escalonamento',
-      'Operação', 'Arquivo / Hibernação', 'Prompts dos Agentes',
-      'Documentação', 'Não classificado'
+      'Operação', 'Arquivo / Hibernação', 'Prompts dos Agentes', 'Não classificado'
+    ];
+    var ORDEM_CAT_PROD = [
+      'AILs', 'Cursos', 'Frameworks', 'Livros / Publicações',
+      'Ferramentas Internas', 'Outros'
+    ];
+    var ORDEM_DOC = [
+      'Cursos', 'Livros', 'Publicações', 'Palestras e apresentações',
+      'Produção Executiva', 'Produção Acadêmica', 'Produção Técnica', 'Geral'
     ];
 
     function toggleBox(id, show) {
-      document.getElementById(id).style.display = show ? 'block' : 'none';
+      var el = document.getElementById(id);
+      if (el) el.style.display = show ? 'block' : 'none';
     }
 
     function login() {
@@ -758,7 +782,8 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         document.getElementById('accordion').style.display = 'flex';
         if (hint) {
           if (doSync && json.sync) {
-            hint.textContent = 'Sync: +' + (json.sync.criados || 0) + ' novos, ' + (json.sync.atualizados || 0) + ' atualizados';
+            hint.textContent = 'Sync: +' + (json.sync.criados || 0) + ' novos, ' +
+              (json.sync.atualizados || 0) + ' atualizados';
           } else {
             hint.textContent = '';
           }
@@ -881,8 +906,99 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       return '<span class="badge badge-' + s + '">' + (st || '—') + '</span>';
     }
 
+    function isProduto(item) {
+      return String(item.Tipo || '').indexOf('Produto') !== -1;
+    }
+    function isDocumento(item) {
+      return String(item.Tipo || '') === 'Documentação' || item['Fase Atual'] === 'Documentação';
+    }
+    function isManual(item) {
+      return item.Origem === 'Virtual' || item['Tem Pasta'] === 'Não' ||
+        String(item.Tipo || '').indexOf('Virtual') !== -1 ||
+        String(item.Tipo || '') === 'Automação' ||
+        String(item.Tipo || '') === 'Prompt' ||
+        String(item.Tipo || '') === 'Iniciativa';
+    }
+    function isProjeto(item) {
+      return !isProduto(item) && !isDocumento(item) && !isManual(item);
+    }
+
+    function groupBy(arr, keyFn) {
+      var g = {};
+      arr.forEach(function (item) {
+        var k = keyFn(item) || 'Outros';
+        if (!g[k]) g[k] = [];
+        g[k].push(item);
+      });
+      return g;
+    }
+
+    function orderedKeys(groups, preferred) {
+      var keys = [];
+      if (preferred) {
+        preferred.forEach(function (k) {
+          if (groups[k] && groups[k].length) keys.push(k);
+        });
+      }
+      Object.keys(groups).sort().forEach(function (k) {
+        if (keys.indexOf(k) === -1 && groups[k] && groups[k].length) keys.push(k);
+      });
+      return keys;
+    }
+
+    function renderItemRows(items) {
+      var html = '<div class="col-headers">' +
+        '<div>Nome</div><div>Status</div><div>Prioridade</div><div>Dias</div>' +
+        '<div>Próxima Ação</div><div>Agente</div><div>Origem</div><div>Ações</div></div>';
+      items.forEach(function (item) {
+        var origemBadge = isManual(item)
+          ? '<span class="badge badge-virtual">Manual</span>'
+          : '<span class="badge badge-drive">Drive</span>';
+        html += '<div class="item-row">' +
+          '<div class="nome">' + (item.Nome || '—') + '</div>' +
+          '<div>' + badgeStatus(item.Status) + '</div>' +
+          '<div>' + (item.Prioridade || '—') + '</div>' +
+          '<div>' + (item['Dias Parado'] != null ? item['Dias Parado'] : '—') + '</div>' +
+          '<div class="obs">' + (item['Próxima Ação'] || '—') + '</div>' +
+          '<div>' + (item.Agente || '—') + '</div>' +
+          '<div>' + origemBadge + '</div>' +
+          '<div>' +
+            (item['Link da Pasta']
+              ? '<a class="link-btn" href="' + item['Link da Pasta'] + '" target="_blank">Abrir</a> '
+              : '') +
+            '<button class="btn btn-sm btn-dark" onclick=\'openEdit(' + safeJson(item) + ')\'>Editar</button>' +
+          '</div></div>';
+      });
+      return html;
+    }
+
+    function renderSubGroups(title, groups, preferredOrder) {
+      var keys = orderedKeys(groups, preferredOrder);
+      if (!keys.length) return '';
+
+      var total = 0;
+      keys.forEach(function (k) { total += groups[k].length; });
+
+      var html = '<div class="acc-group acc-top open">' +
+        '<div class="acc-header" onclick="toggleAcc(this)">' +
+        '<h3>' + title + ' <span class="count">(' + total + ')</span></h3>' +
+        '<span class="chevron">▼</span></div><div class="acc-body">';
+
+      keys.forEach(function (k) {
+        var items = groups[k];
+        html += '<div class="acc-group acc-nested open">' +
+          '<div class="acc-header" onclick="toggleAcc(this)">' +
+          '<h3>' + k + ' <span class="count">(' + items.length + ')</span></h3>' +
+          '<span class="chevron">▼</span></div>' +
+          '<div class="acc-body">' + renderItemRows(items) + '</div></div>';
+      });
+
+      html += '</div></div>';
+      return html;
+    }
+
     function renderAccordion() {
-      var search = document.getElementById('search').value.toLowerCase();
+      var search = (document.getElementById('search').value || '').toLowerCase();
       var status = document.getElementById('filter-status').value;
       var tipo = document.getElementById('filter-tipo').value;
       var origem = document.getElementById('filter-origem').value;
@@ -896,74 +1012,43 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         return true;
       });
 
-      var grouped = {};
-      filtered.forEach(function (item) {
-        var f = item['Fase Atual'] || 'Não classificado';
-        if (!grouped[f]) grouped[f] = [];
-        grouped[f].push(item);
+      var projetos = filtered.filter(isProjeto);
+      var produtos = filtered.filter(isProduto);
+      var docs = filtered.filter(isDocumento);
+      var manuais = filtered.filter(isManual);
+
+      var gProj = groupBy(projetos, function (i) {
+        return i['Fase Atual'] || 'Não classificado';
+      });
+      var gProd = groupBy(produtos, function (i) {
+        return i.Categoria || 'Outros';
+      });
+      var gDoc = groupBy(docs, function (i) {
+        return i.Categoria || 'Geral';
+      });
+      var gMan = groupBy(manuais, function (i) {
+        return i.Tipo || 'Manual';
       });
 
       var html = '';
-      FASES_ORDER.forEach(function (fase) {
-        if (!grouped[fase] || !grouped[fase].length) return;
-        var items = grouped[fase];
-        html += '<div class="acc-group open"><div class="acc-header" onclick="toggleAcc(this)">' +
-          '<h3>' + fase + ' <span class="count">(' + items.length + ')</span></h3><span class="chevron">▼</span></div>' +
-          '<div class="acc-body"><div class="col-headers">' +
-          '<div>Nome</div><div>Status</div><div>Prioridade</div><div>Dias</div>' +
-          '<div>Próxima Ação</div><div>Agente</div><div>Origem</div><div>Ações</div></div>';
-        items.forEach(function (item) {
-          var origemBadge = (item.Origem === 'Virtual' || item['Tem Pasta'] === 'Não')
-            ? '<span class="badge badge-virtual">Manual</span>'
-            : '<span class="badge badge-drive">Drive</span>';
-          html += '<div class="item-row">' +
-            '<div class="nome">' + (item.Nome || '—') + '</div>' +
-            '<div>' + badgeStatus(item.Status) + '</div>' +
-            '<div>' + (item.Prioridade || '—') + '</div>' +
-            '<div>' + (item['Dias Parado'] != null ? item['Dias Parado'] : '—') + '</div>' +
-            '<div class="obs">' + (item['Próxima Ação'] || '—') + '</div>' +
-            '<div>' + (item.Agente || '—') + '</div>' +
-            '<div>' + origemBadge + '</div>' +
-            '<div>' +
-              (item['Link da Pasta'] ? '<a class="link-btn" href="' + item['Link da Pasta'] + '" target="_blank">Abrir</a> ' : '') +
-              '<button class="btn btn-sm btn-dark" onclick=\'openEdit(' + safeJson(item) + ')\'>Editar</button>' +
-            '</div></div>';
-        });
-        html += '</div></div>';
-      });
-      document.getElementById('accordion').innerHTML = html || '<div class="empty">Nenhum registro encontrado</div>';
+      html += renderSubGroups('Projetos', gProj, FASES_PROJETO);
+      html += renderSubGroups('Produtos', gProd, ORDEM_CAT_PROD);
+      html += renderSubGroups('Documentação', gDoc, ORDEM_DOC);
+      html += renderSubGroups('Inclusão Manual', gMan, null);
+
+      document.getElementById('accordion').innerHTML =
+        html || '<div class="empty">Nenhum registro encontrado</div>';
     }
 
     function renderVirtuais() {
-      var list = allData.filter(function (i) {
-        return i.Origem === 'Virtual' || i['Tem Pasta'] === 'Não' ||
-          String(i.Tipo || '').indexOf('Virtual') !== -1 ||
-          String(i.Tipo || '') === 'Automação' || String(i.Tipo || '') === 'Prompt' ||
-          String(i.Tipo || '') === 'Iniciativa';
-      });
+      var list = allData.filter(isManual);
       var el = document.getElementById('virtuais-list');
       if (!list.length) {
         el.innerHTML = '<div class="empty">Nenhuma inclusão manual. Clique em + Inclusão Manual.</div>';
         return;
       }
-      var html = '<div class="acc-group open"><div class="acc-header" onclick="toggleAcc(this)">' +
-        '<h3>Inclusões manuais <span class="count">(' + list.length + ')</span></h3>' +
-        '<span class="chevron">▼</span></div><div class="acc-body"><div class="col-headers">' +
-        '<div>Nome</div><div>Status</div><div>Tipo</div><div>Fase</div>' +
-        '<div>Próxima Ação</div><div>Agente</div><div>Email</div><div>Ações</div></div>';
-      list.forEach(function (item) {
-        html += '<div class="item-row">' +
-          '<div class="nome">' + (item.Nome || '—') + '</div>' +
-          '<div>' + badgeStatus(item.Status) + '</div>' +
-          '<div>' + (item.Tipo || '—') + '</div>' +
-          '<div>' + (item['Fase Atual'] || '—') + '</div>' +
-          '<div>' + (item['Próxima Ação'] || '—') + '</div>' +
-          '<div>' + (item.Agente || '—') + '</div>' +
-          '<div>' + (item['Conta Email LLM'] || '—') + '</div>' +
-          '<div><button class="btn btn-sm btn-dark" onclick=\'openEdit(' + safeJson(item) + ')\'>Editar</button></div></div>';
-      });
-      html += '</div></div>';
-      el.innerHTML = html;
+      var gMan = groupBy(list, function (i) { return i.Tipo || 'Manual'; });
+      el.innerHTML = renderSubGroups('Inclusões manuais', gMan, null);
     }
 
     function renderAgents() {
@@ -986,7 +1071,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         var emails = tree[llm];
         var total = 0;
         Object.keys(emails).forEach(function (e) { total += emails[e].length; });
-        html += '<div class="acc-group open"><div class="acc-header" onclick="toggleAcc(this)">' +
+        html += '<div class="acc-group acc-top open"><div class="acc-header" onclick="toggleAcc(this)">' +
           '<h3>' + llm + ' <span class="count">(' + total + ' agentes)</span></h3>' +
           '<span class="chevron">▼</span></div><div class="acc-body">';
         Object.keys(emails).sort().forEach(function (email) {
@@ -1013,7 +1098,9 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       el.innerHTML = html;
     }
 
-    function toggleAcc(el) { el.parentElement.classList.toggle('open'); }
+    function toggleAcc(el) {
+      el.parentElement.classList.toggle('open');
+    }
     function safeJson(obj) {
       return JSON.stringify(obj).replace(/'/g, '&#39;').replace(/</g, '\\u003c');
     }
@@ -1064,7 +1151,9 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       document.getElementById('edit-agent-error').style.display = 'none';
       document.getElementById('modal-edit-agent').classList.add('active');
     }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
 
     async function saveEdit() {
       if (!currentEdit) return;
@@ -1125,7 +1214,6 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       }
       var llm = document.getElementById('agent-llm').value;
       var email = document.getElementById('agent-email').value;
-      var criarProj = document.getElementById('agent-criar-proj').checked;
       var payload = {
         action: 'createAgent', password: password,
         nome: nome,
@@ -1136,7 +1224,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         systemPrompt: document.getElementById('agent-system').value,
         observacoes: document.getElementById('agent-obs').value,
         status: 'Ativo',
-        criarProjeto: criarProj,
+        criarProjeto: document.getElementById('agent-criar-proj').checked,
         projetoNome: document.getElementById('agent-proj-nome').value,
         projetoFase: document.getElementById('agent-proj-fase').value,
         projetoProxima: document.getElementById('agent-proj-proxima').value
@@ -1203,7 +1291,6 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         document.getElementById('virtual-error').textContent = 'Nome obrigatório';
         return;
       }
-      var criarAg = document.getElementById('virt-criar-ag').checked;
       var payload = {
         action: 'createVirtual', password: password,
         nome: nome,
@@ -1217,7 +1304,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         agente: document.getElementById('virt-agente').value,
         llm: document.getElementById('virt-llm').value,
         email: document.getElementById('virt-email').value,
-        criarAgente: criarAg,
+        criarAgente: document.getElementById('virt-criar-ag').checked,
         novoAgenteNome: document.getElementById('virt-novo-ag-nome').value,
         novoAgenteFuncao: document.getElementById('virt-novo-ag-funcao').value,
         novoAgenteLlm: document.getElementById('virt-novo-ag-llm').value,
@@ -1296,7 +1383,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         alocar: { action: 'ai_alocar', label: 'Sugerir alocações' },
         resumo: {
           action: 'ai_chat',
-          message: 'Faça um resumo executivo do portfólio (incluindo manuais e documentações) com riscos e oportunidades.',
+          message: 'Faça um resumo executivo do portfólio (projetos por fase, produtos por categoria, documentações e manuais) com riscos e oportunidades.',
           label: 'Resumo do portfólio'
         }
       };
@@ -1311,21 +1398,4 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         var res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(body) });
         var json = await res.json();
         if (loading) loading.remove();
-        appendAI('bot', json.success ? json.reply : ('Erro: ' + json.error));
-      } catch (err) {
-        if (loading) loading.remove();
-        appendAI('bot', 'Erro: ' + err.message);
-      }
-    }
-
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') {
-        closeModal('modal-edit');
-        closeModal('modal-agent');
-        closeModal('modal-edit-agent');
-        closeModal('modal-virtual');
-      }
-    });
-  </script>
-</body>
-</html>
+        appendAI('bot', json.success ? 
