@@ -252,6 +252,9 @@
     .badge-inativo { background: #e2e8f0; color: #64748b; }
     .badge-nuvem { background: #ede9fe; color: #5b21b6; }
     .badge-drive { background: #e0f2fe; color: #0369a1; }
+    .badge-pendente { background: #fef3c7; color: #92400e; }
+    .badge-realizado { background: #d1fae5; color: #065f46; }
+    .badge-cancelado { background: #fee2e2; color: #991b1b; }
     .link-btn { color: var(--gold); text-decoration: none; font-size: 0.75rem; font-weight: 500; }
     .link-btn:hover { text-decoration: underline; }
     .agent-line {
@@ -276,6 +279,28 @@
       color: #64748b;
       font-weight: 600;
       margin-bottom: 0.4rem;
+    }
+    .cal-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem 0.75rem;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+    }
+    .cal-form .full { grid-column: 1 / -1; }
+    .cal-form label {
+      display: block;
+      font-size: 0.7rem;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 0.2rem;
+    }
+    .cal-form input, .cal-form select, .cal-form textarea {
+      margin-bottom: 0;
+      background: #fff;
     }
     .modal-overlay {
       position: fixed; inset: 0;
@@ -369,6 +394,7 @@
     @media (max-width: 900px) {
       .item-row, .col-headers { grid-template-columns: 1fr; }
       .col-headers { display: none; }
+      .cal-form { grid-template-columns: 1fr; }
       #ai-panel { width: calc(100% - 28px); right: 14px; }
     }
   </style>
@@ -386,7 +412,7 @@
     <header>
       <div>
         <h1>EU<span>⁺</span> Executivo</h1>
-        <div class="subtitle">Projetos · Produtos · Nuvem · Capital Intelectual</div>
+        <div class="subtitle">Projetos · Produtos · Capital Intelectual · Programação</div>
       </div>
       <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
         <button class="btn btn-sm" onclick="exportReport()">Relatório PDF</button>
@@ -404,7 +430,7 @@
 
       <div class="tabs">
         <div class="tab active" data-tab="projetos" onclick="switchTab('projetos')">Projetos e Produtos</div>
-        <div class="tab" data-tab="nuvem" onclick="switchTab('nuvem')">Nuvem</div>
+        <div class="tab" data-tab="programacao" onclick="switchTab('programacao')">Programação de Atividades</div>
         <div class="tab" data-tab="github" onclick="switchTab('github')">Links GitHub</div>
         <div class="tab" data-tab="agentes" onclick="switchTab('agentes')">Inventário de Agentes</div>
       </div>
@@ -440,12 +466,60 @@
           <div class="accordion" id="accordion" style="display:none;"></div>
         </div>
 
-        <div id="tab-nuvem" style="display:none;">
+        <div id="tab-programacao" style="display:none;">
           <div class="filters">
-            <button class="btn btn-sm btn-dark" onclick="openNuvemModal()">+ Inclusão Nuvem</button>
-            <button class="btn btn-secondary btn-sm" onclick="loadData(true)">Atualizar</button>
+            <button class="btn btn-sm btn-dark" onclick="toggleCalForm()">+ Atividade</button>
+            <button class="btn btn-secondary btn-sm" onclick="loadProgramacao()">Atualizar</button>
           </div>
-          <div id="nuvem-list" class="accordion"></div>
+          <div id="cal-form-wrap" style="display:none;">
+            <div class="cal-form">
+              <div class="full">
+                <label>Título *</label>
+                <input type="text" id="cal-titulo" />
+              </div>
+              <div>
+                <label>Data início *</label>
+                <input type="datetime-local" id="cal-inicio" />
+              </div>
+              <div>
+                <label>Data fim</label>
+                <input type="datetime-local" id="cal-fim" />
+              </div>
+              <div>
+                <label>Tipo</label>
+                <select id="cal-tipo">
+                  <option>Reunião</option>
+                  <option>Entrega</option>
+                  <option>Revisão</option>
+                  <option>Sync</option>
+                  <option>Relatório</option>
+                  <option>Outro</option>
+                </select>
+              </div>
+              <div>
+                <label>Status</label>
+                <select id="cal-status">
+                  <option>Pendente</option>
+                  <option>Realizado</option>
+                  <option>Cancelado</option>
+                </select>
+              </div>
+              <div class="full">
+                <label>Relacionado (Projeto/Produto)</label>
+                <input type="text" id="cal-relacionado" list="cal-projetos-list" />
+                <datalist id="cal-projetos-list"></datalist>
+              </div>
+              <div class="full">
+                <label>Observações</label>
+                <textarea id="cal-obs" rows="2"></textarea>
+              </div>
+              <div class="full" style="display:flex;gap:0.5rem;justify-content:flex-end;">
+                <button class="btn btn-secondary btn-sm" onclick="toggleCalForm()">Cancelar</button>
+                <button class="btn btn-sm" onclick="saveCalendario()">Salvar atividade</button>
+              </div>
+            </div>
+          </div>
+          <div id="programacao-list"></div>
         </div>
 
         <div id="tab-github" style="display:none;">
@@ -599,7 +673,7 @@
     </div>
   </div>
 
-  <!-- Modal Nuvem -->
+  <!-- Modal Nuvem (header +) -->
   <div class="modal-overlay" id="modal-nuvem">
     <div class="modal">
       <h3>Inclusão Nuvem</h3>
@@ -745,6 +819,7 @@
     var allData = [];
     var agents = [];
     var githubLinks = [];
+    var programacao = [];
     var lastKpis = {};
     var currentEdit = null;
 
@@ -752,9 +827,14 @@
       'Ideação', 'Laboratório', 'Construção', 'Escalonamento',
       'Operação', 'Arquivo / Hibernação', 'Prompts dos Agentes', 'Não classificado'
     ];
+    // 7.1–7.5 (provisórios em Cursos / Frameworks / Livros)
     var ORDEM_CAT_PROD = [
-      'AILs', 'Cursos', 'Frameworks', 'Livros / Publicações',
-      'Ferramentas Internas', 'Outros'
+      'AILs',
+      'Cursos (Provis)',
+      'Frameworks (Provis)',
+      'Livros / Publicações (Provis)',
+      'Ferramentas Internas',
+      'Cursos', 'Frameworks', 'Livros / Publicações', 'Outros'
     ];
     var ORDEM_CI = [
       'Cursos', 'Livros', 'Publicações', 'Palestras e apresentações',
@@ -830,10 +910,10 @@
       document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
       document.querySelector('.tab[data-tab="' + tab + '"]').classList.add('active');
       document.getElementById('tab-projetos').style.display = tab === 'projetos' ? 'block' : 'none';
-      document.getElementById('tab-nuvem').style.display = tab === 'nuvem' ? 'block' : 'none';
+      document.getElementById('tab-programacao').style.display = tab === 'programacao' ? 'block' : 'none';
       document.getElementById('tab-github').style.display = tab === 'github' ? 'block' : 'none';
       document.getElementById('tab-agentes').style.display = tab === 'agentes' ? 'block' : 'none';
-      if (tab === 'nuvem') renderNuvem();
+      if (tab === 'programacao') loadProgramacao();
       if (tab === 'github') loadGithub();
       if (tab === 'agentes') renderAgents();
     }
@@ -865,8 +945,8 @@
         lastKpis = json.kpis || {};
         renderKPIs();
         renderAccordion();
-        renderNuvem();
         fillProjectSelects();
+        fillCalProjetos();
         document.getElementById('loading').style.display = 'none';
         document.getElementById('accordion').style.display = 'flex';
         if (hint) {
@@ -909,6 +989,96 @@
       } catch (e) {
         el.innerHTML = '<div class="empty">Erro: ' + e.message + '</div>';
       }
+    }
+
+    async function loadProgramacao() {
+      var el = document.getElementById('programacao-list');
+      el.innerHTML = '<div class="loading">Carregando programação…</div>';
+      try {
+        var res = await fetch(API_URL + '?action=listCalendario&password=' + encodeURIComponent(password));
+        var json = await res.json();
+        programacao = (json.success && json.data) ? json.data : [];
+        renderProgramacao();
+      } catch (e) {
+        el.innerHTML = '<div class="empty">Erro: ' + e.message + '<br>Confirme action listCalendario no backend.</div>';
+      }
+    }
+
+    function toggleCalForm() {
+      var w = document.getElementById('cal-form-wrap');
+      w.style.display = w.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function fillCalProjetos() {
+      var dl = document.getElementById('cal-projetos-list');
+      if (!dl) return;
+      dl.innerHTML = '';
+      allData.forEach(function (p) {
+        if (p.Status === 'Arquivado' || !p.Nome) return;
+        var o = document.createElement('option');
+        o.value = p.Nome;
+        dl.appendChild(o);
+      });
+    }
+
+    async function saveCalendario() {
+      var titulo = document.getElementById('cal-titulo').value.trim();
+      var inicio = document.getElementById('cal-inicio').value;
+      if (!titulo || !inicio) {
+        alert('Título e data início são obrigatórios');
+        return;
+      }
+      try {
+        var res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'createCalendario',
+            password: password,
+            titulo: titulo,
+            dataInicio: inicio,
+            dataFim: document.getElementById('cal-fim').value || '',
+            tipo: document.getElementById('cal-tipo').value,
+            status: document.getElementById('cal-status').value,
+            relacionado: document.getElementById('cal-relacionado').value,
+            observacoes: document.getElementById('cal-obs').value
+          })
+        });
+        var json = await res.json();
+        if (!json.success) {
+          alert(json.error || 'Erro ao salvar');
+          return;
+        }
+        document.getElementById('cal-titulo').value = '';
+        document.getElementById('cal-obs').value = '';
+        toggleCalForm();
+        loadProgramacao();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    function renderProgramacao() {
+      var el = document.getElementById('programacao-list');
+      if (!programacao.length) {
+        el.innerHTML = '<div class="empty">Nenhuma atividade. Clique em + Atividade ou aguarde o relatório semanal.</div>';
+        return;
+      }
+      var html = '<div class="col-headers" style="grid-template-columns:1.1fr 0.9fr 0.7fr 0.6fr 1fr 0.7fr">' +
+        '<div>Título</div><div>Início</div><div>Tipo</div><div>Status</div><div>Relacionado</div><div>Obs</div></div>';
+      programacao.forEach(function (ev) {
+        var di = ev['Data Início'] || ev.dataInicio || '';
+        if (di && typeof di === 'string' && di.indexOf('T') !== -1) {
+          di = di.replace('T', ' ').substring(0, 16);
+        }
+        html += '<div class="item-row" style="grid-template-columns:1.1fr 0.9fr 0.7fr 0.6fr 1fr 0.7fr">' +
+          '<div class="nome">' + (ev.Título || ev.titulo || '—') + '</div>' +
+          '<div>' + (di || '—') + '</div>' +
+          '<div>' + (ev.Tipo || ev.tipo || '—') + '</div>' +
+          '<div>' + badgeStatus(ev.Status || ev.status || 'Pendente') + '</div>' +
+          '<div class="obs">' + (ev['Relacionado (Projeto/Produto)'] || ev.relacionado || '—') + '</div>' +
+          '<div class="obs">' + (ev.Observações || ev.observacoes || '—') + '</div></div>';
+      });
+      el.innerHTML = html;
     }
 
     function fillAgentSelects() {
@@ -1115,19 +1285,6 @@
 
       document.getElementById('accordion').innerHTML =
         html || '<div class="empty">Nenhum registro encontrado</div>';
-    }
-
-    function renderNuvem() {
-      var list = allData.filter(function (i) {
-        return isNuvem(i) && i.Status !== 'Arquivado';
-      });
-      var el = document.getElementById('nuvem-list');
-      if (!list.length) {
-        el.innerHTML = '<div class="empty">Nenhum item Nuvem. Clique em + Nuvem.</div>';
-        return;
-      }
-      var g = groupBy(list, function (i) { return i['Fase Atual'] || 'Não classificado'; });
-      el.innerHTML = renderSubGroups('Projetos Nuvem (por fase)', g, FASES_PROJETO);
     }
 
     function renderGithub() {
