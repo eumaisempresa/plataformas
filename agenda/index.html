@@ -199,23 +199,13 @@
     .acc-top > .acc-header h3 { color: #EEF0F2; }
     .acc-top > .acc-header .count { color: #7A8FA3; }
     .acc-top > .acc-header .chevron { color: #C4974A; }
-    .acc-nested {
-      border: none;
-      border-radius: 0;
-      border-top: 1px solid #e2e8f0;
-    }
-    .acc-nested > .acc-header {
-      background: #fff;
-      padding-left: 1.35rem;
-    }
-    .acc-nested > .acc-header h3 {
-      font-size: 0.95rem;
-      color: #334155;
-    }
+    .acc-nested { border: none; border-radius: 0; border-top: 1px solid #e2e8f0; }
+    .acc-nested > .acc-header { background: #fff; padding-left: 1.35rem; }
+    .acc-nested > .acc-header h3 { font-size: 0.95rem; color: #334155; }
     .acc-nested > .acc-body { background: #fafafa; }
     .col-headers, .item-row {
       display: grid;
-      grid-template-columns: 1.3fr 0.7fr 0.55fr 0.4fr 1fr 0.9fr 0.7fr 0.85fr;
+      grid-template-columns: 1.3fr 0.7fr 0.55fr 0.4fr 1fr 1.15fr 0.7fr 0.85fr;
       gap: 0.35rem;
       padding: 0.55rem 1rem;
       font-size: 0.8rem;
@@ -260,8 +250,11 @@
     .badge-arquivado { background: #e2e8f0; color: #475569; }
     .badge-emteste { background: #fef3c7; color: #92400e; }
     .badge-inativo { background: #e2e8f0; color: #64748b; }
-    .badge-virtual { background: #ede9fe; color: #5b21b6; }
+    .badge-nuvem { background: #ede9fe; color: #5b21b6; }
     .badge-drive { background: #e0f2fe; color: #0369a1; }
+    .badge-pendente { background: #fef3c7; color: #92400e; }
+    .badge-realizado { background: #d1fae5; color: #065f46; }
+    .badge-cancelado { background: #fee2e2; color: #991b1b; }
     .link-btn { color: var(--gold); text-decoration: none; font-size: 0.75rem; font-weight: 500; }
     .link-btn:hover { text-decoration: underline; }
     .agent-line {
@@ -287,6 +280,29 @@
       font-weight: 600;
       margin-bottom: 0.4rem;
     }
+    .cal-form, .box-agenda {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem 0.75rem;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+    }
+    .cal-form .full, .box-agenda .full { grid-column: 1 / -1; }
+    .cal-form label, .box-agenda label {
+      display: block;
+      font-size: 0.7rem;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 0.2rem;
+    }
+    .cal-form input, .cal-form select, .cal-form textarea,
+    .box-agenda input, .box-agenda select, .box-agenda textarea {
+      margin-bottom: 0;
+      background: #fff;
+    }
     .modal-overlay {
       position: fixed; inset: 0;
       background: rgba(6,14,24,0.85);
@@ -297,7 +313,7 @@
     .modal {
       background: var(--bg-secondary);
       border: 1px solid var(--border);
-      width: 95%; max-width: 520px;
+      width: 95%; max-width: 540px;
       border-radius: 8px; padding: 1.5rem;
       max-height: 90vh; overflow-y: auto;
     }
@@ -379,12 +395,12 @@
     @media (max-width: 900px) {
       .item-row, .col-headers { grid-template-columns: 1fr; }
       .col-headers { display: none; }
+      .cal-form, .box-agenda { grid-template-columns: 1fr; }
       #ai-panel { width: calc(100% - 28px); right: 14px; }
     }
   </style>
 </head>
 <body>
-
   <div id="login-screen">
     <h2>EU<span style="color:var(--gold)">⁺</span> Executivo</h2>
     <p>Controle de Projetos e AILs</p>
@@ -397,33 +413,26 @@
     <header>
       <div>
         <h1>EU<span>⁺</span> Executivo</h1>
-        <div class="subtitle">Controle de Projetos e AILs · Central do Conhecimento</div>
+        <div class="subtitle">Projetos · Produtos · Capital Intelectual · Programação</div>
       </div>
       <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
         <button class="btn btn-sm" onclick="exportReport()">Relatório PDF</button>
         <button class="btn btn-sm" onclick="openAgentModal()">+ Agente</button>
-        <button class="btn btn-sm" onclick="openVirtualModal()">+ Manual</button>
+        <button class="btn btn-sm" onclick="openNuvemModal()">+ Nuvem</button>
+        <button class="btn btn-sm" onclick="openGithubModal()">+ GitHub</button>
         <button class="btn btn-secondary btn-sm" onclick="logout()">Sair</button>
       </div>
     </header>
 
     <div class="container">
-      <div class="kpi-section">
-        <h3>Portfólio</h3>
-        <div class="kpis" id="kpis-geral"></div>
-      </div>
-      <div class="kpi-section">
-        <h3>Agentes e Cobertura</h3>
-        <div class="kpis" id="kpis-agentes"></div>
-      </div>
-      <div class="kpi-section">
-        <h3>Documentações</h3>
-        <div class="kpis" id="kpis-docs"></div>
-      </div>
+      <div class="kpi-section"><h3>Portfólio</h3><div class="kpis" id="kpis-geral"></div></div>
+      <div class="kpi-section"><h3>Agentes e Cobertura</h3><div class="kpis" id="kpis-agentes"></div></div>
+      <div class="kpi-section"><h3>Capital Intelectual</h3><div class="kpis" id="kpis-docs"></div></div>
 
       <div class="tabs">
         <div class="tab active" data-tab="projetos" onclick="switchTab('projetos')">Projetos e Produtos</div>
-        <div class="tab" data-tab="virtuais" onclick="switchTab('virtuais')">Inclusão Manual</div>
+        <div class="tab" data-tab="programacao" onclick="switchTab('programacao')">Programação de Atividades</div>
+        <div class="tab" data-tab="github" onclick="switchTab('github')">Links GitHub</div>
         <div class="tab" data-tab="agentes" onclick="switchTab('agentes')">Inventário de Agentes</div>
       </div>
 
@@ -440,30 +449,38 @@
               <option value="">Todos Tipos</option>
               <option>Projeto</option>
               <option>Produto (AIL)</option>
-              <option>Documentação</option>
-              <option>Projeto Virtual</option>
+              <option>Projeto Nuvem</option>
+              <option>Capital Intelectual</option>
               <option>Automação</option>
               <option>Prompt</option>
+              <option>Iniciativa</option>
             </select>
             <select id="filter-origem" onchange="renderAccordion()">
-              <option value="">Drive + Manuais</option>
+              <option value="">Drive + Nuvem</option>
               <option value="Drive">Só Drive</option>
-              <option value="Virtual">Só Manuais</option>
+              <option value="Nuvem">Só Nuvem</option>
             </select>
-            <button class="btn btn-sm btn-dark" onclick="loadData(true)">Sincronizar Drive</button>
-            <button class="btn btn-sm btn-dark" onclick="loadData(false)">Atualizar lista</button>
+            <button class="btn btn-sm btn-dark" onclick="loadData(true)">Atualizar</button>
             <span class="sync-hint" id="sync-hint"></span>
           </div>
           <div id="loading" class="loading">Carregando...</div>
           <div class="accordion" id="accordion" style="display:none;"></div>
         </div>
 
-        <div id="tab-virtuais" style="display:none;">
+        <div id="tab-programacao" style="display:none;">
           <div class="filters">
-            <button class="btn btn-sm btn-dark" onclick="openVirtualModal()">+ Inclusão Manual</button>
-            <button class="btn btn-secondary btn-sm" onclick="loadData(false)">Atualizar</button>
+            <button class="btn btn-sm btn-dark" onclick="openCalModal()">+ Atividade</button>
+            <button class="btn btn-secondary btn-sm" onclick="loadProgramacao()">Atualizar</button>
           </div>
-          <div id="virtuais-list" class="accordion"></div>
+          <div id="programacao-list"></div>
+        </div>
+
+        <div id="tab-github" style="display:none;">
+          <div class="filters">
+            <button class="btn btn-sm btn-dark" onclick="openGithubModal()">+ Link GitHub</button>
+            <button class="btn btn-secondary btn-sm" onclick="loadGithub()">Atualizar</button>
+          </div>
+          <div id="github-list" class="accordion"></div>
         </div>
 
         <div id="tab-agentes" style="display:none;">
@@ -479,11 +496,11 @@
 
     <footer>
       <div class="slogan">“Você é o EU. Nós somos o + que soma com você.”</div>
-      <div>Ecossistema EU⁺ › EU⁺ Empresa › EU⁺ Executivo › Controle de Projetos e AILs</div>
+      <div>Ecossistema EU⁺ › EU⁺ Empresa › EU⁺ Executivo</div>
     </footer>
   </div>
 
-  <!-- Modal Edit -->
+  <!-- Modal Edit Projeto -->
   <div class="modal-overlay" id="modal-edit">
     <div class="modal">
       <h3 id="modal-title">Editar</h3>
@@ -521,9 +538,80 @@
         <label>Conta Email LLM</label>
         <input type="text" id="edit-email" readonly style="opacity:0.85;" />
       </div>
+      <div class="form-group">
+        <label class="inline">
+          <input type="checkbox" id="edit-criar-ag" onchange="toggleBox('edit-ag-box', this.checked)" />
+          Criar novo agente e vincular
+        </label>
+      </div>
+      <div id="edit-ag-box" class="box-extra">
+        <div class="form-group"><label>Nome do agente</label><input type="text" id="edit-novo-ag-nome" /></div>
+        <div class="form-group"><label>Função / Papel</label><input type="text" id="edit-novo-ag-funcao" /></div>
+        <div class="form-group"><label>LLM</label><input type="text" id="edit-novo-ag-llm" /></div>
+        <div class="form-group"><label>Email LLM</label><input type="text" id="edit-novo-ag-email" /></div>
+      </div>
+      <div class="form-group">
+        <label class="inline">
+          <input type="checkbox" id="edit-agendar" onchange="toggleBox('edit-agenda-box', this.checked)" />
+          Agendar atividade na Programação
+        </label>
+      </div>
+      <div id="edit-agenda-box" class="box-extra">
+        <div class="form-group"><label>Título da atividade</label><input type="text" id="edit-cal-titulo" placeholder="Revisão / Sync / Entrega" /></div>
+        <div class="form-group"><label>Data início</label><input type="datetime-local" id="edit-cal-inicio" /></div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="edit-cal-tipo">
+            <option>Revisão</option><option>Reunião</option><option>Entrega</option>
+            <option>Sync</option><option>Relatório</option><option>Outro</option>
+          </select>
+        </div>
+      </div>
       <div class="modal-actions">
         <button class="btn btn-secondary" onclick="closeModal('modal-edit')">Cancelar</button>
         <button class="btn" onclick="saveEdit()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Programação criar/editar -->
+  <div class="modal-overlay" id="modal-cal">
+    <div class="modal">
+      <h3 id="cal-modal-title">Atividade</h3>
+      <div id="cal-error" class="error-msg" style="display:none;"></div>
+      <input type="hidden" id="cal-row" />
+      <div class="form-group"><label>Título *</label><input type="text" id="cal-titulo" /></div>
+      <div class="form-group"><label>Data início *</label><input type="datetime-local" id="cal-inicio" /></div>
+      <div class="form-group"><label>Data fim</label><input type="datetime-local" id="cal-fim" /></div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <select id="cal-tipo">
+          <option>Reunião</option><option>Entrega</option><option>Revisão</option>
+          <option>Sync</option><option>Relatório</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="cal-status">
+          <option>Pendente</option><option>Realizado</option><option>Cancelado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Projeto / Produto vinculado</label>
+        <select id="cal-relacionado"><option value="">—</option></select>
+      </div>
+      <div class="form-group">
+        <label>Link GitHub vinculado</label>
+        <select id="cal-github"><option value="">—</option></select>
+      </div>
+      <div class="form-group">
+        <label>Agente</label>
+        <select id="cal-agente"><option value="">—</option></select>
+      </div>
+      <div class="form-group"><label>Observações</label><textarea id="cal-obs" rows="2"></textarea></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modal-cal')">Cancelar</button>
+        <button class="btn" onclick="saveCalendario()">Salvar</button>
       </div>
     </div>
   </div>
@@ -535,9 +623,9 @@
       <div id="agent-error" class="error-msg" style="display:none;"></div>
       <div class="form-group"><label>Nome do Agente *</label><input type="text" id="agent-nome" /></div>
       <div class="form-group"><label>Função / Papel *</label><input type="text" id="agent-funcao" /></div>
-      <div class="form-group"><label>LLM *</label><input type="text" id="agent-llm" placeholder="gemini-3.6-flash, Grok..." /></div>
+      <div class="form-group"><label>LLM *</label><input type="text" id="agent-llm" /></div>
       <div class="form-group"><label>Conta Email LLM *</label><input type="text" id="agent-email" /></div>
-      <div class="form-group"><label>ID / Nome do Prompt</label><input type="text" id="agent-prompt" /></div>
+      <div class="form-group"><label>ID / Nome do Prompt</label><input type="text" id="agent-prompt" placeholder="URL ou ID" /></div>
       <div class="form-group"><label>System Prompt (resumo)</label><textarea id="agent-system" rows="3"></textarea></div>
       <div class="form-group"><label>Observações</label><textarea id="agent-obs" rows="2"></textarea></div>
       <div class="form-group">
@@ -547,7 +635,7 @@
       <div class="form-group">
         <label class="inline">
           <input type="checkbox" id="agent-criar-proj" onchange="toggleBox('agent-proj-box', this.checked)" />
-          Criar projeto manual junto
+          Criar projeto Nuvem junto
         </label>
       </div>
       <div id="agent-proj-box" class="box-extra">
@@ -579,7 +667,7 @@
       <div class="form-group"><label>Função</label><input type="text" id="ea-funcao" /></div>
       <div class="form-group"><label>LLM</label><input type="text" id="ea-llm" /></div>
       <div class="form-group"><label>Conta Email</label><input type="text" id="ea-email" /></div>
-      <div class="form-group"><label>ID Prompt</label><input type="text" id="ea-prompt" /></div>
+      <div class="form-group"><label>ID Prompt (URL ou ID)</label><input type="text" id="ea-prompt" /></div>
       <div class="form-group"><label>System Prompt</label><textarea id="ea-system" rows="3"></textarea></div>
       <div class="form-group">
         <label>Status</label>
@@ -590,6 +678,42 @@
         <label>Vincular a projeto existente</label>
         <select id="ea-vincular-projeto"><option value="">— Não alterar vínculos —</option></select>
       </div>
+      <div class="form-group">
+        <label class="inline">
+          <input type="checkbox" id="ea-criar-proj" onchange="toggleBox('ea-proj-box', this.checked)" />
+          Criar projeto Nuvem agora
+        </label>
+      </div>
+      <div id="ea-proj-box" class="box-extra">
+        <div class="form-group"><label>Nome do projeto</label><input type="text" id="ea-proj-nome" /></div>
+        <div class="form-group">
+          <label>Fase</label>
+          <select id="ea-proj-fase">
+            <option>Ideação</option><option>Laboratório</option><option>Construção</option>
+            <option>Escalonamento</option><option>Operação</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="inline">
+          <input type="checkbox" id="ea-agendar" onchange="toggleBox('ea-agenda-box', this.checked)" />
+          Programar atividade (agente + projeto)
+        </label>
+      </div>
+      <div id="ea-agenda-box" class="box-extra">
+        <div class="form-group"><label>Título</label><input type="text" id="ea-cal-titulo" /></div>
+        <div class="form-group"><label>Data início</label><input type="datetime-local" id="ea-cal-inicio" /></div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="ea-cal-tipo">
+            <option>Revisão</option><option>Sync</option><option>Reunião</option><option>Outro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Projeto relacionado</label>
+          <select id="ea-cal-projeto"><option value="">— usar projeto novo ou vínculo —</option></select>
+        </div>
+      </div>
       <div class="modal-actions">
         <button class="btn btn-secondary" onclick="closeModal('modal-edit-agent')">Cancelar</button>
         <button class="btn" onclick="saveEditAgent()">Salvar</button>
@@ -597,66 +721,140 @@
     </div>
   </div>
 
-  <!-- Modal Inclusão Manual -->
-  <div class="modal-overlay" id="modal-virtual">
+  <!-- Modal Nuvem -->
+  <div class="modal-overlay" id="modal-nuvem">
     <div class="modal">
-      <h3>Inclusão Manual</h3>
-      <div id="virtual-error" class="error-msg" style="display:none;"></div>
-      <div class="form-group"><label>Nome *</label><input type="text" id="virt-nome" /></div>
+      <h3>Inclusão Nuvem</h3>
+      <div id="nuvem-error" class="error-msg" style="display:none;"></div>
+      <div class="form-group"><label>Nome *</label><input type="text" id="nuv-nome" /></div>
       <div class="form-group">
         <label>Tipo</label>
-        <select id="virt-tipo">
-          <option>Projeto Virtual</option>
+        <select id="nuv-tipo">
+          <option>Projeto Nuvem</option>
           <option>Automação</option>
           <option>Prompt</option>
           <option>Iniciativa</option>
         </select>
       </div>
-      <div class="form-group"><label>Categoria</label><input type="text" id="virt-categoria" placeholder="Outros" /></div>
+      <div class="form-group"><label>Categoria</label><input type="text" id="nuv-categoria" placeholder="Outros" /></div>
       <div class="form-group">
         <label>Fase</label>
-        <select id="virt-fase">
+        <select id="nuv-fase">
           <option>Ideação</option><option>Laboratório</option><option>Construção</option>
           <option>Escalonamento</option><option>Operação</option>
-          <option>Arquivo / Hibernação</option><option>Prompts dos Agentes</option>
+          <option>Arquivo / Hibernação</option>
         </select>
       </div>
       <div class="form-group">
         <label>Status</label>
-        <select id="virt-status">
+        <select id="nuv-status">
           <option>Ativo</option><option>Desacelerando</option><option>Pausado</option>
           <option>Concluído</option><option>Arquivado</option>
         </select>
       </div>
       <div class="form-group">
         <label>Prioridade</label>
-        <select id="virt-prioridade"><option>Alta</option><option selected>Média</option><option>Baixa</option></select>
+        <select id="nuv-prioridade"><option>Alta</option><option selected>Média</option><option>Baixa</option></select>
       </div>
-      <div class="form-group"><label>Próxima Ação</label><input type="text" id="virt-proxima" /></div>
-      <div class="form-group"><label>Observações</label><textarea id="virt-obs" rows="2"></textarea></div>
+      <div class="form-group"><label>Próxima Ação</label><input type="text" id="nuv-proxima" /></div>
+      <div class="form-group"><label>Observações</label><textarea id="nuv-obs" rows="2"></textarea></div>
       <div class="form-group">
         <label>Agente existente</label>
-        <select id="virt-agente" onchange="onVirtAgentSelect()">
+        <select id="nuv-agente" onchange="onNuvAgentSelect()">
           <option value="">— Sem agente —</option>
         </select>
       </div>
-      <div class="form-group"><label>LLM</label><input type="text" id="virt-llm" readonly style="opacity:0.85;" /></div>
-      <div class="form-group"><label>Conta Email LLM</label><input type="text" id="virt-email" readonly style="opacity:0.85;" /></div>
+      <div class="form-group"><label>LLM</label><input type="text" id="nuv-llm" readonly style="opacity:0.85;" /></div>
+      <div class="form-group"><label>Conta Email LLM</label><input type="text" id="nuv-email" readonly style="opacity:0.85;" /></div>
       <div class="form-group">
         <label class="inline">
-          <input type="checkbox" id="virt-criar-ag" onchange="toggleBox('virt-ag-box', this.checked)" />
+          <input type="checkbox" id="nuv-criar-ag" onchange="toggleBox('nuv-ag-box', this.checked)" />
           Cadastrar novo agente agora
         </label>
       </div>
-      <div id="virt-ag-box" class="box-extra">
-        <div class="form-group"><label>Nome do agente</label><input type="text" id="virt-novo-ag-nome" /></div>
-        <div class="form-group"><label>Função</label><input type="text" id="virt-novo-ag-funcao" /></div>
-        <div class="form-group"><label>LLM</label><input type="text" id="virt-novo-ag-llm" /></div>
-        <div class="form-group"><label>Email LLM</label><input type="text" id="virt-novo-ag-email" /></div>
+      <div id="nuv-ag-box" class="box-extra">
+        <div class="form-group"><label>Nome do agente</label><input type="text" id="nuv-novo-ag-nome" /></div>
+        <div class="form-group"><label>Função</label><input type="text" id="nuv-novo-ag-funcao" /></div>
+        <div class="form-group"><label>LLM</label><input type="text" id="nuv-novo-ag-llm" /></div>
+        <div class="form-group"><label>Email LLM</label><input type="text" id="nuv-novo-ag-email" /></div>
+      </div>
+      <div class="form-group">
+        <label class="inline">
+          <input type="checkbox" id="nuv-agendar" onchange="toggleBox('nuv-agenda-box', this.checked)" />
+          Agendar atividade na Programação
+        </label>
+      </div>
+      <div id="nuv-agenda-box" class="box-extra">
+        <div class="form-group"><label>Título</label><input type="text" id="nuv-cal-titulo" /></div>
+        <div class="form-group"><label>Data início</label><input type="datetime-local" id="nuv-cal-inicio" /></div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="nuv-cal-tipo">
+            <option>Revisão</option><option>Sync</option><option>Entrega</option><option>Outro</option>
+          </select>
+        </div>
       </div>
       <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="closeModal('modal-virtual')">Cancelar</button>
-        <button class="btn" onclick="saveVirtual()">Cadastrar</button>
+        <button class="btn btn-secondary" onclick="closeModal('modal-nuvem')">Cancelar</button>
+        <button class="btn" onclick="saveNuvem()">Cadastrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal GitHub -->
+  <div class="modal-overlay" id="modal-github">
+    <div class="modal">
+      <h3>Link GitHub</h3>
+      <div id="gh-error" class="error-msg" style="display:none;"></div>
+      <div class="form-group"><label>URL *</label><input type="text" id="gh-url" placeholder="https://github.com/..." /></div>
+      <div class="form-group"><label>Título</label><input type="text" id="gh-titulo" /></div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <select id="gh-tipo">
+          <option>Site</option>
+          <option>AILs (Ambientes Inteligentes Leves)</option>
+          <option>Outros</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Projeto vinculado</label>
+        <select id="gh-projeto"><option value="">— Nenhum —</option></select>
+      </div>
+      <div class="form-group">
+        <label>Agente vinculado</label>
+        <select id="gh-agente"><option value="">—</option></select>
+      </div>
+      <div class="form-group"><label>Observações</label><textarea id="gh-obs" rows="2"></textarea></div>
+      <div class="form-group">
+        <label class="inline">
+          <input type="checkbox" id="gh-criar-proj" onchange="toggleBox('gh-proj-box', this.checked)" />
+          Criar projeto Nuvem com o título/nome
+        </label>
+      </div>
+      <div id="gh-proj-box" class="box-extra">
+        <div class="form-group">
+          <label>Fase do projeto</label>
+          <select id="gh-proj-fase">
+            <option>Ideação</option><option>Laboratório</option><option>Construção</option>
+            <option>Escalonamento</option><option>Operação</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="inline">
+          <input type="checkbox" id="gh-criar-ag" onchange="toggleBox('gh-ag-box', this.checked)" />
+          Criar agente junto
+        </label>
+      </div>
+      <div id="gh-ag-box" class="box-extra">
+        <div class="form-group"><label>Nome agente</label><input type="text" id="gh-novo-ag-nome" /></div>
+        <div class="form-group"><label>Função</label><input type="text" id="gh-novo-ag-funcao" /></div>
+        <div class="form-group"><label>LLM</label><input type="text" id="gh-novo-ag-llm" /></div>
+        <div class="form-group"><label>Email</label><input type="text" id="gh-novo-ag-email" /></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modal-github')">Cancelar</button>
+        <button class="btn" onclick="saveGithub()">Salvar</button>
       </div>
     </div>
   </div>
@@ -674,8 +872,7 @@
       <button onclick="quickAI('resumo')">Resumo</button>
     </div>
     <div id="ai-messages">
-      <div class="ai-msg bot">Olá. Sou o Gestor Inteligente do EU⁺ Executivo.<br><br>
-Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e responder sobre o portfólio.</div>
+      <div class="ai-msg bot">Olá. Sou o Gestor do EU⁺ Executivo.</div>
     </div>
     <div id="ai-input-area">
       <input type="text" id="ai-input" placeholder="Pergunte algo..." onkeypress="if(event.key==='Enter')sendAI()" />
@@ -689,6 +886,8 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
     var password = localStorage.getItem('eu_plus_password') || '';
     var allData = [];
     var agents = [];
+    var githubLinks = [];
+    var programacao = [];
     var lastKpis = {};
     var currentEdit = null;
 
@@ -697,10 +896,11 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       'Operação', 'Arquivo / Hibernação', 'Prompts dos Agentes', 'Não classificado'
     ];
     var ORDEM_CAT_PROD = [
-      'AILs', 'Cursos', 'Frameworks', 'Livros / Publicações',
-      'Ferramentas Internas', 'Outros'
+      'AILs', 'Cursos (Provis)', 'Frameworks (Provis)',
+      'Livros / Publicações (Provis)', 'Ferramentas Internas',
+      'Cursos', 'Frameworks', 'Livros / Publicações', 'Outros'
     ];
-    var ORDEM_DOC = [
+    var ORDEM_CI = [
       'Cursos', 'Livros', 'Publicações', 'Palestras e apresentações',
       'Produção Executiva', 'Produção Acadêmica', 'Produção Técnica', 'Geral'
     ];
@@ -710,6 +910,56 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       if (el) el.style.display = show ? 'block' : 'none';
     }
 
+    function isNuvem(item) {
+      var o = String(item.Origem || '');
+      return o === 'Nuvem' || o === 'Virtual' || item['Tem Pasta'] === 'Não';
+    }
+    function isProduto(item) {
+      return String(item.Tipo || '').indexOf('Produto') !== -1;
+    }
+    function isCapital(item) {
+      var t = String(item.Tipo || '');
+      var f = String(item['Fase Atual'] || '');
+      return t === 'Capital Intelectual' || t === 'Documentação' ||
+        f === 'Capital Intelectual' || f === 'Documentação';
+    }
+    function isProjeto(item) {
+      return !isProduto(item) && !isCapital(item);
+    }
+
+    function mapaAgentesPorNome() {
+      var m = {};
+      agents.forEach(function (a) {
+        var n = a['Nome do Agente'];
+        if (n) m[n] = a;
+      });
+      return m;
+    }
+    function labelAgente(nome) {
+      if (!nome) return '—';
+      var a = mapaAgentesPorNome()[nome];
+      if (!a) return nome;
+      var papel = a['Função / Papel'] || '';
+      return papel ? (nome + ' · ' + papel) : nome;
+    }
+
+    function promptLink(idPrompt) {
+      if (!idPrompt) return '';
+      var s = String(idPrompt).trim();
+      if (/^https?:\/\//i.test(s)) {
+        return '<a class="link-btn" href="' + s + '" target="_blank">Prompt</a>';
+      }
+      return '<span style="font-size:0.72rem;color:#64748b">Prompt: ' + s + '</span>';
+    }
+
+    async function criarAtividadeAPI(dados) {
+      var res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(Object.assign({ action: 'createCalendario', password: password }, dados))
+      });
+      return res.json();
+    }
+
     function login() {
       var pass = document.getElementById('password').value.trim();
       if (!pass) return;
@@ -717,7 +967,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       localStorage.setItem('eu_plus_password', password);
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').style.display = 'block';
-      loadData(false);
+      loadData(true);
       loadAgents();
     }
     function logout() {
@@ -730,7 +980,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
     if (password) {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app').style.display = 'block';
-      loadData(false);
+      loadData(true);
       loadAgents();
     }
     document.getElementById('password').addEventListener('keypress', function (e) {
@@ -741,9 +991,11 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
       document.querySelector('.tab[data-tab="' + tab + '"]').classList.add('active');
       document.getElementById('tab-projetos').style.display = tab === 'projetos' ? 'block' : 'none';
-      document.getElementById('tab-virtuais').style.display = tab === 'virtuais' ? 'block' : 'none';
+      document.getElementById('tab-programacao').style.display = tab === 'programacao' ? 'block' : 'none';
+      document.getElementById('tab-github').style.display = tab === 'github' ? 'block' : 'none';
       document.getElementById('tab-agentes').style.display = tab === 'agentes' ? 'block' : 'none';
-      if (tab === 'virtuais') renderVirtuais();
+      if (tab === 'programacao') loadProgramacao();
+      if (tab === 'github') loadGithub();
       if (tab === 'agentes') renderAgents();
     }
 
@@ -751,18 +1003,13 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       document.getElementById('loading').style.display = 'block';
       document.getElementById('accordion').style.display = 'none';
       var hint = document.getElementById('sync-hint');
-      if (hint) hint.textContent = doSync ? 'Sincronizando Drive…' : '';
+      if (hint) hint.textContent = 'Atualizando…';
       try {
-        var res, json;
-        if (doSync) {
-          res = await fetch(API_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: 'sync', password: password })
-          });
-        } else {
-          res = await fetch(API_URL + '?action=list&password=' + encodeURIComponent(password));
-        }
-        json = await res.json();
+        var res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: doSync ? 'sync' : 'list', password: password })
+        });
+        var json = await res.json();
         if (!json.success) {
           if (json.error === 'Senha inválida') {
             logout();
@@ -776,16 +1023,17 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         lastKpis = json.kpis || {};
         renderKPIs();
         renderAccordion();
-        renderVirtuais();
         fillProjectSelects();
+        fillRelacionadoSelects();
         document.getElementById('loading').style.display = 'none';
         document.getElementById('accordion').style.display = 'flex';
         if (hint) {
-          if (doSync && json.sync) {
+          if (json.sync) {
             hint.textContent = 'Sync: +' + (json.sync.criados || 0) + ' novos, ' +
-              (json.sync.atualizados || 0) + ' atualizados';
+              (json.sync.atualizados || 0) + ' atualizados' +
+              (json.sync.arquivados != null ? ', ' + json.sync.arquivados + ' arquivados' : '');
           } else {
-            hint.textContent = '';
+            hint.textContent = allData.length + ' itens';
           }
         }
       } catch (err) {
@@ -808,8 +1056,62 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       document.getElementById('agents-loading').style.display = 'none';
     }
 
+    async function loadGithub() {
+      var el = document.getElementById('github-list');
+      el.innerHTML = '<div class="loading">Carregando…</div>';
+      try {
+        var res = await fetch(API_URL + '?action=listGithub&password=' + encodeURIComponent(password));
+        var json = await res.json();
+        githubLinks = (json.success && json.data) ? json.data : [];
+        renderGithub();
+        fillGithubSelects();
+      } catch (e) {
+        el.innerHTML = '<div class="empty">Erro: ' + e.message + '</div>';
+      }
+    }
+
+    async function loadProgramacao() {
+      var el = document.getElementById('programacao-list');
+      el.innerHTML = '<div class="loading">Carregando…</div>';
+      try {
+        var res = await fetch(API_URL + '?action=listCalendario&password=' + encodeURIComponent(password));
+        var json = await res.json();
+        programacao = (json.success && json.data) ? json.data : [];
+        renderProgramacao();
+      } catch (e) {
+        el.innerHTML = '<div class="empty">Erro: ' + e.message + '</div>';
+      }
+    }
+
+    function fillRelacionadoSelects() {
+      var sel = document.getElementById('cal-relacionado');
+      if (!sel) return;
+      var cur = sel.value;
+      sel.innerHTML = '<option value="">—</option>';
+      allData.forEach(function (p) {
+        if (p.Status === 'Arquivado' || !p.Nome) return;
+        var opt = document.createElement('option');
+        opt.value = p.Nome;
+        opt.textContent = p.Nome + ' [' + (p.Tipo || '') + ' · ' + (p['Fase Atual'] || p.Categoria || '') + ']';
+        sel.appendChild(opt);
+      });
+      if (cur) sel.value = cur;
+    }
+
+    function fillGithubSelects() {
+      var sel = document.getElementById('cal-github');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">—</option>';
+      githubLinks.forEach(function (g) {
+        var opt = document.createElement('option');
+        opt.value = g.URL || g.Título || '';
+        opt.textContent = (g.Título || g.URL || '') + (g.Tipo ? ' · ' + g.Tipo : '');
+        sel.appendChild(opt);
+      });
+    }
+
     function fillAgentSelects() {
-      ['edit-agente', 'virt-agente'].forEach(function (id) {
+      ['edit-agente', 'nuv-agente', 'gh-agente', 'cal-agente'].forEach(function (id) {
         var sel = document.getElementById(id);
         if (!sel) return;
         var current = sel.value;
@@ -819,7 +1121,8 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
           if (!nome) return;
           var opt = document.createElement('option');
           opt.value = nome;
-          opt.textContent = nome + (a.LLM ? ' (' + a.LLM + ')' : '');
+          var papel = a['Função / Papel'] || '';
+          opt.textContent = papel ? (nome + ' · ' + papel) : nome;
           opt.dataset.llm = a.LLM || '';
           opt.dataset.email = a['Conta Email LLM'] || '';
           sel.appendChild(opt);
@@ -829,20 +1132,24 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
     }
 
     function fillProjectSelects() {
-      ['agent-vincular-projeto', 'ea-vincular-projeto'].forEach(function (id) {
+      ['agent-vincular-projeto', 'ea-vincular-projeto', 'gh-projeto', 'ea-cal-projeto'].forEach(function (id) {
         var sel = document.getElementById(id);
         if (!sel) return;
-        var first = id === 'ea-vincular-projeto'
-          ? '— Não alterar vínculos —'
-          : '— Não vincular agora —';
+        var first = '—';
+        if (id === 'ea-vincular-projeto') first = '— Não alterar vínculos —';
+        if (id === 'agent-vincular-projeto') first = '— Não vincular agora —';
+        if (id === 'gh-projeto') first = '— Nenhum —';
+        if (id === 'ea-cal-projeto') first = '— usar projeto novo ou vínculo —';
         sel.innerHTML = '<option value="">' + first + '</option>';
         allData.forEach(function (p) {
+          if (p.Status === 'Arquivado' || !p.Nome) return;
           var opt = document.createElement('option');
-          opt.value = JSON.stringify({
-            row: p._row,
-            sheet: p._sheet || (p.Origem === 'Virtual' ? 'Projetos Virtuais' : 'Controle Mestre')
-          });
-          opt.textContent = (p.Nome || '') + ' [' + (p['Fase Atual'] || '') + ']';
+          if (id === 'agent-vincular-projeto' || id === 'ea-vincular-projeto') {
+            opt.value = JSON.stringify({ row: p._row, sheet: 'Controle Mestre' });
+          } else {
+            opt.value = p.Nome;
+          }
+          opt.textContent = p.Nome + ' [' + (p['Fase Atual'] || p.Categoria || '') + ']';
           sel.appendChild(opt);
         });
       });
@@ -854,18 +1161,17 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       document.getElementById('edit-llm').value = (opt && opt.dataset.llm) || '';
       document.getElementById('edit-email').value = (opt && opt.dataset.email) || '';
     }
-    function onVirtAgentSelect() {
-      var sel = document.getElementById('virt-agente');
+    function onNuvAgentSelect() {
+      var sel = document.getElementById('nuv-agente');
       var opt = sel.options[sel.selectedIndex];
-      document.getElementById('virt-llm').value = (opt && opt.dataset.llm) || '';
-      document.getElementById('virt-email').value = (opt && opt.dataset.email) || '';
+      document.getElementById('nuv-llm').value = (opt && opt.dataset.llm) || '';
+      document.getElementById('nuv-email').value = (opt && opt.dataset.email) || '';
     }
 
     function renderKPIs() {
       var k = lastKpis || {};
       var pf = k.porFase || {};
-      var d = k.documentacoes || {};
-
+      var d = k.capitalIntelectual || k.documentacoes || {};
       document.getElementById('kpis-geral').innerHTML =
         kpi('neutral', k.total != null ? k.total : allData.length, 'Total') +
         kpi('good', k.ativos || 0, 'Ativos') +
@@ -873,22 +1179,21 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         kpi('bad', k.pausados || 0, 'Pausados') +
         kpi('neutral', k.projetos || 0, 'Projetos') +
         kpi('neutral', k.produtos || 0, 'Produtos') +
+        kpi('neutral', k.nuvem || 0, 'Nuvem') +
         kpi('neutral', pf['Ideação'] || 0, 'Ideação') +
         kpi('neutral', pf['Laboratório'] || 0, 'Lab') +
         kpi('neutral', pf['Construção'] || 0, 'Constr.') +
         kpi('neutral', pf['Escalonamento'] || 0, 'Escalon.') +
         kpi('neutral', pf['Operação'] || 0, 'Operação') +
         kpi('neutral', pf['Arquivo / Hibernação'] || 0, 'Arquivo');
-
       document.getElementById('kpis-agentes').innerHTML =
         kpi('neutral', k.totalAgentes != null ? k.totalAgentes : agents.length, 'Agentes') +
         kpi('good', k.agentesAtivos || 0, 'Ag. ativos') +
         kpi((k.coberturaAgentes || 0) >= 50 ? 'good' : 'warn', (k.coberturaAgentes || 0) + '%', 'Cobertura') +
         kpi('bad', k.semAgente || 0, 'Sem agente') +
         kpi('warn', k.agentesSemProjeto || 0, 'Ag. ociosos');
-
       document.getElementById('kpis-docs').innerHTML =
-        kpi('neutral', d.total || 0, 'Docs') +
+        kpi('neutral', d.total || 0, 'Total CI') +
         kpi('neutral', d.cursos || 0, 'Cursos') +
         kpi('neutral', d.livros || 0, 'Livros') +
         kpi('neutral', d.publicacoes || 0, 'Public.') +
@@ -897,32 +1202,13 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         kpi('neutral', d.prodAcademica || 0, 'Prod. Acad.') +
         kpi('neutral', d.prodTecnica || 0, 'Prod. Téc.');
     }
-
     function kpi(cls, num, label) {
       return '<div class="kpi ' + cls + '"><div class="number">' + num + '</div><div class="label">' + label + '</div></div>';
     }
     function badgeStatus(st) {
-      var s = (st || '').toLowerCase().replace(/ /g, '').replace('ç', 'c');
+      var s = (st || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s/g, '');
       return '<span class="badge badge-' + s + '">' + (st || '—') + '</span>';
     }
-
-    function isProduto(item) {
-      return String(item.Tipo || '').indexOf('Produto') !== -1;
-    }
-    function isDocumento(item) {
-      return String(item.Tipo || '') === 'Documentação' || item['Fase Atual'] === 'Documentação';
-    }
-    function isManual(item) {
-      return item.Origem === 'Virtual' || item['Tem Pasta'] === 'Não' ||
-        String(item.Tipo || '').indexOf('Virtual') !== -1 ||
-        String(item.Tipo || '') === 'Automação' ||
-        String(item.Tipo || '') === 'Prompt' ||
-        String(item.Tipo || '') === 'Iniciativa';
-    }
-    function isProjeto(item) {
-      return !isProduto(item) && !isDocumento(item) && !isManual(item);
-    }
-
     function groupBy(arr, keyFn) {
       var g = {};
       arr.forEach(function (item) {
@@ -932,14 +1218,11 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       });
       return g;
     }
-
     function orderedKeys(groups, preferred) {
       var keys = [];
-      if (preferred) {
-        preferred.forEach(function (k) {
-          if (groups[k] && groups[k].length) keys.push(k);
-        });
-      }
+      if (preferred) preferred.forEach(function (k) {
+        if (groups[k] && groups[k].length) keys.push(k);
+      });
       Object.keys(groups).sort().forEach(function (k) {
         if (keys.indexOf(k) === -1 && groups[k] && groups[k].length) keys.push(k);
       });
@@ -951,8 +1234,8 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         '<div>Nome</div><div>Status</div><div>Prioridade</div><div>Dias</div>' +
         '<div>Próxima Ação</div><div>Agente</div><div>Origem</div><div>Ações</div></div>';
       items.forEach(function (item) {
-        var origemBadge = isManual(item)
-          ? '<span class="badge badge-virtual">Manual</span>'
+        var origemBadge = isNuvem(item)
+          ? '<span class="badge badge-nuvem">Nuvem</span>'
           : '<span class="badge badge-drive">Drive</span>';
         html += '<div class="item-row">' +
           '<div class="nome">' + (item.Nome || '—') + '</div>' +
@@ -960,7 +1243,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
           '<div>' + (item.Prioridade || '—') + '</div>' +
           '<div>' + (item['Dias Parado'] != null ? item['Dias Parado'] : '—') + '</div>' +
           '<div class="obs">' + (item['Próxima Ação'] || '—') + '</div>' +
-          '<div>' + (item.Agente || '—') + '</div>' +
+          '<div class="obs">' + labelAgente(item.Agente) + '</div>' +
           '<div>' + origemBadge + '</div>' +
           '<div>' +
             (item['Link da Pasta']
@@ -975,15 +1258,12 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
     function renderSubGroups(title, groups, preferredOrder) {
       var keys = orderedKeys(groups, preferredOrder);
       if (!keys.length) return '';
-
       var total = 0;
       keys.forEach(function (k) { total += groups[k].length; });
-
       var html = '<div class="acc-group acc-top open">' +
         '<div class="acc-header" onclick="toggleAcc(this)">' +
         '<h3>' + title + ' <span class="count">(' + total + ')</span></h3>' +
         '<span class="chevron">▼</span></div><div class="acc-body">';
-
       keys.forEach(function (k) {
         var items = groups[k];
         html += '<div class="acc-group acc-nested open">' +
@@ -992,7 +1272,6 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
           '<span class="chevron">▼</span></div>' +
           '<div class="acc-body">' + renderItemRows(items) + '</div></div>';
       });
-
       html += '</div></div>';
       return html;
     }
@@ -1002,59 +1281,89 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       var status = document.getElementById('filter-status').value;
       var tipo = document.getElementById('filter-tipo').value;
       var origem = document.getElementById('filter-origem').value;
-
       var filtered = allData.filter(function (item) {
+        if (!status && item.Status === 'Arquivado') return false;
         if (search && (item.Nome || '').toLowerCase().indexOf(search) === -1) return false;
         if (status && item.Status !== status) return false;
         if (tipo && item.Tipo !== tipo) return false;
-        if (origem === 'Drive' && item.Origem === 'Virtual') return false;
-        if (origem === 'Virtual' && item.Origem !== 'Virtual' && item['Tem Pasta'] !== 'Não') return false;
+        if (origem === 'Drive' && isNuvem(item)) return false;
+        if (origem === 'Nuvem' && !isNuvem(item)) return false;
         return true;
       });
-
-      var projetos = filtered.filter(isProjeto);
-      var produtos = filtered.filter(isProduto);
-      var docs = filtered.filter(isDocumento);
-      var manuais = filtered.filter(isManual);
-
-      var gProj = groupBy(projetos, function (i) {
+      var gProj = groupBy(filtered.filter(isProjeto), function (i) {
         return i['Fase Atual'] || 'Não classificado';
       });
-      var gProd = groupBy(produtos, function (i) {
+      var gProd = groupBy(filtered.filter(isProduto), function (i) {
         return i.Categoria || 'Outros';
       });
-      var gDoc = groupBy(docs, function (i) {
+      var gCI = groupBy(filtered.filter(isCapital), function (i) {
         return i.Categoria || 'Geral';
       });
-      var gMan = groupBy(manuais, function (i) {
-        return i.Tipo || 'Manual';
-      });
-
       var html = '';
       html += renderSubGroups('Projetos', gProj, FASES_PROJETO);
       html += renderSubGroups('Produtos', gProd, ORDEM_CAT_PROD);
-      html += renderSubGroups('Documentação', gDoc, ORDEM_DOC);
-      html += renderSubGroups('Inclusão Manual', gMan, null);
-
+      html += renderSubGroups('Capital Intelectual', gCI, ORDEM_CI);
       document.getElementById('accordion').innerHTML =
         html || '<div class="empty">Nenhum registro encontrado</div>';
     }
 
-    function renderVirtuais() {
-      var list = allData.filter(isManual);
-      var el = document.getElementById('virtuais-list');
-      if (!list.length) {
-        el.innerHTML = '<div class="empty">Nenhuma inclusão manual. Clique em + Inclusão Manual.</div>';
+    function formatCalDate(di) {
+      if (!di) return '—';
+      if (typeof di === 'string' && di.indexOf('T') !== -1) return di.replace('T', ' ').substring(0, 16);
+      try {
+        var d = new Date(di);
+        if (!isNaN(d.getTime())) {
+          return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+      } catch (e) {}
+      return String(di);
+    }
+
+    function renderProgramacao() {
+      var el = document.getElementById('programacao-list');
+      if (!programacao.length) {
+        el.innerHTML = '<div class="empty">Nenhuma atividade. Clique em + Atividade.</div>';
         return;
       }
-      var gMan = groupBy(list, function (i) { return i.Tipo || 'Manual'; });
-      el.innerHTML = renderSubGroups('Inclusões manuais', gMan, null);
+      var html = '<div class="col-headers" style="grid-template-columns:1.1fr 0.85fr 0.55fr 0.55fr 0.9fr 0.7fr 0.55fr">' +
+        '<div>Título</div><div>Início</div><div>Tipo</div><div>Status</div><div>Relacionado</div><div>Agente</div><div>Ações</div></div>';
+      programacao.forEach(function (ev) {
+        html += '<div class="item-row" style="grid-template-columns:1.1fr 0.85fr 0.55fr 0.55fr 0.9fr 0.7fr 0.55fr">' +
+          '<div class="nome">' + (ev.Título || '—') + '</div>' +
+          '<div>' + formatCalDate(ev['Data Início']) + '</div>' +
+          '<div>' + (ev.Tipo || '—') + '</div>' +
+          '<div>' + badgeStatus(ev.Status || 'Pendente') + '</div>' +
+          '<div class="obs">' + (ev['Relacionado (Projeto/Produto)'] || '—') + '</div>' +
+          '<div class="obs">' + labelAgente(ev.Agente) + '</div>' +
+          '<div><button class="btn btn-sm btn-dark" onclick=\'openCalEdit(' + safeJson(ev) + ')\'>Editar</button></div></div>';
+      });
+      el.innerHTML = html;
+    }
+
+    function renderGithub() {
+      var el = document.getElementById('github-list');
+      if (!githubLinks.length) {
+        el.innerHTML = '<div class="empty">Nenhum link.</div>';
+        return;
+      }
+      var html = '<div class="col-headers" style="grid-template-columns:1.2fr 1fr 0.9fr 1fr 1fr 0.6fr">' +
+        '<div>Título</div><div>URL</div><div>Tipo</div><div>Projeto</div><div>Agente</div><div>Status</div></div>';
+      githubLinks.forEach(function (g) {
+        html += '<div class="item-row" style="grid-template-columns:1.2fr 1fr 0.9fr 1fr 1fr 0.6fr">' +
+          '<div class="nome">' + (g.Título || '—') + '</div>' +
+          '<div><a class="link-btn" href="' + (g.URL || '#') + '" target="_blank">Abrir</a></div>' +
+          '<div>' + (g.Tipo || '—') + '</div>' +
+          '<div>' + (g['Projeto vinculado'] || '—') + '</div>' +
+          '<div class="obs">' + labelAgente(g['Agente vinculado']) + '</div>' +
+          '<div>' + badgeStatus(g.Status) + '</div></div>';
+      });
+      el.innerHTML = html;
     }
 
     function renderAgents() {
       var el = document.getElementById('agents-accordion');
       if (!agents.length) {
-        el.innerHTML = '<div class="empty">Nenhum agente cadastrado.</div>';
+        el.innerHTML = '<div class="empty">Nenhum agente.</div>';
         return;
       }
       var tree = {};
@@ -1065,14 +1374,13 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         if (!tree[llm][email]) tree[llm][email] = [];
         tree[llm][email].push(a);
       });
-
       var html = '';
       Object.keys(tree).sort().forEach(function (llm) {
         var emails = tree[llm];
         var total = 0;
         Object.keys(emails).forEach(function (e) { total += emails[e].length; });
         html += '<div class="acc-group acc-top open"><div class="acc-header" onclick="toggleAcc(this)">' +
-          '<h3>' + llm + ' <span class="count">(' + total + ' agentes)</span></h3>' +
+          '<h3>' + llm + ' <span class="count">(' + total + ')</span></h3>' +
           '<span class="chevron">▼</span></div><div class="acc-body">';
         Object.keys(emails).sort().forEach(function (email) {
           html += '<div class="acc-sub"><div class="acc-sub-title">✉ ' + email + '</div>';
@@ -1080,14 +1388,13 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
             var projs = a.projetos || [];
             var listaP = projs.length
               ? projs.map(function (p) {
-                  return '<small>• ' + (p.nome || '') + ' (' + (p.fase || '') + ' · ' + (p.status || '') + ')</small>';
+                  return '<small>• ' + (p.nome || '') + ' (' + (p.fase || '') + ')</small>';
                 }).join('<br>')
               : '<small style="color:#94a3b8">Nenhum projeto vinculado</small>';
             html += '<div class="agent-line">' +
               '<div><strong>' + (a['Nome do Agente'] || '—') + '</strong><br>' +
-              '<small>' + (a['Função / Papel'] || '') +
-              (a['ID Prompt'] ? ' · Prompt: ' + a['ID Prompt'] : '') + '</small><br>' +
-              listaP + '</div>' +
+              '<small>' + (a['Função / Papel'] || '') + '</small><br>' +
+              promptLink(a['ID Prompt']) + '<br>' + listaP + '</div>' +
               '<div>' + badgeStatus(a.Status || 'Ativo') +
               ' <button class="btn btn-sm btn-dark" onclick=\'openEditAgent(' + safeJson(a) + ')\'>Editar</button></div></div>';
           });
@@ -1098,9 +1405,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       el.innerHTML = html;
     }
 
-    function toggleAcc(el) {
-      el.parentElement.classList.toggle('open');
-    }
+    function toggleAcc(el) { el.parentElement.classList.toggle('open'); }
     function safeJson(obj) {
       return JSON.stringify(obj).replace(/'/g, '&#39;').replace(/</g, '\\u003c');
     }
@@ -1112,6 +1417,11 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       document.getElementById('edit-prioridade').value = item.Prioridade || 'Média';
       document.getElementById('edit-proxima').value = item['Próxima Ação'] || '';
       document.getElementById('edit-obs').value = item['Observações / Histórico'] || '';
+      document.getElementById('edit-criar-ag').checked = false;
+      document.getElementById('edit-agendar').checked = false;
+      toggleBox('edit-ag-box', false);
+      toggleBox('edit-agenda-box', false);
+      document.getElementById('edit-cal-titulo').value = 'Revisão: ' + (item.Nome || '');
       fillAgentSelects();
       document.getElementById('edit-agente').value = item.Agente || '';
       onAgentSelect();
@@ -1123,6 +1433,91 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       document.getElementById('modal-edit').classList.add('active');
     }
 
+    function openCalModal() {
+      document.getElementById('cal-modal-title').textContent = 'Nova atividade';
+      document.getElementById('cal-row').value = '';
+      document.getElementById('cal-titulo').value = '';
+      document.getElementById('cal-inicio').value = '';
+      document.getElementById('cal-fim').value = '';
+      document.getElementById('cal-obs').value = '';
+      document.getElementById('cal-status').value = 'Pendente';
+      fillRelacionadoSelects();
+      fillGithubSelects();
+      fillAgentSelects();
+      document.getElementById('cal-error').style.display = 'none';
+      document.getElementById('modal-cal').classList.add('active');
+    }
+
+    function openCalEdit(ev) {
+      document.getElementById('cal-modal-title').textContent = 'Editar atividade';
+      document.getElementById('cal-row').value = ev._row || '';
+      document.getElementById('cal-titulo').value = ev.Título || '';
+      document.getElementById('cal-tipo').value = ev.Tipo || 'Outro';
+      document.getElementById('cal-status').value = ev.Status || 'Pendente';
+      document.getElementById('cal-obs').value = ev.Observações || '';
+      fillRelacionadoSelects();
+      fillGithubSelects();
+      fillAgentSelects();
+      document.getElementById('cal-relacionado').value = ev['Relacionado (Projeto/Produto)'] || '';
+      document.getElementById('cal-github').value = ev['Link GitHub'] || '';
+      document.getElementById('cal-agente').value = ev.Agente || '';
+      // datetime-local best effort
+      var di = ev['Data Início'];
+      if (di) {
+        try {
+          var d = new Date(di);
+          if (!isNaN(d.getTime())) {
+            document.getElementById('cal-inicio').value = d.toISOString().slice(0, 16);
+          }
+        } catch (e) {}
+      }
+      document.getElementById('cal-error').style.display = 'none';
+      document.getElementById('modal-cal').classList.add('active');
+    }
+
+    async function saveCalendario() {
+      var titulo = document.getElementById('cal-titulo').value.trim();
+      var inicio = document.getElementById('cal-inicio').value;
+      var row = document.getElementById('cal-row').value;
+      if (!titulo || (!row && !inicio)) {
+        document.getElementById('cal-error').style.display = 'block';
+        document.getElementById('cal-error').textContent = 'Título e data início obrigatórios';
+        return;
+      }
+      var payload = {
+        password: password,
+        titulo: titulo,
+        dataInicio: inicio,
+        dataFim: document.getElementById('cal-fim').value || '',
+        tipo: document.getElementById('cal-tipo').value,
+        status: document.getElementById('cal-status').value,
+        relacionado: document.getElementById('cal-relacionado').value,
+        linkGithub: document.getElementById('cal-github').value,
+        agente: document.getElementById('cal-agente').value,
+        observacoes: document.getElementById('cal-obs').value
+      };
+      if (row) {
+        payload.action = 'updateCalendario';
+        payload.row = parseInt(row, 10);
+      } else {
+        payload.action = 'createCalendario';
+      }
+      try {
+        var res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        var json = await res.json();
+        if (!json.success) {
+          document.getElementById('cal-error').style.display = 'block';
+          document.getElementById('cal-error').textContent = json.error || 'Erro';
+          return;
+        }
+        closeModal('modal-cal');
+        loadProgramacao();
+      } catch (e) {
+        document.getElementById('cal-error').style.display = 'block';
+        document.getElementById('cal-error').textContent = e.message;
+      }
+    }
+
     function openAgentModal() {
       fillProjectSelects();
       document.getElementById('agent-criar-proj').checked = false;
@@ -1130,12 +1525,24 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       document.getElementById('agent-error').style.display = 'none';
       document.getElementById('modal-agent').classList.add('active');
     }
-    function openVirtualModal() {
+    function openNuvemModal() {
       fillAgentSelects();
-      document.getElementById('virt-criar-ag').checked = false;
-      toggleBox('virt-ag-box', false);
-      document.getElementById('virtual-error').style.display = 'none';
-      document.getElementById('modal-virtual').classList.add('active');
+      document.getElementById('nuv-criar-ag').checked = false;
+      document.getElementById('nuv-agendar').checked = false;
+      toggleBox('nuv-ag-box', false);
+      toggleBox('nuv-agenda-box', false);
+      document.getElementById('nuvem-error').style.display = 'none';
+      document.getElementById('modal-nuvem').classList.add('active');
+    }
+    function openGithubModal() {
+      fillAgentSelects();
+      fillProjectSelects();
+      document.getElementById('gh-criar-proj').checked = false;
+      document.getElementById('gh-criar-ag').checked = false;
+      toggleBox('gh-proj-box', false);
+      toggleBox('gh-ag-box', false);
+      document.getElementById('gh-error').style.display = 'none';
+      document.getElementById('modal-github').classList.add('active');
     }
     function openEditAgent(a) {
       document.getElementById('edit-agent-row').value = a._row;
@@ -1147,6 +1554,10 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       document.getElementById('ea-system').value = a['System Prompt (resumo)'] || '';
       document.getElementById('ea-status').value = a.Status || 'Ativo';
       document.getElementById('ea-obs').value = a.Observações || '';
+      document.getElementById('ea-criar-proj').checked = false;
+      document.getElementById('ea-agendar').checked = false;
+      toggleBox('ea-proj-box', false);
+      toggleBox('ea-agenda-box', false);
       fillProjectSelects();
       document.getElementById('edit-agent-error').style.display = 'none';
       document.getElementById('modal-edit-agent').classList.add('active');
@@ -1157,18 +1568,50 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
 
     async function saveEdit() {
       if (!currentEdit) return;
+      var agente = document.getElementById('edit-agente').value;
+      var llm = document.getElementById('edit-llm').value;
+      var email = document.getElementById('edit-email').value;
+
+      if (document.getElementById('edit-criar-ag').checked) {
+        var nomeAg = document.getElementById('edit-novo-ag-nome').value.trim();
+        if (!nomeAg) {
+          document.getElementById('modal-error').style.display = 'block';
+          document.getElementById('modal-error').textContent = 'Nome do novo agente obrigatório';
+          return;
+        }
+        var ar = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'createAgent', password: password,
+            nome: nomeAg,
+            funcao: document.getElementById('edit-novo-ag-funcao').value,
+            llm: document.getElementById('edit-novo-ag-llm').value,
+            email: document.getElementById('edit-novo-ag-email').value,
+            status: 'Ativo'
+          })
+        });
+        var aj = await ar.json();
+        if (!aj.success) {
+          document.getElementById('modal-error').style.display = 'block';
+          document.getElementById('modal-error').textContent = aj.error || 'Erro ao criar agente';
+          return;
+        }
+        agente = nomeAg;
+        llm = document.getElementById('edit-novo-ag-llm').value;
+        email = document.getElementById('edit-novo-ag-email').value;
+      }
+
       var payload = {
-        action: 'update',
-        password: password,
+        action: 'update', password: password,
         row: currentEdit._row,
-        _sheet: currentEdit._sheet || (currentEdit.Origem === 'Virtual' ? 'Projetos Virtuais' : 'Controle Mestre'),
+        _sheet: 'Controle Mestre',
         'Status': document.getElementById('edit-status').value,
         'Prioridade': document.getElementById('edit-prioridade').value,
         'Próxima Ação': document.getElementById('edit-proxima').value,
         'Observações / Histórico': document.getElementById('edit-obs').value,
-        'Agente': document.getElementById('edit-agente').value,
-        'LLM': document.getElementById('edit-llm').value,
-        'Conta Email LLM': document.getElementById('edit-email').value
+        'Agente': agente,
+        'LLM': llm,
+        'Conta Email LLM': email
       };
       try {
         var res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
@@ -1177,6 +1620,19 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
           document.getElementById('modal-error').style.display = 'block';
           document.getElementById('modal-error').textContent = json.error || 'Erro';
           return;
+        }
+        if (document.getElementById('edit-agendar').checked) {
+          var ini = document.getElementById('edit-cal-inicio').value;
+          if (ini) {
+            await criarAtividadeAPI({
+              titulo: document.getElementById('edit-cal-titulo').value || ('Revisão: ' + currentEdit.Nome),
+              dataInicio: ini,
+              tipo: document.getElementById('edit-cal-tipo').value,
+              status: 'Pendente',
+              relacionado: currentEdit.Nome,
+              agente: agente
+            });
+          }
         }
         closeModal('modal-edit');
         loadData(false);
@@ -1194,13 +1650,9 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       await fetch(API_URL, {
         method: 'POST',
         body: JSON.stringify({
-          action: 'update',
-          password: password,
-          row: info.row,
-          _sheet: info.sheet,
-          'Agente': nomeAgente,
-          'LLM': llm,
-          'Conta Email LLM': email
+          action: 'update', password: password,
+          row: info.row, _sheet: 'Controle Mestre',
+          'Agente': nomeAgente, 'LLM': llm, 'Conta Email LLM': email
         })
       });
     }
@@ -1218,8 +1670,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         action: 'createAgent', password: password,
         nome: nome,
         funcao: document.getElementById('agent-funcao').value,
-        llm: llm,
-        email: email,
+        llm: llm, email: email,
         idPrompt: document.getElementById('agent-prompt').value,
         systemPrompt: document.getElementById('agent-system').value,
         observacoes: document.getElementById('agent-obs').value,
@@ -1254,8 +1705,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       var llm = document.getElementById('ea-llm').value;
       var email = document.getElementById('ea-email').value;
       var payload = {
-        action: 'updateAgent',
-        password: password,
+        action: 'updateAgent', password: password,
         row: parseInt(row, 10),
         'Nome do Agente': nome,
         'Função / Papel': document.getElementById('ea-funcao').value,
@@ -1275,6 +1725,41 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
           return;
         }
         await vincularAgenteAoProjeto(nome, llm, email, 'ea-vincular-projeto');
+
+        var projetoNome = '';
+        if (document.getElementById('ea-criar-proj').checked) {
+          projetoNome = document.getElementById('ea-proj-nome').value.trim();
+          if (projetoNome) {
+            await fetch(API_URL, {
+              method: 'POST',
+              body: JSON.stringify({
+                action: 'createNuvem', password: password,
+                nome: projetoNome,
+                tipo: 'Projeto Nuvem',
+                fase: document.getElementById('ea-proj-fase').value,
+                status: 'Ativo',
+                prioridade: 'Média',
+                agente: nome, llm: llm, email: email
+              })
+            });
+          }
+        }
+
+        if (document.getElementById('ea-agendar').checked) {
+          var ini = document.getElementById('ea-cal-inicio').value;
+          var rel = document.getElementById('ea-cal-projeto').value || projetoNome;
+          if (ini) {
+            await criarAtividadeAPI({
+              titulo: document.getElementById('ea-cal-titulo').value || ('Sync: ' + nome),
+              dataInicio: ini,
+              tipo: document.getElementById('ea-cal-tipo').value,
+              status: 'Pendente',
+              relacionado: rel,
+              agente: nome
+            });
+          }
+        }
+
         closeModal('modal-edit-agent');
         loadAgents();
         loadData(false);
@@ -1284,47 +1769,109 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
       }
     }
 
-    async function saveVirtual() {
-      var nome = document.getElementById('virt-nome').value.trim();
+    async function saveNuvem() {
+      var nome = document.getElementById('nuv-nome').value.trim();
       if (!nome) {
-        document.getElementById('virtual-error').style.display = 'block';
-        document.getElementById('virtual-error').textContent = 'Nome obrigatório';
+        document.getElementById('nuvem-error').style.display = 'block';
+        document.getElementById('nuvem-error').textContent = 'Nome obrigatório';
         return;
       }
       var payload = {
-        action: 'createVirtual', password: password,
+        action: 'createNuvem', password: password,
         nome: nome,
-        tipo: document.getElementById('virt-tipo').value,
-        categoria: document.getElementById('virt-categoria').value || 'Outros',
-        fase: document.getElementById('virt-fase').value,
-        status: document.getElementById('virt-status').value,
-        prioridade: document.getElementById('virt-prioridade').value,
-        proximaAcao: document.getElementById('virt-proxima').value,
-        observacoes: document.getElementById('virt-obs').value,
-        agente: document.getElementById('virt-agente').value,
-        llm: document.getElementById('virt-llm').value,
-        email: document.getElementById('virt-email').value,
-        criarAgente: document.getElementById('virt-criar-ag').checked,
-        novoAgenteNome: document.getElementById('virt-novo-ag-nome').value,
-        novoAgenteFuncao: document.getElementById('virt-novo-ag-funcao').value,
-        novoAgenteLlm: document.getElementById('virt-novo-ag-llm').value,
-        novoAgenteEmail: document.getElementById('virt-novo-ag-email').value
+        tipo: document.getElementById('nuv-tipo').value,
+        categoria: document.getElementById('nuv-categoria').value || 'Outros',
+        fase: document.getElementById('nuv-fase').value,
+        status: document.getElementById('nuv-status').value,
+        prioridade: document.getElementById('nuv-prioridade').value,
+        proximaAcao: document.getElementById('nuv-proxima').value,
+        observacoes: document.getElementById('nuv-obs').value,
+        agente: document.getElementById('nuv-agente').value,
+        llm: document.getElementById('nuv-llm').value,
+        email: document.getElementById('nuv-email').value,
+        criarAgente: document.getElementById('nuv-criar-ag').checked,
+        novoAgenteNome: document.getElementById('nuv-novo-ag-nome').value,
+        novoAgenteFuncao: document.getElementById('nuv-novo-ag-funcao').value,
+        novoAgenteLlm: document.getElementById('nuv-novo-ag-llm').value,
+        novoAgenteEmail: document.getElementById('nuv-novo-ag-email').value
       };
       try {
         var res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
         var json = await res.json();
         if (!json.success) {
-          document.getElementById('virtual-error').style.display = 'block';
-          document.getElementById('virtual-error').textContent = json.error || 'Erro';
+          document.getElementById('nuvem-error').style.display = 'block';
+          document.getElementById('nuvem-error').textContent = json.error || 'Erro';
           return;
         }
-        closeModal('modal-virtual');
+        if (document.getElementById('nuv-agendar').checked) {
+          var ini = document.getElementById('nuv-cal-inicio').value;
+          if (ini) {
+            await criarAtividadeAPI({
+              titulo: document.getElementById('nuv-cal-titulo').value || ('Kickoff: ' + nome),
+              dataInicio: ini,
+              tipo: document.getElementById('nuv-cal-tipo').value,
+              status: 'Pendente',
+              relacionado: nome,
+              agente: payload.agente || paramsAgenteNuvem()
+            });
+          }
+        }
+        closeModal('modal-nuvem');
         loadData(false);
         loadAgents();
-        alert('Inclusão manual: ' + (json.id || nome));
+        alert('Nuvem: ' + (json.id || nome));
       } catch (err) {
-        document.getElementById('virtual-error').style.display = 'block';
-        document.getElementById('virtual-error').textContent = err.message;
+        document.getElementById('nuvem-error').style.display = 'block';
+        document.getElementById('nuvem-error').textContent = err.message;
+      }
+    }
+    function paramsAgenteNuvem() {
+      if (document.getElementById('nuv-criar-ag').checked) {
+        return document.getElementById('nuv-novo-ag-nome').value;
+      }
+      return document.getElementById('nuv-agente').value;
+    }
+
+    async function saveGithub() {
+      var url = document.getElementById('gh-url').value.trim();
+      if (!url) {
+        document.getElementById('gh-error').style.display = 'block';
+        document.getElementById('gh-error').textContent = 'URL obrigatória';
+        return;
+      }
+      var projeto = document.getElementById('gh-projeto').value;
+      var payload = {
+        action: 'createGithub', password: password,
+        url: url,
+        titulo: document.getElementById('gh-titulo').value,
+        tipo: document.getElementById('gh-tipo').value,
+        projeto: projeto,
+        agente: document.getElementById('gh-agente').value,
+        observacoes: document.getElementById('gh-obs').value,
+        criarProjeto: document.getElementById('gh-criar-proj').checked,
+        projetoNome: projeto || document.getElementById('gh-titulo').value,
+        fase: document.getElementById('gh-proj-fase').value,
+        criarAgente: document.getElementById('gh-criar-ag').checked,
+        novoAgenteNome: document.getElementById('gh-novo-ag-nome').value,
+        novoAgenteFuncao: document.getElementById('gh-novo-ag-funcao').value,
+        novoAgenteLlm: document.getElementById('gh-novo-ag-llm').value,
+        novoAgenteEmail: document.getElementById('gh-novo-ag-email').value
+      };
+      try {
+        var res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        var json = await res.json();
+        if (!json.success) {
+          document.getElementById('gh-error').style.display = 'block';
+          document.getElementById('gh-error').textContent = json.error || 'Erro';
+          return;
+        }
+        closeModal('modal-github');
+        loadGithub();
+        loadData(false);
+        loadAgents();
+      } catch (err) {
+        document.getElementById('gh-error').style.display = 'block';
+        document.getElementById('gh-error').textContent = err.message;
       }
     }
 
@@ -1335,16 +1882,11 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
           body: JSON.stringify({ action: 'exportReport', password: password })
         });
         var json = await res.json();
-        if (!json.success) {
-          alert(json.error || 'Erro ao gerar relatório');
-          return;
-        }
+        if (!json.success) { alert(json.error || 'Erro'); return; }
         var w = window.open('', '_blank');
         w.document.write(json.html);
         w.document.close();
-      } catch (err) {
-        alert('Erro: ' + err.message);
-      }
+      } catch (err) { alert('Erro: ' + err.message); }
     }
 
     function toggleAI() { document.getElementById('ai-panel').classList.toggle('open'); }
@@ -1371,6 +1913,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         var json = await res.json();
         if (loading) loading.remove();
         appendAI('bot', json.success ? json.reply : ('Erro: ' + json.error));
+        if (json.exec && json.exec.length) { loadData(false); loadAgents(); }
       } catch (err) {
         if (loading) loading.remove();
         appendAI('bot', 'Erro: ' + err.message);
@@ -1383,7 +1926,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
         alocar: { action: 'ai_alocar', label: 'Sugerir alocações' },
         resumo: {
           action: 'ai_chat',
-          message: 'Faça um resumo executivo do portfólio (projetos por fase, produtos por categoria, documentações e manuais) com riscos e oportunidades.',
+          message: 'Resumo executivo curto do portfólio. Sem markdown.',
           label: 'Resumo do portfólio'
         }
       };
@@ -1407,10 +1950,7 @@ Posso analisar ociosidade, auditar lançamentos, sugerir alocação de agentes e
 
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
-        closeModal('modal-edit');
-        closeModal('modal-agent');
-        closeModal('modal-edit-agent');
-        closeModal('modal-virtual');
+        ['modal-edit', 'modal-agent', 'modal-edit-agent', 'modal-nuvem', 'modal-github', 'modal-cal'].forEach(closeModal);
       }
     });
   </script>
