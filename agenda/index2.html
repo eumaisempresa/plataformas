@@ -258,17 +258,39 @@
     .link-btn { color: var(--gold); text-decoration: none; font-size: 0.75rem; font-weight: 500; }
     .link-btn:hover { text-decoration: underline; }
     .agent-line {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 0.5rem;
-      padding: 0.55rem 0.75rem;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 1.2fr 1.3fr auto;
+      gap: 0.5rem 0.75rem;
+      align-items: start;
+      padding: 0.65rem 0.75rem;
       border-bottom: 1px solid #f1f5f9;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       color: #1e293b;
       background: #fff;
     }
     .agent-line:last-child { border-bottom: none; }
+    .agent-line .al-label {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: #94a3b8;
+      margin-bottom: 2px;
+    }
+    .agent-col-headers {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 1.2fr 1.3fr auto;
+      gap: 0.5rem 0.75rem;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.62rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #64748b;
+      background: #f1f5f9;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    @media (max-width: 900px) {
+      .agent-line, .agent-col-headers { grid-template-columns: 1fr; }
+    }
     .acc-sub {
       border-top: 1px solid #f1f5f9;
       padding: 0.5rem 0.75rem 0.5rem 1.25rem;
@@ -417,6 +439,9 @@
       </div>
       <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
         <button class="btn btn-sm" onclick="exportReport()">Relatório PDF</button>
+        <button class="btn btn-sm" onclick="enviarRelatorioEmail()">E-mail relatório</button>
+        <button class="btn btn-sm" onclick="openFormPasta()">+ Pasta</button>
+        <button class="btn btn-sm" onclick="openFormDoc()">+ Doc</button>
         <button class="btn btn-sm" onclick="openAgentModal()">+ Agente</button>
         <button class="btn btn-sm" onclick="openNuvemModal()">+ Nuvem</button>
         <button class="btn btn-sm" onclick="openGithubModal()">+ GitHub</button>
@@ -460,6 +485,7 @@
               <option value="Drive">Só Drive</option>
               <option value="Nuvem">Só Nuvem</option>
             </select>
+            <button class="btn btn-sm" onclick="openNuvemModal()">+ Projeto Nuvem</button>
             <button class="btn btn-sm btn-dark" onclick="loadData(true)">Atualizar</button>
             <span class="sync-hint" id="sync-hint"></span>
           </div>
@@ -526,9 +552,7 @@
       </div>
       <div class="form-group">
         <label>Agente</label>
-        <select id="edit-agente" onchange="onAgentSelect()">
-          <option value="">— Sem agente —</option>
-        </select>
+        <input type="text" id="edit-agente" list="datalist-agentes" placeholder="Digite o agente..." autocomplete="off" onchange="onAgentSelect()" oninput="onAgentSelect()" />
       </div>
       <div class="form-group">
         <label>LLM</label>
@@ -598,7 +622,7 @@
       </div>
       <div class="form-group">
         <label>Projeto / Produto vinculado</label>
-        <select id="cal-relacionado"><option value="">—</option></select>
+        <input type="text" id="cal-relacionado" list="datalist-projetos" placeholder="Digite projeto/produto..." autocomplete="off" />
       </div>
       <div class="form-group">
         <label>Link GitHub vinculado</label>
@@ -606,7 +630,7 @@
       </div>
       <div class="form-group">
         <label>Agente</label>
-        <select id="cal-agente"><option value="">—</option></select>
+        <input type="text" id="cal-agente" list="datalist-agentes" placeholder="Digite o agente..." autocomplete="off" />
       </div>
       <div class="form-group"><label>Observações</label><textarea id="cal-obs" rows="2"></textarea></div>
       <div class="modal-actions">
@@ -776,9 +800,7 @@
       <div class="form-group"><label>Observações</label><textarea id="nuv-obs" rows="2"></textarea></div>
       <div class="form-group">
         <label>Agente existente</label>
-        <select id="nuv-agente" onchange="onNuvAgentSelect()">
-          <option value="">— Sem agente —</option>
-        </select>
+        <input type="text" id="nuv-agente" list="datalist-agentes" placeholder="Digite o agente..." autocomplete="off" />
       </div>
       <div class="form-group"><label>LLM</label><input type="text" id="nuv-llm" readonly style="opacity:0.85;" /></div>
       <div class="form-group"><label>Conta Email LLM</label><input type="text" id="nuv-email" readonly style="opacity:0.85;" /></div>
@@ -835,11 +857,11 @@
       </div>
       <div class="form-group">
         <label>Projeto vinculado</label>
-        <select id="gh-projeto"><option value="">— Nenhum —</option></select>
+        <input type="text" id="gh-projeto" list="datalist-projetos" placeholder="Digite para buscar projeto..." autocomplete="off" />
       </div>
       <div class="form-group">
         <label>Agente vinculado</label>
-        <select id="gh-agente"><option value="">—</option></select>
+        <input type="text" id="gh-agente" list="datalist-agentes" placeholder="Digite para buscar agente..." autocomplete="off" />
       </div>
       <div class="form-group">
         <label>Status</label>
@@ -979,6 +1001,64 @@
         body: JSON.stringify(Object.assign({ action: 'createCalendario', password: password }, dados))
       });
       return res.json();
+    }
+
+
+    function toDatetimeLocalValue(d) {
+      if (!d) return '';
+      if (!(d instanceof Date)) d = new Date(d);
+      if (isNaN(d.getTime())) return '';
+      var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+        'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
+
+    async function excluirProgramacao(row) {
+      if (!row) return;
+      if (!confirm('Excluir esta atividade da programação?')) return;
+      try {
+        var res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'deleteCalendario', password: password, row: row })
+        });
+        var json = await res.json();
+        if (!json.success) { alert(json.error || 'Erro ao excluir'); return; }
+        loadProgramacao();
+      } catch (err) { alert(err.message); }
+    }
+
+    async function enviarRelatorioEmail() {
+      if (!confirm('Enviar relatório gerencial para EMAIL_GESTOR?')) return;
+      try {
+        var res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'enviarRelatorio', password: password })
+        });
+        var json = await res.json();
+        alert(json.success ? ('Enviado para ' + (json.para || 'EMAIL_GESTOR')) : (json.error || 'Falha'));
+      } catch (err) { alert(err.message); }
+    }
+
+    function openFormPasta() {
+      var nome = prompt('Nome da nova pasta (será criada na pasta do Agente Executivo):');
+      if (!nome || !nome.trim()) return;
+      fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'criarPastaAgente', password: password, nome: nome.trim() })
+      }).then(function (r) { return r.json(); }).then(function (j) {
+        alert(j.success ? ('Pasta criada: ' + (j.nome || nome)) : (j.error || 'Erro'));
+      }).catch(function (e) { alert(e.message); });
+    }
+
+    function openFormDoc() {
+      var titulo = prompt('Título do documento (pasta do Agente Executivo):');
+      if (!titulo || !titulo.trim()) return;
+      fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'criarDocAgente', password: password, titulo: titulo.trim() })
+      }).then(function (r) { return r.json(); }).then(function (j) {
+        alert(j.success ? ('Doc criado') : (j.error || 'Erro'));
+      }).catch(function (e) { alert(e.message); });
     }
 
     function login() {
@@ -1132,10 +1212,27 @@
     }
 
     function fillAgentSelects() {
+      var dl = document.getElementById('datalist-agentes');
+      if (dl) {
+        dl.innerHTML = '';
+        agents.forEach(function (a) {
+          var nome = a['Nome do Agente'] || '';
+          if (!nome) return;
+          var opt = document.createElement('option');
+          var papel = a['Função / Papel'] || '';
+          opt.value = nome;
+          opt.label = papel ? (nome + ' · ' + papel) : nome;
+          dl.appendChild(opt);
+        });
+      }
       ['edit-agente', 'nuv-agente', 'gh-agente', 'cal-agente'].forEach(function (id) {
         var sel = document.getElementById(id);
         if (!sel) return;
         var current = sel.value;
+        if (sel.tagName === 'INPUT') {
+          if (current) sel.value = current;
+          return;
+        }
         sel.innerHTML = '<option value="">— Sem agente —</option>';
         agents.forEach(function (a) {
           var nome = a['Nome do Agente'] || '';
@@ -1153,34 +1250,59 @@
     }
 
     function fillProjectSelects() {
-      ['agent-vincular-projeto', 'ea-vincular-projeto', 'gh-projeto', 'ea-cal-projeto'].forEach(function (id) {
+      var dl = document.getElementById('datalist-projetos');
+      if (dl) {
+        dl.innerHTML = '';
+        allData.forEach(function (p) {
+          if (p.Status === 'Arquivado' || !p.Nome) return;
+          var opt = document.createElement('option');
+          opt.value = p.Nome;
+          opt.label = p.Nome + ' [' + (p.Tipo || '') + ' · ' + (p['Fase Atual'] || p.Categoria || '') + ']';
+          dl.appendChild(opt);
+        });
+      }
+      ['agent-vincular-projeto', 'ea-vincular-projeto', 'gh-projeto', 'ea-cal-projeto', 'cal-relacionado'].forEach(function (id) {
         var sel = document.getElementById(id);
         if (!sel) return;
+        var current = sel.value;
+        if (sel.tagName === 'INPUT') {
+          if (current) sel.value = current;
+          return;
+        }
         var first = '—';
         if (id === 'ea-vincular-projeto') first = '— Não alterar vínculos —';
         if (id === 'agent-vincular-projeto') first = '— Não vincular agora —';
         if (id === 'gh-projeto') first = '— Nenhum —';
         if (id === 'ea-cal-projeto') first = '— usar projeto novo ou vínculo —';
+        if (id === 'cal-relacionado') first = '—';
         sel.innerHTML = '<option value="">' + first + '</option>';
         allData.forEach(function (p) {
           if (p.Status === 'Arquivado' || !p.Nome) return;
           var opt = document.createElement('option');
           if (id === 'agent-vincular-projeto' || id === 'ea-vincular-projeto') {
-            opt.value = JSON.stringify({ row: p._row, sheet: 'Controle Mestre' });
+            opt.value = JSON.stringify({ row: p._row, nome: p.Nome });
+            opt.textContent = p.Nome + ' [' + (p.Tipo || '') + ' · ' + (p['Fase Atual'] || '') + ']';
           } else {
             opt.value = p.Nome;
+            opt.textContent = p.Nome + ' [' + (p.Tipo || '') + ' · ' + (p['Fase Atual'] || p.Categoria || '') + ']';
           }
-          opt.textContent = p.Nome + ' [' + (p['Fase Atual'] || p.Categoria || '') + ']';
           sel.appendChild(opt);
         });
+        if (current) sel.value = current;
       });
     }
 
     function onAgentSelect() {
       var sel = document.getElementById('edit-agente');
-      var opt = sel.options[sel.selectedIndex];
-      document.getElementById('edit-llm').value = (opt && opt.dataset.llm) || '';
-      document.getElementById('edit-email').value = (opt && opt.dataset.email) || '';
+      if (!sel) return;
+      var nome = sel.value || '';
+      var a = agents.filter(function (x) { return (x['Nome do Agente'] || '') === nome; })[0];
+      var llmEl = document.getElementById('edit-llm');
+      var emEl = document.getElementById('edit-email');
+      if (a) {
+        if (llmEl) llmEl.value = a.LLM || '';
+        if (emEl) emEl.value = a['Conta Email LLM'] || '';
+      }
     }
     function onNuvAgentSelect() {
       var sel = document.getElementById('nuv-agente');
@@ -1210,8 +1332,12 @@
       document.getElementById('kpis-agentes').innerHTML =
         kpi('neutral', k.totalAgentes != null ? k.totalAgentes : agents.length, 'Agentes') +
         kpi('good', k.agentesAtivos || 0, 'Ag. ativos') +
-        kpi((k.coberturaAgentes || 0) >= 50 ? 'good' : 'warn', (k.coberturaAgentes || 0) + '%', 'Cobertura') +
-        kpi('bad', k.semAgente || 0, 'Sem agente') +
+        kpi((k.coberturaAgentes || 0) >= 50 ? 'good' : 'warn', (k.coberturaAgentes || 0) + '%', 'Cobert. geral') +
+        kpi((k.coberturaProjetos || 0) >= 50 ? 'good' : 'warn', (k.coberturaProjetos || 0) + '%', 'Cobert. projetos') +
+        kpi((k.coberturaProdutos || 0) >= 50 ? 'good' : 'warn', (k.coberturaProdutos || 0) + '%', 'Cobert. produtos') +
+        kpi('bad', k.projetosSemAgente != null ? k.projetosSemAgente : '—', 'Proj. s/ agente') +
+        kpi('bad', k.produtosSemAgente != null ? k.produtosSemAgente : '—', 'Prod. s/ agente') +
+        kpi('bad', k.semAgente || 0, 'Itens s/ agente') +
         kpi('warn', k.agentesSemProjeto || 0, 'Ag. ociosos');
       document.getElementById('kpis-docs').innerHTML =
         kpi('neutral', d.total || 0, 'Total CI') +
@@ -1346,30 +1472,41 @@
         el.innerHTML = '<div class="empty">Nenhuma atividade. Clique em + Atividade.</div>';
         return;
       }
-      var html = '<div class="col-headers" style="grid-template-columns:1.1fr 0.85fr 0.55fr 0.55fr 0.9fr 0.7fr 0.55fr">' +
+      var html = '<div class="col-headers" style="grid-template-columns:1.1fr 0.85fr 0.55fr 0.55fr 0.9fr 0.7fr 0.9fr">' +
         '<div>Título</div><div>Início</div><div>Tipo</div><div>Status</div><div>Relacionado</div><div>Agente</div><div>Ações</div></div>';
       programacao.forEach(function (ev) {
-        html += '<div class="item-row" style="grid-template-columns:1.1fr 0.85fr 0.55fr 0.55fr 0.9fr 0.7fr 0.55fr">' +
+        html += '<div class="item-row" style="grid-template-columns:1.1fr 0.85fr 0.55fr 0.55fr 0.9fr 0.7fr 0.9fr">' +
           '<div class="nome">' + (ev.Título || '—') + '</div>' +
           '<div>' + formatCalDate(ev['Data Início']) + '</div>' +
           '<div>' + (ev.Tipo || '—') + '</div>' +
           '<div>' + badgeStatus(ev.Status || 'Pendente') + '</div>' +
           '<div class="obs">' + (ev['Relacionado (Projeto/Produto)'] || '—') + '</div>' +
           '<div class="obs">' + labelAgente(ev.Agente) + '</div>' +
-          '<div><button class="btn btn-sm btn-dark" onclick=\'openCalEdit(' + safeJson(ev) + ')\'>Editar</button></div></div>';
+          '<div style="display:flex;gap:4px;flex-wrap:wrap;">' +
+          '<button class="btn btn-sm btn-dark" onclick=\'openCalEdit(' + safeJson(ev) + ')\'>Editar</button>' +
+          '<button class="btn btn-sm btn-secondary" onclick="excluirProgramacao(' + (ev._row || 0) + ')">Excluir</button>' +
+          '</div></div>';
       });
       el.innerHTML = html;
     }
 
     function renderGithub() {
       var el = document.getElementById('github-list');
-      if (!githubLinks.length) {
-        el.innerHTML = '<div class="empty">Nenhum link.</div>';
+      var q = ((document.getElementById('gh-search') || {}).value || '').toLowerCase().trim();
+      var tipoF = ((document.getElementById('gh-filter-tipo') || {}).value || '').trim();
+      var list = (githubLinks || []).filter(function (g) {
+        if (tipoF && String(g.Tipo || '') !== tipoF) return false;
+        if (!q) return true;
+        var blob = ((g.Título || '') + ' ' + (g.URL || '') + ' ' + (g['Projeto vinculado'] || '') + ' ' + (g['Agente vinculado'] || '')).toLowerCase();
+        return blob.indexOf(q) !== -1;
+      });
+      if (!list.length) {
+        el.innerHTML = '<div class="empty">Nenhum link' + (q || tipoF ? ' com este filtro' : '') + '.</div>';
         return;
       }
       var html = '<div class="col-headers" style="grid-template-columns:1.1fr 0.9fr 0.85fr 1fr 1fr 0.55fr 0.55fr">' +
         '<div>Título</div><div>URL</div><div>Tipo</div><div>Projeto</div><div>Agente</div><div>Status</div><div>Ações</div></div>';
-      githubLinks.forEach(function (g) {
+      list.forEach(function (g) {
         html += '<div class="item-row" style="grid-template-columns:1.1fr 0.9fr 0.85fr 1fr 1fr 0.55fr 0.55fr">' +
           '<div class="nome">' + (g.Título || '—') + '</div>' +
           '<div><a class="link-btn" href="' + (g.URL || '#') + '" target="_blank" rel="noopener">Abrir</a></div>' +
@@ -1406,17 +1543,23 @@
           '<span class="chevron">▼</span></div><div class="acc-body">';
         Object.keys(emails).sort().forEach(function (email) {
           html += '<div class="acc-sub"><div class="acc-sub-title">✉ ' + email + '</div>';
+          html += '<div class="agent-col-headers">' +
+            '<div>Nome</div><div>Função / Papel</div><div>Projeto vinculado</div><div>System Prompt</div><div>Ações</div></div>';
           emails[email].forEach(function (a) {
             var projs = a.projetos || [];
             var listaP = projs.length
               ? projs.map(function (p) {
-                  return '<small>• ' + (p.nome || '') + ' (' + (p.fase || '') + ')</small>';
-                }).join('<br>')
-              : '<small style="color:#94a3b8">Nenhum projeto vinculado</small>';
+                  return (p.nome || '') + (p.fase ? ' (' + p.fase + ')' : '');
+                }).join('; ')
+              : '—';
+            var sys = a['System Prompt (resumo)'] || a['System Prompt'] || '—';
+            if (sys.length > 120) sys = sys.substring(0, 117) + '…';
             html += '<div class="agent-line">' +
-              '<div><strong>' + (a['Nome do Agente'] || '—') + '</strong><br>' +
-              '<small>' + (a['Função / Papel'] || '') + '</small><br>' +
-              promptLink(a['ID Prompt']) + '<br>' + listaP + '</div>' +
+              '<div><div class="al-label">Nome</div><strong>' + (a['Nome do Agente'] || '—') + '</strong><br>' +
+              promptLink(a['ID Prompt']) + '</div>' +
+              '<div><div class="al-label">Função</div>' + (a['Função / Papel'] || '—') + '</div>' +
+              '<div><div class="al-label">Projetos</div><span class="obs">' + listaP + '</span></div>' +
+              '<div><div class="al-label">System Prompt</div><span class="obs">' + sys + '</span></div>' +
               '<div>' + badgeStatus(a.Status || 'Ativo') +
               ' <button class="btn btn-sm btn-dark" onclick=\'openEditAgent(' + safeJson(a) + ')\'>Editar</button></div></div>';
           });
@@ -1489,7 +1632,7 @@
         try {
           var d = new Date(di);
           if (!isNaN(d.getTime())) {
-            document.getElementById('cal-inicio').value = d.toISOString().slice(0, 16);
+            document.getElementById('cal-inicio').value = toDatetimeLocalValue(d);
           }
         } catch (e) {}
       }
@@ -2032,5 +2175,7 @@
       }
     });
   </script>
+  <datalist id="datalist-agentes"></datalist>
+  <datalist id="datalist-projetos"></datalist>
 </body>
 </html>
