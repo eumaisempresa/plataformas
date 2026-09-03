@@ -122,6 +122,27 @@
     .kpi.warn .number { color: #fbbf24; }
     .kpi.bad .number { color: #f87171; }
     .kpi.neutral .number { color: var(--gold); }
+
+    .kpi-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+      gap: 0.45rem;
+      margin-bottom: 0.55rem;
+      padding: 0.55rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .kpi-group.g1 { border-color: rgba(196,151,74,0.45); background: rgba(196,151,74,0.06); }
+    .kpi-group.g2 { border-color: rgba(52,211,153,0.35); background: rgba(52,211,153,0.05); }
+    .kpi-group.g3 { border-color: rgba(96,165,250,0.4); background: rgba(96,165,250,0.06); }
+    .kpi-group.g-ci { border-color: rgba(196,151,74,0.3); background: rgba(14,30,48,0.35); }
+    .kpi .pct {
+      font-size: 0.62rem;
+      color: var(--text-secondary);
+      margin-top: 1px;
+    }
+    .kpi-group .kpi { background: var(--bg-secondary); }
+
     .tabs {
       display: flex;
       flex-wrap: wrap;
@@ -464,7 +485,7 @@
       <div class="content-area">
         <div id="tab-projetos">
           <div class="filters">
-            <input type="text" id="search" placeholder="Buscar..." oninput="renderAccordion()" />
+            <input type="text" id="search" placeholder="Buscar nome, agente, LLM, e-mail..." oninput="renderAccordion()" style="min-width:220px;" />
             <select id="filter-status" onchange="renderAccordion()">
               <option value="">Todos Status</option>
               <option>Ativo</option><option>Desacelerando</option><option>Pausado</option>
@@ -495,6 +516,7 @@
 
         <div id="tab-programacao" style="display:none;">
           <div class="filters">
+            <input type="text" id="prog-search" placeholder="Buscar título, projeto, agente, obs..." oninput="renderProgramacao()" style="min-width:220px;" />
             <button class="btn btn-sm btn-dark" onclick="openCalModal()">+ Atividade</button>
             <button class="btn btn-secondary btn-sm" onclick="loadProgramacao()">Atualizar</button>
           </div>
@@ -503,6 +525,17 @@
 
         <div id="tab-github" style="display:none;">
           <div class="filters">
+            <input type="text" id="gh-search" placeholder="Buscar título, projeto, agente, obs..." oninput="renderGithub()" style="min-width:220px;" />
+            <select id="gh-filter-tipo" onchange="renderGithub()">
+              <option value="">Todos os tipos</option>
+              <option>Site</option>
+              <option>AILs (Ambientes Inteligentes Leves)</option>
+              <option>Outros</option>
+              <option>Repositório</option>
+              <option>Protótipo</option>
+              <option>Ferramenta</option>
+              <option>Docs</option>
+            </select>
             <button class="btn btn-sm btn-dark" onclick="openGithubModal()">+ Link GitHub</button>
             <button class="btn btn-secondary btn-sm" onclick="loadGithub()">Atualizar</button>
           </div>
@@ -511,6 +544,7 @@
 
         <div id="tab-agentes" style="display:none;">
           <div class="filters">
+            <input type="text" id="agent-search" placeholder="Buscar nome, função, LLM, e-mail, prompt, obs, projeto..." oninput="renderAgents()" style="min-width:260px;" />
             <button class="btn btn-sm btn-dark" onclick="openAgentModal()">+ Novo Agente</button>
             <button class="btn btn-secondary btn-sm" onclick="loadAgents()">Atualizar</button>
           </div>
@@ -1061,6 +1095,15 @@
       }).catch(function (e) { alert(e.message); });
     }
 
+
+    function normalizeSystemPrompt(s) {
+      return String(s || '')
+        .replace(/\r\n/g, ' ')
+        .replace(/[\r\n\t]+/g, ' ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    }
+
     function login() {
       var pass = document.getElementById('password').value.trim();
       if (!pass) return;
@@ -1315,20 +1358,42 @@
       var k = lastKpis || {};
       var pf = k.porFase || {};
       var d = k.capitalIntelectual || k.documentacoes || {};
+      var total = k.total != null ? k.total : (allData.filter(function (i) {
+        var t = String(i.Tipo || ''), f = String(i['Fase Atual'] || '');
+        return t !== 'Capital Intelectual' && t !== 'Documentação' && f !== 'Capital Intelectual';
+      }).length || 1);
+      if (!total) total = 1;
+      function pct(n) {
+        return Math.round((Number(n || 0) / total) * 100);
+      }
+      function kpiP(cls, num, label, p) {
+        return '<div class="kpi ' + cls + '"><div class="number">' + num + '</div>' +
+          '<div class="label">' + label + '</div><div class="pct">' + p + '%</div></div>';
+      }
+      var nProj = k.projetos || 0, nProd = k.produtos || 0;
+      var nAt = k.ativos || 0, nDes = k.desacelerando || 0, nPau = k.pausados || 0;
+      var nId = pf['Ideação'] || 0, nLab = pf['Laboratório'] || 0, nCo = pf['Construção'] || 0;
+      var nEs = pf['Escalonamento'] || 0, nOp = pf['Operação'] || 0;
+
       document.getElementById('kpis-geral').innerHTML =
-        kpi('neutral', k.total != null ? k.total : allData.length, 'Total') +
-        kpi('good', k.ativos || 0, 'Ativos') +
-        kpi('warn', k.desacelerando || 0, 'Desacel.') +
-        kpi('bad', k.pausados || 0, 'Pausados') +
-        kpi('neutral', k.projetos || 0, 'Projetos') +
-        kpi('neutral', k.produtos || 0, 'Produtos') +
-        kpi('neutral', k.nuvem || 0, 'Nuvem') +
-        kpi('neutral', pf['Ideação'] || 0, 'Ideação') +
-        kpi('neutral', pf['Laboratório'] || 0, 'Lab') +
-        kpi('neutral', pf['Construção'] || 0, 'Constr.') +
-        kpi('neutral', pf['Escalonamento'] || 0, 'Escalon.') +
-        kpi('neutral', pf['Operação'] || 0, 'Operação') +
-        kpi('neutral', pf['Arquivo / Hibernação'] || 0, 'Arquivo');
+        '<div class="kpi-group g1">' +
+          kpiP('neutral', total, 'Total', 100) +
+          kpiP('neutral', nProj, 'Projetos', pct(nProj)) +
+          kpiP('neutral', nProd, 'Produtos', pct(nProd)) +
+        '</div>' +
+        '<div class="kpi-group g2">' +
+          kpiP('good', nAt, 'Ativos', pct(nAt)) +
+          kpiP('warn', nDes, 'Desacel.', pct(nDes)) +
+          kpiP('bad', nPau, 'Pausados', pct(nPau)) +
+        '</div>' +
+        '<div class="kpi-group g3">' +
+          kpiP('neutral', nId, 'Ideação', pct(nId)) +
+          kpiP('neutral', nLab, 'Lab', pct(nLab)) +
+          kpiP('neutral', nCo, 'Constr.', pct(nCo)) +
+          kpiP('neutral', nEs, 'Escalon.', pct(nEs)) +
+          kpiP('neutral', nOp, 'Operação', pct(nOp)) +
+        '</div>';
+
       document.getElementById('kpis-agentes').innerHTML =
         kpi('neutral', k.totalAgentes != null ? k.totalAgentes : agents.length, 'Agentes') +
         kpi('good', k.agentesAtivos || 0, 'Ag. ativos') +
@@ -1339,15 +1404,24 @@
         kpi('bad', k.produtosSemAgente != null ? k.produtosSemAgente : '—', 'Prod. s/ agente') +
         kpi('bad', k.semAgente || 0, 'Itens s/ agente') +
         kpi('warn', k.agentesSemProjeto || 0, 'Ag. ociosos');
+
+      var ciTotal = d.total || 0;
+      if (!ciTotal) ciTotal = 1;
+      function pctCi(n) { return Math.round((Number(n || 0) / ciTotal) * 100); }
+      var itemsCi = [
+        ['neutral', d.total || 0, 'Total CI', d.total ? 100 : 0],
+        ['neutral', d.cursos || 0, 'Cursos', pctCi(d.cursos)],
+        ['neutral', d.livros || 0, 'Livros', pctCi(d.livros)],
+        ['neutral', d.publicacoes || 0, 'Public.', pctCi(d.publicacoes)],
+        ['neutral', d.palestras || 0, 'Palestras', pctCi(d.palestras)],
+        ['neutral', d.prodExecutiva || 0, 'Prod. Exec.', pctCi(d.prodExecutiva)],
+        ['neutral', d.prodAcademica || 0, 'Prod. Acad.', pctCi(d.prodAcademica)],
+        ['neutral', d.prodTecnica || 0, 'Prod. Téc.', pctCi(d.prodTecnica)]
+      ];
       document.getElementById('kpis-docs').innerHTML =
-        kpi('neutral', d.total || 0, 'Total CI') +
-        kpi('neutral', d.cursos || 0, 'Cursos') +
-        kpi('neutral', d.livros || 0, 'Livros') +
-        kpi('neutral', d.publicacoes || 0, 'Public.') +
-        kpi('neutral', d.palestras || 0, 'Palestras') +
-        kpi('neutral', d.prodExecutiva || 0, 'Prod. Exec.') +
-        kpi('neutral', d.prodAcademica || 0, 'Prod. Acad.') +
-        kpi('neutral', d.prodTecnica || 0, 'Prod. Téc.');
+        '<div class="kpi-group g-ci">' + itemsCi.map(function (x) {
+          return kpiP(x[0], x[1], x[2], x[3]);
+        }).join('') + '</div>';
     }
     function kpi(cls, num, label) {
       return '<div class="kpi ' + cls + '"><div class="number">' + num + '</div><div class="label">' + label + '</div></div>';
@@ -1430,7 +1504,13 @@
       var origem = document.getElementById('filter-origem').value;
       var filtered = allData.filter(function (item) {
         if (!status && item.Status === 'Arquivado') return false;
-        if (search && (item.Nome || '').toLowerCase().indexOf(search) === -1) return false;
+        if (search) {
+          var blob = [
+            item.Nome, item.Agente, item.LLM, item['Conta Email LLM'],
+            item.Tipo, item.Categoria, item['Fase Atual'], item['Próxima Ação']
+          ].join(' ').toLowerCase();
+          if (blob.indexOf(search) === -1) return false;
+        }
         if (status && item.Status !== status) return false;
         if (tipo && item.Tipo !== tipo) return false;
         if (origem === 'Drive' && isNuvem(item)) return false;
@@ -1468,13 +1548,22 @@
 
     function renderProgramacao() {
       var el = document.getElementById('programacao-list');
-      if (!programacao.length) {
-        el.innerHTML = '<div class="empty">Nenhuma atividade. Clique em + Atividade.</div>';
+      var q = ((document.getElementById('prog-search') || {}).value || '').toLowerCase().trim();
+      var list = (programacao || []).filter(function (ev) {
+        if (!q) return true;
+        var blob = [
+          ev.Título, ev.Tipo, ev.Status, ev['Relacionado (Projeto/Produto)'],
+          ev.Agente, ev.Observações, ev.Observacoes
+        ].join(' ').toLowerCase();
+        return blob.indexOf(q) !== -1;
+      });
+      if (!list.length) {
+        el.innerHTML = '<div class="empty">Nenhuma atividade' + (q ? ' com este filtro' : '. Clique em + Atividade') + '.</div>';
         return;
       }
       var html = '<div class="col-headers" style="grid-template-columns:1.1fr 0.85fr 0.55fr 0.55fr 0.9fr 0.7fr 0.9fr">' +
         '<div>Título</div><div>Início</div><div>Tipo</div><div>Status</div><div>Relacionado</div><div>Agente</div><div>Ações</div></div>';
-      programacao.forEach(function (ev) {
+      list.forEach(function (ev) {
         html += '<div class="item-row" style="grid-template-columns:1.1fr 0.85fr 0.55fr 0.55fr 0.9fr 0.7fr 0.9fr">' +
           '<div class="nome">' + (ev.Título || '—') + '</div>' +
           '<div>' + formatCalDate(ev['Data Início']) + '</div>' +
@@ -1497,7 +1586,10 @@
       var list = (githubLinks || []).filter(function (g) {
         if (tipoF && String(g.Tipo || '') !== tipoF) return false;
         if (!q) return true;
-        var blob = ((g.Título || '') + ' ' + (g.URL || '') + ' ' + (g['Projeto vinculado'] || '') + ' ' + (g['Agente vinculado'] || '')).toLowerCase();
+        var blob = [
+          g.Título, g.URL, g.Tipo, g['Projeto vinculado'], g['Agente vinculado'],
+          g.Observações, g.Observacoes, g.Status
+        ].join(' ').toLowerCase();
         return blob.indexOf(q) !== -1;
       });
       if (!list.length) {
@@ -1521,12 +1613,23 @@
 
     function renderAgents() {
       var el = document.getElementById('agents-accordion');
-      if (!agents.length) {
-        el.innerHTML = '<div class="empty">Nenhum agente.</div>';
+      var q = ((document.getElementById('agent-search') || {}).value || '').toLowerCase().trim();
+      var filtered = (agents || []).filter(function (a) {
+        if (!q) return true;
+        var projs = (a.projetos || []).map(function (p) { return p.nome || ''; }).join(' ');
+        var blob = [
+          a['Nome do Agente'], a['Função / Papel'], a.LLM, a['Conta Email LLM'],
+          a['System Prompt (resumo)'], a['System Prompt'], a.Observações, a.Observacoes,
+          a['ID Prompt'], a.Status, projs
+        ].join(' ').toLowerCase();
+        return blob.indexOf(q) !== -1;
+      });
+      if (!filtered.length) {
+        el.innerHTML = '<div class="empty">Nenhum agente' + (q ? ' com este filtro' : '') + '.</div>';
         return;
       }
       var tree = {};
-      agents.forEach(function (a) {
+      filtered.forEach(function (a) {
         var llm = a.LLM || 'Sem LLM';
         var email = a['Conta Email LLM'] || 'Sem conta';
         if (!tree[llm]) tree[llm] = {};
@@ -1553,6 +1656,7 @@
                 }).join('; ')
               : '—';
             var sys = a['System Prompt (resumo)'] || a['System Prompt'] || '—';
+            sys = String(sys).replace(/\s+/g, ' ').trim();
             if (sys.length > 120) sys = sys.substring(0, 117) + '…';
             html += '<div class="agent-line">' +
               '<div><div class="al-label">Nome</div><strong>' + (a['Nome do Agente'] || '—') + '</strong><br>' +
@@ -1868,7 +1972,7 @@
         funcao: document.getElementById('agent-funcao').value,
         llm: llm, email: email,
         idPrompt: document.getElementById('agent-prompt').value,
-        systemPrompt: document.getElementById('agent-system').value,
+        systemPrompt: normalizeSystemPrompt(document.getElementById('agent-system').value),
         observacoes: document.getElementById('agent-obs').value,
         status: 'Ativo',
         criarProjeto: document.getElementById('agent-criar-proj').checked,
@@ -1925,7 +2029,7 @@
         'LLM': llm,
         'Conta Email LLM': email,
         'ID Prompt': document.getElementById('ea-prompt').value,
-        'System Prompt (resumo)': document.getElementById('ea-system').value,
+        'System Prompt (resumo)': normalizeSystemPrompt(document.getElementById('ea-system').value),
         'Status': document.getElementById('ea-status').value,
         'Observações': document.getElementById('ea-obs').value
       };
