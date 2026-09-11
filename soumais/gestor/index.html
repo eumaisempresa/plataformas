@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel Gestor | Sou+ EU+</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+  <!-- LOGIN OVERLAY GESTOR -->
+  <div id="loginGestorModal" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 text-center">
+      <h2 class="text-xl font-bold text-white">Acesso Master Gestor</h2>
+      <input type="password" id="senhaGestor" placeholder="Senha de Administração" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:border-amber-500 focus:outline-none">
+      <button onclick="loginGestor()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2 rounded-xl text-sm">Entrar no Gestor</button>
+    </div>
+  </div>
+
+  <!-- PAINEL GESTOR PRINCIPAL -->
+  <header class="border-b border-slate-800 bg-slate-900 px-6 py-4 flex justify-between items-center">
+    <h1 class="font-bold text-lg text-white">Painel Gestor — Carteira de Clientes Sou+</h1>
+    <span class="text-xs text-amber-500 font-semibold">Sessão Master Ativa</span>
+  </header>
+
+  <main class="p-6 max-w-7xl mx-auto space-y-6">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+      <h3 class="font-bold text-sm text-white mb-4">Clientes Cadastrados</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-300">
+          <thead class="bg-slate-950 text-slate-400 uppercase">
+            <tr>
+              <th class="p-3">Data</th>
+              <th class="p-3">Cliente</th>
+              <th class="p-3">Profissão</th>
+              <th class="p-3">WhatsApp</th>
+              <th class="p-3">E-mail</th>
+              <th class="p-3">Ambiente</th>
+              <th class="p-3">Status Pagamento</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaClientes" class="divide-y divide-slate-800">
+            <!-- Linhas geradas via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz6bf-kpKsE6GUWqX5gckuYFoltfGyv7f76kL7WTbmKzfWD2W5wmbIni8qqD5-8WY3q/exec";
+
+    async function loginGestor() {
+      const senha = document.getElementById('senhaGestor').value;
+      const res = await fetch(WEB_APP_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "loginGestor", senha: senha })
+      }).then(r => r.json());
+
+      if (res.status === "success") {
+        document.getElementById('loginGestorModal').classList.add('hidden');
+        renderizarTabela(res.clientes);
+      } else {
+        alert("Acesso negado.");
+      }
+    }
+
+    function renderizarTabela(clientes) {
+      const tbody = document.getElementById('tabelaClientes');
+      tbody.innerHTML = clientes.map(c => `
+        <tr>
+          <td class="p-3">${c.dataHora}</td>
+          <td class="p-3 font-bold text-white">${c.nome}</td>
+          <td class="p-3">${c.profissao}</td>
+          <td class="p-3">${c.whatsapp}</td>
+          <td class="p-3">${c.email}</td>
+          <td class="p-3"><a href="/soumais/painel/${c.slug}" target="_blank" class="text-amber-400 hover:underline">/soumais/painel/${c.slug}</a></td>
+          <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${c.statusPagamento}</span></td>
+        </tr>
+      `).join('');
+    }
+  </script>
+</body>
+</html>
