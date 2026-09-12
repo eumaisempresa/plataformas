@@ -40,7 +40,7 @@
     .eu-symbol sup {
       font-size: 0.42em;
       vertical-align: super;
-      margin-left: 0.20em; /* Área de Proteção (Respiro de 20%) */
+      margin-left: 0.20em;
       color: var(--gold-primary);
     }
 
@@ -290,17 +290,15 @@
     </div>
   </main>
 
-  <!-- RODAPÉ INSTITUCIONAL (IDENTIDADE VISUAL ECOSSISTEMA EU⁺) -->
+  <!-- RODAPÉ INSTITUCIONAL -->
   <footer class="brand-footer text-[#EEF0F2] py-8 px-6 mt-auto">
     <div class="max-w-6xl mx-auto space-y-6">
       
-      <!-- Slogan Obrigatório -->
       <div class="text-center border-b border-[rgba(196,151,74,0.18)] pb-4">
         <p class="text-sm font-medium text-[#D4AA62]">"Você é o EU. Nós somos o ⁺ que soma com você."</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-[#7A8FA3]">
-        <!-- Coluna 1: Marca & Descrição -->
         <div>
           <h4 class="text-sm font-bold text-white mb-2">
             <span class="eu-symbol">EU<sup>⁺</sup></span> Vida
@@ -308,7 +306,6 @@
           <p class="leading-relaxed">Plataforma integrante do Ecossistema EU⁺ voltada para o desenvolvimento pessoal, educacional e preparação de alta performance.</p>
         </div>
 
-        <!-- Coluna 2: Links Institucionais -->
         <div>
           <h4 class="text-sm font-bold text-white mb-2">Plataformas e Links</h4>
           <ul class="space-y-1">
@@ -320,7 +317,6 @@
           </ul>
         </div>
 
-        <!-- Coluna 3: Contatos Diretos -->
         <div>
           <h4 class="text-sm font-bold text-white mb-2">Atendimento e Contato</h4>
           <p>WhatsApp: <a href="https://wa.me/5527998131806" target="_blank" class="text-[#EEF0F2] hover:text-[#C4974A]">27 99813-1806</a></p>
@@ -334,7 +330,7 @@
     </div>
   </footer>
 
-  <!-- LÓGICA DE JAVASCRIPT -->
+  <!-- LÓGICA JAVASCRIPT CORRIGIDA -->
   <script>
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx_nxZL6g9rbcLIjJRd8WS-Vpq_LqAmRi3aKRJx5SEp7Zf-skw7Vfu6sXpImGHaLlh2yw/exec";
     
@@ -344,13 +340,11 @@
     let eixoAtualSelecionado = null;
     let temaAtualSelecionado = null;
 
-    // TOGGLE TELA DE RECUPERAR SENHA
     function toggleRecuperarSenha(show) {
       document.getElementById('boxLogin').classList.toggle('hidden', show);
       document.getElementById('boxRecuperar').classList.toggle('hidden', !show);
     }
 
-    // CADASTRAR ALUNO
     async function handleCadastrar(e) {
       e.preventDefault();
       const feedback = document.getElementById('cadFeedback');
@@ -380,7 +374,6 @@
       }
     }
 
-    // LOGIN
     async function handleLogin(e) {
       e.preventDefault();
       const feedback = document.getElementById('loginFeedback');
@@ -410,7 +403,7 @@
       }
     }
 
-    // RECUPERAR SENHA
+    // CORREÇÃO DA RECUPERAÇÃO DE SENHA
     async function handleRecuperarSenha(e) {
       e.preventDefault();
       const feedback = document.getElementById('recFeedback');
@@ -426,16 +419,15 @@
         const data = await res.json();
 
         if (data.success) {
-          feedback.innerHTML = `<span class="text-green-600 font-medium">${data.message}</span>`;
+          feedback.innerHTML = `<span class="text-green-600 font-medium">${data.message || "Nova senha enviada para seu e-mail com sucesso!"}</span>`;
         } else {
-          feedback.innerHTML = `<span class="text-red-600 font-medium">${data.message}</span>`;
+          feedback.innerHTML = `<span class="text-red-600 font-medium">${data.message || "E-mail não encontrado."}</span>`;
         }
       } catch (err) {
-        feedback.innerHTML = '<span class="text-red-600">Falha ao processar a solicitação.</span>';
+        feedback.innerHTML = '<span class="text-red-600">Falha ao processar a solicitação. Verifique sua conexão.</span>';
       }
     }
 
-    // ALTERAR SENHA
     async function handleAlterarSenha(e) {
       e.preventDefault();
       const res = await fetch(WEBAPP_URL, {
@@ -451,7 +443,6 @@
       alert(data.message);
     }
 
-    // BUSCAR BANCO DE TEMAS E AGRUPAR POR EIXO (CASCATA NÍVEL 1)
     async function carregarTemas() {
       const res = await fetch(`${WEBAPP_URL}?action=getTemas`);
       const data = await res.json();
@@ -459,7 +450,6 @@
       if (data.success && data.temas.length > 0) {
         bancoDadosTemas = data.temas;
         
-        // Agrupa por Eixo Temático
         eixosAgrupados = {};
         bancoDadosTemas.forEach(item => {
           const eixo = item.eixo || "Geral";
@@ -473,7 +463,6 @@
       }
     }
 
-    // RENDERIZAR EIXOS TEMÁTICOS (NÍVEL 1)
     function renderizarEixos() {
       const grid = document.getElementById('gridEixos');
       grid.innerHTML = '';
@@ -496,7 +485,6 @@
       document.getElementById('viewDetalheTema').classList.add('hidden');
     }
 
-    // SELECIONAR EIXO (NÍVEL 2)
     function selecionarEixo(eixo) {
       eixoAtualSelecionado = eixo;
       document.getElementById('tituloEixoSelecionado').innerText = `Eixo: ${eixo}`;
@@ -518,7 +506,6 @@
       document.getElementById('viewDetalheTema').classList.add('hidden');
     }
 
-    // SELECIONAR TEMA INDIVIDUAL (NÍVEL 3)
     function selecionarTema(index) {
       const item = eixosAgrupados[eixoAtualSelecionado][index];
       temaAtualSelecionado = item;
@@ -551,7 +538,6 @@
       }
     }
 
-    // CORRIGIR REDAÇÃO
     async function handleCorrigirRedacao(e) {
       e.preventDefault();
       const btn = document.getElementById('btnCorrigir');
