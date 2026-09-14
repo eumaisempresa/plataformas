@@ -763,7 +763,7 @@
       }
     }
 
-    // CORREÇÃO DE REDAÇÃO
+    // CORREÇÃO DE REDAÇÃO CORRIGIDA
     async function handleCorrigirRedacao(e) {
       e.preventDefault();
       
@@ -778,12 +778,21 @@
 
       const tema = document.getElementById('redacaoTema').value;
 
+      // Payload ajustado para atender ambas as estruturas possíveis no Apps Script
       const payload = {
         action: 'corrigirRedacao',
         email: usuarioLogado.email,
         tema: tema,
+        texto: "Imagem enviada para OCR",
         fotoBase64: fotoBase64,
-        mimeType: fotoMimeType
+        mimeType: fotoMimeType,
+        dados: {
+          email: usuarioLogado.email,
+          tema: tema,
+          texto: "Imagem enviada para OCR",
+          fotoBase64: fotoBase64,
+          mimeType: fotoMimeType
+        }
       };
 
       try {
