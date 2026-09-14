@@ -346,16 +346,16 @@
 
           <div class="text-center p-6 bg-[#060E18] text-white rounded-xl">
             <span class="text-xs text-[#7A8FA3] uppercase tracking-wider block mb-1">Nota Final Estimada</span>
-            <div class="text-5xl font-extrabold text-[#C4974A]" id="notaFinal">0</div>
+            <div class="text-5xl font-extrabold text-[#C4974A]" id="notaFinal">...</div>
             <span class="text-xs text-gray-400">de 1000 pontos</span>
           </div>
           
           <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-center text-xs">
-            <div class="bg-white p-3 border rounded-lg"><span class="block text-gray-500 font-bold">C1</span><span id="notaC1" class="text-lg font-bold text-gray-800">0</span></div>
-            <div class="bg-white p-3 border rounded-lg"><span class="block text-gray-500 font-bold">C2</span><span id="notaC2" class="text-lg font-bold text-gray-800">0</span></div>
-            <div class="bg-white p-3 border rounded-lg"><span class="block text-gray-500 font-bold">C3</span><span id="notaC3" class="text-lg font-bold text-gray-800">0</span></div>
-            <div class="bg-white p-3 border rounded-lg"><span class="block text-gray-500 font-bold">C4</span><span id="notaC4" class="text-lg font-bold text-gray-800">0</span></div>
-            <div class="bg-white p-3 border rounded-lg"><span class="block text-gray-500 font-bold">C5</span><span id="notaC5" class="text-lg font-bold text-gray-800">0</span></div>
+            <div class="bg-white p-3 border rounded-lg"><span class="block text-gray-500 font-bold">C1</span><span id="notaC1" class="text-lg font-bold text-gray-800">-</span></div>
+            <div class="bg-white p-3 border rounded-lg"><span class="block text-gray-500 font-bold">C2</span><span id="notaC2" class="text-lg font-bold text-gray-800">-</span></div>
+            <div class="bg-white p-3 border rounded-lg"><span class="block text-gray-500 font-bold">C3</span><span id="notaC3" class="text-lg font-bold text-gray-800">-</span></div>
+            <div class="bg-white p-3 border rounded-lg"><span class="block text-gray-500 font-bold">C4</span><span id="notaC4" class="text-lg font-bold text-gray-800">-</span></div>
+            <div class="bg-white p-3 border rounded-lg"><span class="block text-gray-500 font-bold">C5</span><span id="notaC5" class="text-lg font-bold text-gray-800">-</span></div>
           </div>
 
           <div id="detalhesCorrecao" class="space-y-3 bg-white p-4 border rounded-lg text-xs leading-relaxed"></div>
@@ -786,13 +786,32 @@
       }
     }
 
-    // CORREÇÃO DE REDAÇÃO CORRIGIDA (ASSÍNCRONA E SEGURA)
+    // CORREÇÃO DE REDAÇÃO CORRIGIDA COM FEEDBACK DE CARREGAMENTO
     async function handleCorrigirRedacao(e) {
       e.preventDefault();
       
       const btn = document.getElementById('btnCorrigir');
+      const resContainer = document.getElementById('resultadoCorrecao');
+      
       btn.disabled = true;
       btn.innerText = "Lendo e processando arquivo de imagem...";
+
+      // Exibe imediatamente o container em estado de carregamento
+      resContainer.classList.remove('hidden');
+      document.getElementById('notaFinal').innerText = "...";
+      document.getElementById('notaC1').innerText = "-";
+      document.getElementById('notaC2').innerText = "-";
+      document.getElementById('notaC3').innerText = "-";
+      document.getElementById('notaC4').innerText = "-";
+      document.getElementById('notaC5').innerText = "-";
+      document.getElementById('detalhesCorrecao').innerHTML = `
+        <div class="flex items-center gap-3 text-gray-600 p-2">
+          <span class="animate-spin text-[#C4974A] text-xl">⏳</span>
+          <p class="font-medium text-xs">Sua foto foi enviada com sucesso! Aguarde enquanto nossa IA analisa a redação manuscrita...</p>
+        </div>
+      `;
+      
+      resContainer.scrollIntoView({ behavior: 'smooth' });
 
       try {
         const fotoData = await obterFotoBase64Assincrona();
@@ -801,13 +820,14 @@
           alert("Por favor, selecione ou tire uma foto da sua redação manuscrita antes de enviar.");
           btn.disabled = false;
           btn.innerText = "Enviar Foto para Avaliação Inteligente";
+          resContainer.classList.add('hidden');
           return;
         }
 
         btn.innerText = "Analisando foto e avaliando competências...";
         const tema = document.getElementById('redacaoTema').value;
 
-        // Payload limpo e estruturado em duplo formato para retrocompatibilidade do backend
+        // Payload com duplo formato para retrocompatibilidade do backend
         const payload = {
           action: 'corrigirRedacao',
           email: usuarioLogado.email,
@@ -836,28 +856,28 @@
 
         if (data.success) {
           const r = data.resultado || data.dados || {};
-          document.getElementById('notaFinal').innerText = r.notaFinal || r.nota_final || 0;
-          document.getElementById('notaC1').innerText = r.c1 || 0;
-          document.getElementById('notaC2').innerText = r.c2 || 0;
-          document.getElementById('notaC3').innerText = r.c3 || 0;
-          document.getElementById('notaC4').innerText = r.c4 || 0;
-          document.getElementById('notaC5').innerText = r.c5 || 0;
+          
+          document.getElementById('notaFinal').innerText = r.notaFinal ?? r.nota_final ?? '0';
+          document.getElementById('notaC1').innerText = r.c1 ?? '0';
+          document.getElementById('notaC2').innerText = r.c2 ?? '0';
+          document.getElementById('notaC3').innerText = r.c3 ?? '0';
+          document.getElementById('notaC4').innerText = r.c4 ?? '0';
+          document.getElementById('notaC5').innerText = r.c5 ?? '0';
 
           document.getElementById('detalhesCorrecao').innerHTML = `
             <h4 class="font-bold text-gray-800 text-sm mb-1">Feedback do Corretor IA:</h4>
             <div class="bg-gray-50 p-3 rounded-lg border text-gray-700 whitespace-pre-line">${r.feedback || 'Análise concluída.'}</div>
           `;
-
-          document.getElementById('resultadoCorrecao').classList.remove('hidden');
-          document.getElementById('resultadoCorrecao').scrollIntoView({ behavior: 'smooth' });
           
           carregarHistoricoAluno();
         } else {
           alert(data.message || "Falha na análise da redação.");
+          resContainer.classList.add('hidden');
         }
       } catch (err) {
         btn.disabled = false;
         btn.innerText = "Enviar Foto para Avaliação Inteligente";
+        resContainer.classList.add('hidden');
         alert("Erro na comunicação com o servidor de correção.");
       }
     }
