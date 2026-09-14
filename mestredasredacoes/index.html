@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mestre da Redação⁺ | Ecossistema EU⁺</title>
+  
+  <!-- Fonts & Tailwind CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Biblioteca para geração de PDF (html2pdf) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    :root {
+      --bg-primary: #060E18;
+      --bg-secondary: #0A1624;
+      --bg-tertiary: #0E1E30;
+      --gold-primary: #C4974A;
+      --gold-secondary: #D4AA62;
+      --text-primary: #EEF0F2;
+      --text-secondary: #7A8FA3;
+      --border-gold: rgba(196, 151, 74, 0.18);
+      --eu-vida-color: #4A9BC4;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
+    .eu-symbol {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+      color: var(--gold-primary);
+      display: inline-block;
+    }
+    .eu-symbol sup {
+      font-size: 0.42em;
+      vertical-align: super;
+      margin-left: 0.20em;
+      color: var(--gold-primary);
+    }
+
+    .brand-header {
+      background-color: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-gold);
+    }
+
+    .brand-footer {
+      background-color: var(--bg-secondary);
+      border-top: 1px solid var(--border-gold);
+    }
+
+    .gold-button {
+      background: linear-gradient(135deg, var(--gold-primary), var(--gold-secondary));
+      color: #060E18;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .gold-button:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- TOPO INSTITUCIONAL / NAVBAR -->
+  <header class="brand-header px-6 py-4 shadow-lg sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl font-bold tracking-tight">
+          <span class="eu-symbol">EU<sup>⁺</sup></span> 
+          <span class="text-sm font-normal text-gray-400">|</span> 
+          <span class="text-lg font-semibold text-[#EEF0F2]">Mestre da Redação<span class="eu-symbol"><sup>⁺</sup></span></span>
+        </h1>
+      </div>
+      
+      <nav class="text-xs text-[#7A8FA3] hidden md:block">
+        <a href="https://institucional.eumaisempresa.com.br" target="_blank" class="hover:text-[#C4974A]">Ecossistema EU⁺</a> &gt; 
+        <a href="https://eumaisempresa.com.br" target="_blank" class="hover:text-[#C4974A]">EU⁺ Empresa</a> &gt; 
+        <a href="https://eumaisempresa.com.br/plataformas/vida" target="_blank" class="text-[#4A9BC4] font-medium">EU⁺ Vida</a> &gt; 
+        <span class="text-[#EEF0F2]">Mestre da Redação⁺</span>
+      </nav>
+
+      <div id="userStatus" class="text-xs text-[#7A8FA3]"></div>
+    </div>
+  </header>
+
+  <!-- MODAL DE SENHA (CADASTRO) -->
+  <div id="modalSenha" class="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 text-gray-800 shadow-2xl border-2 border-[#C4974A]">
+      <div class="text-center space-y-3">
+        <div class="inline-flex items-center justify-center w-12 h-12 bg-amber-100 rounded-full text-[#C4974A] text-2xl font-bold">
+          🔑
+        </div>
+        <h3 class="text-xl font-bold text-[#060E18]">Conta Criada com Sucesso!</h3>
+        <p class="text-xs text-gray-600 leading-relaxed">
+          Sua conta foi gerada. Guarde sua senha de acesso em um local seguro.
+        </p>
+        
+        <div class="bg-gray-100 border border-gray-300 rounded-xl p-4 my-4 flex items-center justify-between gap-2">
+          <span id="txtSenhaGerada" class="font-mono text-lg font-bold text-[#060E18] tracking-wider select-all"></span>
+          <button type="button" onclick="copiarSenhaGerada()" id="btnCopiarSenha" class="gold-button px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shrink-0">
+            📋 Copiar
+          </button>
+        </div>
+
+        <button onclick="fecharModalESeletarLogin()" class="w-full bg-[#060E18] hover:bg-[#0A1624] text-white font-semibold py-3 rounded-lg text-sm transition-colors mt-2">
+          Entrar Agora com este E-mail
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE VISUALIZAÇÃO DE HISTÓRICO DE REDAÇÃO -->
+  <div id="modalHistorico" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-2xl max-w-3xl w-full p-6 text-gray-800 shadow-2xl border-2 border-[#C4974A] max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-start border-b pb-3 mb-4">
+        <div>
+          <span id="histData" class="text-xs text-gray-500"></span>
+          <h3 id="histTema" class="text-lg font-bold text-[#060E18]"></h3>
+        </div>
+        <button onclick="fecharModalHistorico()" class="text-gray-400 hover:text-gray-800 font-bold text-xl">&times;</button>
+      </div>
+
+      <!-- ÁREA IMPRESSA NO PDF/MODAL -->
+      <div id="conteudoModalPDF" class="p-2 space-y-4">
+        <div class="text-center p-4 bg-[#060E18] text-white rounded-xl mb-4">
+          <span class="text-xs text-[#7A8FA3] uppercase tracking-wider block">Nota Final</span>
+          <div class="text-4xl font-extrabold text-[#C4974A]" id="histNotaFinal">0</div>
+        </div>
+
+        <div class="grid grid-cols-5 gap-2 text-center text-xs mb-4">
+          <div class="bg-gray-100 p-2 rounded"><span class="block text-gray-500 font-bold">C1</span><span id="histC1" class="font-bold">0</span></div>
+          <div class="bg-gray-100 p-2 rounded"><span class="block text-gray-500 font-bold">C2</span><span id="histC2" class="font-bold">0</span></div>
+          <div class="bg-gray-100 p-2 rounded"><span class="block text-gray-500 font-bold">C3</span><span id="histC3" class="font-bold">0</span></div>
+          <div class="bg-gray-100 p-2 rounded"><span class="block text-gray-500 font-bold">C4</span><span id="histC4" class="font-bold">0</span></div>
+          <div class="bg-gray-100 p-2 rounded"><span class="block text-gray-500 font-bold">C5</span><span id="histC5" class="font-bold">0</span></div>
+        </div>
+
+        <div id="histFeedbackCorpo" class="space-y-4 text-xs leading-relaxed border-t pt-4"></div>
+      </div>
+
+      <div class="flex flex-col md:flex-row gap-3 pt-4 border-t mt-4">
+        <button onclick="baixarPDFModal()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2">
+          📄 Baixar Relatório em PDF
+        </button>
+        <button onclick="compartilharWhatsAppModal()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2">
+          💬 Enviar para WhatsApp
+        </button>
+        <button onclick="fecharModalHistorico()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2.5 rounded-lg text-xs font-semibold">
+          Fechar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CORPO PRINCIPAL -->
+  <main class="flex-grow bg-white text-gray-800">
+    <div class="max-w-6xl mx-auto px-4 py-8">
+
+      <!-- AUTENTICAÇÃO / LOGIN / CADASTRO -->
+      <div id="authSection" class="grid grid-cols-1 md:grid-cols-2 gap-8 my-4">
+        
+        <!-- CADASTRO -->
+        <div class="bg-gray-50 border border-gray-200 p-6 rounded-xl shadow-sm">
+          <h2 class="text-xl font-bold mb-4 text-[#060E18]">Criar Conta de Aluno</h2>
+          <form id="cadForm" onsubmit="handleCadastrar(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Nome Completo</label>
+              <input type="text" id="cadNome" required class="w-full p-2.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-[#C4974A] outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Escola</label>
+              <input type="text" id="cadEscola" required class="w-full p-2.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-[#C4974A] outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail</label>
+              <input type="email" id="cadEmail" required class="w-full p-2.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-[#C4974A] outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">WhatsApp</label>
+              <input type="tel" id="cadWhatsapp" placeholder="27999999999" required class="w-full p-2.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-[#C4974A] outline-none">
+            </div>
+            <button type="submit" id="btnCadastrarSubmit" class="w-full gold-button py-3 rounded-lg text-sm mt-2">Cadastrar Gratuitamente</button>
+          </form>
+          <div id="cadFeedback" class="mt-3 text-xs"></div>
+        </div>
+
+        <!-- LOGIN / RECUPERAR SENHA -->
+        <div class="bg-gray-50 border border-gray-200 p-6 rounded-xl shadow-sm flex flex-col justify-between">
+          
+          <div id="boxLogin">
+            <h2 class="text-xl font-bold mb-4 text-[#060E18]">Acessar Painel</h2>
+            <form onsubmit="handleLogin(event)" class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">E-mail</label>
+                <input type="email" id="loginEmail" required class="w-full p-2.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-[#C4974A] outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Senha</label>
+                <input type="password" id="loginSenha" required class="w-full p-2.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-[#C4974A] outline-none">
+              </div>
+              <button type="submit" class="w-full bg-[#060E18] hover:bg-[#0A1624] text-white font-medium py-3 rounded-lg text-sm transition-colors">Entrar no Painel</button>
+            </form>
+            <div id="loginFeedback" class="mt-3 text-xs text-red-600"></div>
+            <button onclick="toggleRecuperarSenha(true)" class="mt-4 text-xs text-[#4A9BC4] hover:underline font-medium">Esqueceu sua senha?</button>
+          </div>
+
+          <!-- RECUPERAR SENHA -->
+          <div id="boxRecuperar" class="hidden">
+            <h2 class="text-xl font-bold mb-2 text-[#060E18]">Recuperar Senha</h2>
+            <p class="text-xs text-gray-600 mb-4">Informe seu e-mail cadastrado. Enviaremos uma nova senha temporária para você.</p>
+            <form onsubmit="handleRecuperarSenha(event)" class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Seu E-mail Cadastrado</label>
+                <input type="email" id="recEmail" required class="w-full p-2.5 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-[#C4974A] outline-none">
+              </div>
+              <button type="submit" class="w-full gold-button py-3 rounded-lg text-sm">Enviar Nova Senha por E-mail</button>
+            </form>
+            <div id="recFeedback" class="mt-3 text-xs"></div>
+            <button onclick="toggleRecuperarSenha(false)" class="mt-4 text-xs text-gray-500 hover:underline">Voltar para o Login</button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- PAINEL DO ALUNO -->
+      <div id="appSection" class="hidden space-y-8">
+        
+        <!-- BARRA SUPERIOR: ALTERAÇÃO DE SENHA -->
+        <div class="bg-gray-50 border p-4 rounded-xl flex flex-col md:flex-row justify-between items-center gap-4 shadow-sm">
+          <div>
+            <span class="text-sm font-semibold text-gray-800">Painel do Aluno</span>
+            <p class="text-xs text-gray-500">Mestre da Redação⁺ - Preparatório Enem 2026</p>
+          </div>
+          <form onsubmit="handleAlterarSenha(event)" class="flex flex-wrap md:flex-nowrap items-center gap-2 w-full md:w-auto">
+            <input type="password" id="senhaAtual" placeholder="Senha Atual" required class="p-2 border rounded-lg text-xs bg-gray-100 font-mono" readonly title="Senha atual pré-preenchida">
+            <input type="password" id="novaSenha" placeholder="Digite a Nova Senha" required class="p-2 border rounded-lg text-xs bg-white focus:ring-2 focus:ring-[#C4974A] outline-none">
+            <button type="submit" class="bg-[#060E18] text-[#EEF0F2] px-4 py-2 rounded-lg text-xs font-medium hover:bg-[#0A1624] whitespace-nowrap">Atualizar Senha</button>
+          </form>
+        </div>
+
+        <!-- ABA HISTÓRICO DO ALUNO (MINHAS REDAÇÕES) -->
+        <div class="bg-gray-50 border rounded-xl p-6 shadow-sm">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h2 class="text-xl font-bold text-[#060E18]">📋 Minhas Redações & Histórico de Desempenho</h2>
+              <p class="text-xs text-gray-500">Acompanhe a sua evolução e os feedbacks das redações já corrigidas</p>
+            </div>
+            <button onclick="carregarHistoricoAluno()" class="text-xs text-[#4A9BC4] hover:underline font-medium">🔄 Atualizar Histórico</button>
+          </div>
+
+          <div id="listaHistorico" class="space-y-3">
+            <p class="text-xs text-gray-500 italic">Carregando seu histórico de redações...</p>
+          </div>
+        </div>
+
+        <!-- MÓDULO 1: BANCO DE TEMAS -->
+        <div class="bg-gray-50 border rounded-xl p-6 shadow-sm">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-[#060E18]">📚 Banco de Temas & Guia de Repertórios Enem 2026</h2>
+            <button onclick="carregarTemas()" class="text-xs text-[#4A9BC4] hover:underline font-medium">🔄 Atualizar Temas</button>
+          </div>
+
+          <div id="viewEixos" class="space-y-4">
+            <p class="text-xs text-gray-500 mb-2">Selecione um Eixo Temático para explorar os temas disponíveis:</p>
+            <div id="gridEixos" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+          </div>
+
+          <div id="viewTemasDoEixo" class="hidden space-y-4">
+            <button onclick="voltarParaEixos()" class="text-xs text-[#C4974A] font-bold hover:underline mb-2 flex items-center gap-1">
+              ← Voltar para todos os Eixos
+            </button>
+            <h3 id="tituloEixoSelecionado" class="text-lg font-bold text-[#060E18]"></h3>
+            <div id="gridTemasDoEixo" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+          </div>
+
+          <div id="viewDetalheTema" class="hidden space-y-4">
+            <button onclick="voltarParaListaTemas()" class="text-xs text-[#C4974A] font-bold hover:underline mb-2 flex items-center gap-1">
+              ← Voltar para a lista de temas do eixo
+            </button>
+            <div class="bg-white border-2 border-[#C4974A] rounded-xl p-6 space-y-4 shadow-sm">
+              <span id="detEixoBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-blue-50 text-[#4A9BC4]"></span>
+              <h3 id="detTemaTitulo" class="text-2xl font-bold text-[#060E18]"></h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                <div class="p-3 bg-gray-50 rounded-lg border">
+                  <h4 class="font-bold text-xs text-[#C4974A] uppercase mb-1">Teses Possíveis</h4>
+                  <p id="detTeses" class="text-xs text-gray-700 leading-relaxed"></p>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-lg border">
+                  <h4 class="font-bold text-xs text-[#C4974A] uppercase mb-1">Problematizações</h4>
+                  <p id="detProblematizacoes" class="text-xs text-gray-700 leading-relaxed"></p>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-lg border">
+                  <h4 class="font-bold text-xs text-[#C4974A] uppercase mb-1">Repertórios Legitimados</h4>
+                  <p id="detRepertorios" class="text-xs text-gray-700 leading-relaxed"></p>
+                </div>
+              </div>
+
+              <div class="p-4 bg-yellow-50 border-l-4 border-[#C4974A] rounded-r-lg">
+                <h4 class="font-bold text-xs text-[#060E18] mb-1">💡 Dicas Simuladas para Escrita:</h4>
+                <p id="detDicas" class="text-xs text-gray-800 whitespace-pre-line leading-relaxed"></p>
+              </div>
+
+              <button onclick="usarTemaParaRedacao()" class="w-full gold-button py-2.5 rounded-lg text-sm">Enviar Foto da Redação sobre este Tema</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- MÓDULO 2: CORREÇÃO POR FOTO (ENEM) -->
+        <div id="secaoRedacao" class="bg-gray-50 border rounded-xl p-6 shadow-sm">
+          <h2 class="text-xl font-bold text-[#060E18] mb-2">📸 Envie a Foto da sua Redação Manuscrita</h2>
+          <p class="text-xs text-gray-600 mb-6">A avaliação simulada do ENEM exige o envio em foto da sua folha manuscrita para verificação de legibilidade e estrutura.</p>
+
+          <form onsubmit="handleCorrigirRedacao(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Tema Escolhido</label>
+              <input type="text" id="redacaoTema" placeholder="Selecione no banco acima ou digite o tema..." required class="w-full p-2.5 border rounded-lg text-sm bg-white">
+            </div>
+
+            <!-- CAMPO DE UPLOAD DA FOTO DA REDAÇÃO -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Foto da Folha de Redação Manuscrita</label>
+              <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center bg-white hover:border-[#C4974A] transition-colors cursor-pointer" onclick="document.getElementById('fotoRedacaoInput').click()">
+                <input type="file" id="fotoRedacaoInput" accept="image/*" capture="environment" class="hidden" onchange="previewFotoRedacao(event)">
+                <div id="uploadPlaceholder" class="space-y-2">
+                  <span class="text-3xl block">📷</span>
+                  <p class="text-xs font-semibold text-gray-700">Clique para selecionar a foto ou tirar pelo celular</p>
+                  <p class="text-[11px] text-gray-400">Formatos aceitos: JPG, PNG, WEBP</p>
+                </div>
+                <div id="uploadPreview" class="hidden flex flex-col items-center space-y-2">
+                  <img id="imgPreview" class="max-h-64 rounded-lg border shadow-sm object-contain" src="#" alt="Pré-visualização da folha">
+                  <span class="text-xs text-[#4A9BC4] font-medium underline">Clique para trocar de foto</span>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" id="btnCorrigir" class="w-full bg-[#060E18] hover:bg-[#0A1624] text-white py-3 rounded-lg font-semibold text-sm transition-colors">
+              Enviar Foto para Avaliação Inteligente
+            </button>
+          </form>
+        </div>
+
+        <!-- MÓDULO 3: RESULTADO CORRIGIDO -->
+        <div id="resultadoCorrecao" class="hidden bg-gray-50 border-2 border-[#C4974A] rounded-xl p-6 space-y-6 shadow-md">
+          <div id="conteudoResultadoPDF" class="space-y-6 p-2 bg-white rounded-xl border">
+            <div class="flex justify-between items-center border-b pb-4 px-2">
+              <div>
+                <h3 class="text-xl font-bold text-[#060E18]">Relatório de Desempenho Enem 2026</h3>
+                <p id="resTemaTitulo" class="text-xs text-gray-600 font-medium mt-1"></p>
+              </div>
+              <span class="text-xs text-gray-500 font-semibold">Mestre da Redação⁺</span>
+            </div>
+
+            <div class="text-center p-6 bg-[#060E18] text-white rounded-xl">
+              <span class="text-xs text-[#7A8FA3] uppercase tracking-wider block mb-1">Nota Final Estimada</span>
+              <div class="text-5xl font-extrabold text-[#C4974A]" id="notaFinal">...</div>
+              <span class="text-xs text-gray-400">de 1000 pontos</span>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-center text-xs">
+              <div class="bg-gray-50 p-3 border rounded-lg"><span class="block text-gray-500 font-bold">C1</span><span id="notaC1" class="text-lg font-bold text-gray-800">-</span></div>
+              <div class="bg-gray-50 p-3 border rounded-lg"><span class="block text-gray-500 font-bold">C2</span><span id="notaC2" class="text-lg font-bold text-gray-800">-</span></div>
+              <div class="bg-gray-50 p-3 border rounded-lg"><span class="block text-gray-500 font-bold">C3</span><span id="notaC3" class="text-lg font-bold text-gray-800">-</span></div>
+              <div class="bg-gray-50 p-3 border rounded-lg"><span class="block text-gray-500 font-bold">C4</span><span id="notaC4" class="text-lg font-bold text-gray-800">-</span></div>
+              <div class="bg-gray-50 p-3 border rounded-lg"><span class="block text-gray-500 font-bold">C5</span><span id="notaC5" class="text-lg font-bold text-gray-800">-</span></div>
+            </div>
+
+            <!-- DETALHAMENTO EXPANDIDO E COMPLETO -->
+            <div id="detalhesCorrecao" class="space-y-4 text-xs leading-relaxed"></div>
+          </div>
+
+          <!-- BOTÕES DE AÇÃO: PDF E WHATSAPP -->
+          <div class="flex flex-col md:flex-row gap-4 pt-2">
+            <button onclick="baixarPDFResultado()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg text-sm flex items-center justify-center gap-2 shadow-sm transition-colors">
+              📄 Baixar Relatório Completo em PDF
+            </button>
+            <button onclick="compartilharWhatsAppResultado()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg text-sm flex items-center justify-center gap-2 shadow-sm transition-colors">
+              💬 Enviar Resultado para o WhatsApp
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- RODAPÉ -->
+  <footer class="brand-footer text-[#EEF0F2] py-8 px-6 mt-auto">
+    <div class="max-w-6xl mx-auto space-y-6">
+      <div class="text-center border-b border-[rgba(196,151,74,0.18)] pb-4">
+        <p class="text-sm font-medium text-[#D4AA62]">"Você é o EU. Nós somos o ⁺ que soma com você."</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-[#7A8FA3]">
+        <div>
+          <h4 class="text-sm font-bold text-white mb-2">
+            <span class="eu-symbol">EU<sup>⁺</sup></span> Vida
+          </h4>
+          <p class="leading-relaxed">Plataforma integrante do Ecossistema EU⁺ voltada para o desenvolvimento pessoal, educacional e preparação de alta performance.</p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-bold text-white mb-2">Plataformas e Links</h4>
+          <ul class="space-y-1">
+            <li><a href="https://institucional.eumaisempresa.com.br" target="_blank" class="hover:text-[#C4974A]">Ecossistema EU⁺ Institucional</a></li>
+            <li><a href="https://eumaisempresa.com.br" target="_blank" class="hover:text-[#C4974A]">EU⁺ Empresa</a></li>
+            <li><a href="https://eumaisempresa.com.br/plataformas/vida" target="_blank" class="hover:text-[#4A9BC4]">EU⁺ Vida</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-bold text-white mb-2">Atendimento e Contato</h4>
+          <p>WhatsApp: <a href="https://wa.me/5527998131806" target="_blank" class="text-[#EEF0F2] hover:text-[#C4974A]">27 99813-1806</a></p>
+          <p>E-mail: <a href="mailto:eumaisempresa@gmail.com" class="text-[#EEF0F2] hover:text-[#C4974A]">eumaisempresa@gmail.com</a></p>
+        </div>
+      </div>
+
+      <div class="text-center text-[10px] text-[#7A8FA3] pt-4 border-t border-[rgba(196,151,74,0.1)]">
+        &copy; 2026 Ecossistema EU⁺. Todos os direitos reservados. Mestre da Redação⁺.
+      </div>
+    </div>
+  </footer>
+
+  <!-- LÓGICA JAVASCRIPT COMPLETA E ATUALIZADA -->
+  <script>
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx_nxZL6g9rbcLIjJRd8WS-Vpq_LqAmRi3aKRJx5SEp7Zf-skw7Vfu6sXpImGHaLlh2yw/exec";
+    
+    let usuarioLogado = null;
+    let senhaAtualDoUsuario = "";
+    let emailRecemCadastrado = "";
+    let bancoDadosTemas = [];
+    let eixosAgrupados = {};
+    let eixoAtualSelecionado = null;
+    let temaAtualSelecionado = null;
+    let fotoBase64 = null;
+    let fotoMimeType = null;
+    let historicoRedacoes = [];
+    let ultimoResultado = null;
+    let itemHistoricoAtual = null;
+
+    function toggleRecuperarSenha(show) {
+      document.getElementById('boxLogin').classList.toggle('hidden', show);
+      document.getElementById('boxRecuperar').classList.toggle('hidden', !show);
+    }
+
+    // PRÉ-VISUALIZAÇÃO DA FOTO E CONVERSÃO EM BASE64
+    function previewFotoRedacao(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      fotoMimeType = file.type || 'image/jpeg';
+      const reader = new FileReader();
+
+      reader.onload = function(evt) {
+        const result = evt.target.result;
+        fotoBase64 = result.split(',')[1];
+
+        document.getElementById('imgPreview').src = result;
+        document.getElementById('uploadPlaceholder').classList.add('hidden');
+        document.getElementById('uploadPreview').classList.remove('hidden');
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    function obterFotoBase64Assincrona() {
+      return new Promise((resolve, reject) => {
+        const fileInput = document.getElementById('fotoRedacaoInput');
+        if (!fileInput.files || !fileInput.files[0]) {
+          if (fotoBase64) return resolve({ base64: fotoBase64, mimeType: fotoMimeType });
+          return resolve(null);
+        }
+
+        const file = fileInput.files[0];
+        const mime = file.type || 'image/jpeg';
+        const reader = new FileReader();
+
+        reader.onload = function(evt) {
+          const rawBase64 = evt.target.result.split(',')[1];
+          resolve({ base64: rawBase64, mimeType: mime });
+        };
+        reader.onerror = (err) => reject(err);
+
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // CADASTRO DE USUÁRIO
+    async function handleCadastrar(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnCadastrarSubmit');
+      const feedback = document.getElementById('cadFeedback');
+      
+      btn.disabled = true;
+      btn.innerText = "Cadastrando...";
+      feedback.innerHTML = '';
+      
+      emailRecemCadastrado = document.getElementById('cadEmail').value;
+
+      const payload = {
+        action: 'cadastrar',
+        dados: {
+          nome: document.getElementById('cadNome').value,
+          escola: document.getElementById('cadEscola').value,
+          email: emailRecemCadastrado,
+          whatsapp: document.getElementById('cadWhatsapp').value
+        }
+      };
+
+      try {
+        const res = await fetch(WEBAPP_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const data = await res.json();
+        btn.disabled = false;
+        btn.innerText = "Cadastrar Gratuitamente";
+
+        if (data.success) {
+          document.getElementById('txtSenhaGerada').innerText = data.tempPassword;
+          document.getElementById('modalSenha').classList.remove('hidden');
+          document.getElementById('cadForm').reset();
+        } else {
+          feedback.innerHTML = `<span class="text-red-600 font-medium">${data.message}</span>`;
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerText = "Cadastrar Gratuitamente";
+        feedback.innerHTML = `<span class="text-red-600">Erro na comunicação com o servidor.</span>`;
+      }
+    }
+
+    function copiarSenhaGerada() {
+      const senha = document.getElementById('txtSenhaGerada').innerText;
+      navigator.clipboard.writeText(senha).then(() => {
+        const btn = document.getElementById('btnCopiarSenha');
+        btn.innerText = "✅ Copiado!";
+        setTimeout(() => { btn.innerText = "📋 Copiar"; }, 3000);
+      });
+    }
+
+    function fecharModalESeletarLogin() {
+      document.getElementById('modalSenha').classList.add('hidden');
+      if (emailRecemCadastrado) {
+        document.getElementById('loginEmail').value = emailRecemCadastrado;
+        document.getElementById('loginSenha').focus();
+      }
+    }
+
+    // LOGIN DO ALUNO
+    async function handleLogin(e) {
+      e.preventDefault();
+      const feedback = document.getElementById('loginFeedback');
+      feedback.innerText = "Autenticando...";
+
+      const email = document.getElementById('loginEmail').value;
+      const senha = document.getElementById('loginSenha').value;
+
+      try {
+        const res = await fetch(WEBAPP_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'login', email: email, senha: senha })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          usuarioLogado = data.usuario;
+          senhaAtualDoUsuario = senha;
+
+          document.getElementById('authSection').classList.add('hidden');
+          document.getElementById('appSection').classList.remove('hidden');
+          document.getElementById('userStatus').innerHTML = `Aluno: <b>${usuarioLogado.nome}</b>`;
+          document.getElementById('senhaAtual').value = senhaAtualDoUsuario;
+          
+          carregarTemas();
+          carregarHistoricoAluno();
+        } else {
+          feedback.innerText = data.message;
+        }
+      } catch (err) {
+        feedback.innerText = "Erro ao efetuar login. Tente novamente.";
+      }
+    }
+
+    // CARREGAR HISTÓRICO
+    async function carregarHistoricoAluno() {
+      const container = document.getElementById('listaHistorico');
+      if (!usuarioLogado) return;
+
+      container.innerHTML = '<p class="text-xs text-gray-500 italic">Buscando seu histórico...</p>';
+
+      try {
+        const res = await fetch(`${WEBAPP_URL}?action=getHistorico&email=${encodeURIComponent(usuarioLogado.email)}`);
+        const data = await res.json();
+
+        if (data.success && data.redacoes && data.redacoes.length > 0) {
+          historicoRedacoes = data.redacoes;
+          container.innerHTML = '';
+
+          historicoRedacoes.forEach((item, index) => {
+            const dataFmt = item.data ? new Date(item.data).toLocaleDateString('pt-BR') : 'Data N/A';
+            const notaFinal = item.notaFinal !== undefined ? item.notaFinal : (item.nota_final || 0);
+            
+            container.innerHTML += `
+              <div class="p-4 border rounded-xl bg-white hover:border-[#C4974A] transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-3 shadow-sm">
+                <div>
+                  <span class="text-[10px] font-bold text-gray-400">${dataFmt}</span>
+                  <h4 class="font-bold text-sm text-gray-800">${item.tema}</h4>
+                </div>
+                <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+                  <div class="text-right">
+                    <span class="text-[10px] text-gray-500 block">Nota Final</span>
+                    <span class="text-lg font-extrabold text-[#C4974A]">${notaFinal}</span>
+                  </div>
+                  <button onclick="verDetalhesHistorico(${index})" class="gold-button px-3 py-1.5 rounded-lg text-xs">
+                    Ver Feedback Completo
+                  </button>
+                </div>
+              </div>
+            `;
+          });
+        } else {
+          container.innerHTML = '<p class="text-xs text-gray-500">Você ainda não possui redações enviadas para correção.</p>';
+        }
+      } catch (e) {
+        container.innerHTML = '<p class="text-xs text-red-500">Erro ao carregar o histórico.</p>';
+      }
+    }
+
+    // RENDERIZAR FEEDBACK COMPLETO NO MODAL HISTÓRICO
+    function verDetalhesHistorico(index) {
+      const item = historicoRedacoes[index];
+      if (!item) return;
+      itemHistoricoAtual = item;
+
+      let r = item.resultado || item.detalhes || item;
+      
+      // Se r for string JSON, converte
+      if (typeof r === 'string') {
+        try { r = JSON.parse(r); } catch(e) {}
+      }
+
+      document.getElementById('histData').innerText = item.data ? new Date(item.data).toLocaleDateString('pt-BR') : '';
+      document.getElementById('histTema').innerText = item.tema;
+      document.getElementById('histNotaFinal').innerText = r.nota_final ?? item.notaFinal ?? 0;
+      
+      document.getElementById('histC1').innerText = r.c1 ?? item.c1 ?? 0;
+      document.getElementById('histC2').innerText = r.c2 ?? item.c2 ?? 0;
+      document.getElementById('histC3').innerText = r.c3 ?? item.c3 ?? 0;
+      document.getElementById('histC4').innerText = r.c4 ?? item.c4 ?? 0;
+      document.getElementById('histC5').innerText = r.c5 ?? item.c5 ?? 0;
+
+      const htmlFeedback = gerarHTMLFeedbackFormatado(r);
+      document.getElementById('histFeedbackCorpo').innerHTML = htmlFeedback;
+
+      document.getElementById('modalHistorico').classList.remove('hidden');
+    }
+
+    function fecharModalHistorico() {
+      document.getElementById('modalHistorico').classList.add('hidden');
+    }
+
+    // AVALIAÇÃO DE REDAÇÃO E EXIBIÇÃO ORGANIZADA
+    async function handleCorrigirRedacao(e) {
+      e.preventDefault();
+      
+      const btn = document.getElementById('btnCorrigir');
+      const resContainer = document.getElementById('resultadoCorrecao');
+      
+      btn.disabled = true;
+      btn.innerText = "Lendo e processando arquivo de imagem...";
+
+      resContainer.classList.remove('hidden');
+      document.getElementById('notaFinal').innerText = "...";
+      document.getElementById('notaC1').innerText = "-";
+      document.getElementById('notaC2').innerText = "-";
+      document.getElementById('notaC3').innerText = "-";
+      document.getElementById('notaC4').innerText = "-";
+      document.getElementById('notaC5').innerText = "-";
+      document.getElementById('detalhesCorrecao').innerHTML = `
+        <div class="flex items-center gap-3 text-gray-600 p-4">
+          <span class="animate-spin text-[#C4974A] text-2xl">⏳</span>
+          <p class="font-medium text-xs">Sua foto foi enviada com sucesso! Aguarde enquanto nossa IA avalia cada competência...</p>
+        </div>
+      `;
+      
+      resContainer.scrollIntoView({ behavior: 'smooth' });
+
+      try {
+        const fotoData = await obterFotoBase64Assincrona();
+
+        if (!fotoData || !fotoData.base64) {
+          alert("Por favor, selecione ou tire uma foto da sua redação manuscrita antes de enviar.");
+          btn.disabled = false;
+          btn.innerText = "Enviar Foto para Avaliação Inteligente";
+          resContainer.classList.add('hidden');
+          return;
+        }
+
+        btn.innerText = "Analisando foto e avaliando competências...";
+        const tema = document.getElementById('redacaoTema').value;
+
+        const payload = {
+          action: 'corrigirRedacao',
+          email: usuarioLogado.email,
+          tema: tema,
+          texto: "Imagem enviada para OCR",
+          fotoBase64: fotoData.base64,
+          mimeType: fotoData.mimeType,
+          dados: {
+            email: usuarioLogado.email,
+            tema: tema,
+            texto: "Imagem enviada para OCR",
+            fotoBase64: fotoData.base64,
+            mimeType: fotoData.mimeType
+          }
+        };
+
+        const res = await fetch(WEBAPP_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        btn.disabled = false;
+        btn.innerText = "Enviar Foto para Avaliação Inteligente";
+
+        if (data.success) {
+          const r = data.resultado || data.dados || {};
+          ultimoResultado = r;
+          ultimoResultado.tema = tema;
+
+          document.getElementById('resTemaTitulo').innerText = `Tema: ${tema}`;
+          document.getElementById('notaFinal').innerText = r.nota_final ?? r.notaFinal ?? '0';
+          document.getElementById('notaC1').innerText = r.c1 ?? '0';
+          document.getElementById('notaC2').innerText = r.c2 ?? '0';
+          document.getElementById('notaC3').innerText = r.c3 ?? '0';
+          document.getElementById('notaC4').innerText = r.c4 ?? '0';
+          document.getElementById('notaC5').innerText = r.c5 ?? '0';
+
+          document.getElementById('detalhesCorrecao').innerHTML = gerarHTMLFeedbackFormatado(r);
+          
+          carregarHistoricoAluno();
+        } else {
+          alert(data.message || "Falha na análise da redação.");
+          resContainer.classList.add('hidden');
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerText = "Enviar Foto para Avaliação Inteligente";
+        resContainer.classList.add('hidden');
+        alert("Erro na comunicação com o servidor de correção.");
+      }
+    }
+
+    // RENDERIZADOR FORMATADO DO FEEDBACK INTEGRAL
+    function gerarHTMLFeedbackFormatado(r) {
+      const feedbackGeral = r.feedback || "Sem feedback geral.";
+      const detalhes = r.detalhes || {};
+      const pontosCriticos = r.pontos_criticos || [];
+      const planoAcao = r.plano_acao || [];
+
+      let html = '';
+
+      // 1. AVALIAÇÃO GERAL
+      html += `
+        <div class="bg-amber-50 border-l-4 border-[#C4974A] p-4 rounded-r-xl">
+          <h4 class="font-bold text-[#060E18] text-sm mb-1">📌 Avaliação Geral do Corretor</h4>
+          <p class="text-gray-700 leading-relaxed text-xs">${feedbackGeral}</p>
+        </div>
+      `;
+
+      // 2. DETALHAMENTO DAS 5 COMPETÊNCIAS
+      if (Object.keys(detalhes).length > 0) {
+        html += `<div class="space-y-2 mt-4"><h4 class="font-bold text-[#060E18] text-sm">🔍 Análise Detalhada por Competência:</h4>`;
+        
+        const nomesComp = {
+          c1: "Competência 1 - Domínio da Norma Culta",
+          c2: "Competência 2 - Compreensão do Tema e Repertório",
+          c3: "Competência 3 - Projeto de Texto e Argumentação",
+          c4: "Competência 4 - Coesão e Conectivos",
+          c5: "Competência 5 - Proposta de Intervenção"
+        };
+
+        for (let key in nomesComp) {
+          if (detalhes[key]) {
+            html += `
+              <div class="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                <span class="font-bold text-xs text-[#060E18] block mb-1">${nomesComp[key]}</span>
+                <p class="text-gray-600 leading-relaxed text-xs">${detalhes[key]}</p>
+              </div>
+            `;
+          }
+        }
+        html += `</div>`;
+      }
+
+      // 3. PONTOS CRÍTICOS
+      if (pontosCriticos.length > 0) {
+        html += `
+          <div class="p-4 bg-red-50 border border-red-200 rounded-xl mt-4">
+            <h4 class="font-bold text-red-800 text-sm mb-2">⚠️ Pontos Críticos a Corrigir:</h4>
+            <ul class="list-disc list-inside space-y-1 text-red-700 text-xs">
+              ${pontosCriticos.map(p => `<li>${p}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }
+
+      // 4. PLANO DE AÇÃO
+      if (planoAcao.length > 0) {
+        html += `
+          <div class="p-4 bg-blue-50 border border-blue-200 rounded-xl mt-4">
+            <h4 class="font-bold text-blue-900 text-sm mb-2">🎯 Plano de Ação para a Próxima Redação:</h4>
+            <ul class="list-disc list-inside space-y-1 text-blue-800 text-xs">
+              ${planoAcao.map(a => `<li>${a}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }
+
+      return html;
+    }
+
+    // DOWNLOAD EM PDF
+    function baixarPDFResultado() {
+      const element = document.getElementById('conteudoResultadoPDF');
+      const opt = {
+        margin:       10,
+        filename:     `Relatorio_Redacao_ENEM_${new Date().toISOString().slice(0,10)}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+
+    function baixarPDFModal() {
+      const element = document.getElementById('conteudoModalPDF');
+      const opt = {
+        margin:       10,
+        filename:     `Relatorio_Redacao_ENEM_Historico.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+
+    // COMPARTILHAR VIA WHATSAPP
+    function compartilharWhatsAppResultado() {
+      if (!ultimoResultado) return;
+      
+      const tema = ultimoResultado.tema || document.getElementById('redacaoTema').value;
+      const nota = ultimoResultado.nota_final ?? ultimoResultado.notaFinal ?? '0';
+      
+      const mensagem = `*Mestre da Redação⁺ - Avaliação ENEM 2026*%0A%0A` +
+        `*Tema:* ${tema}%0A` +
+        `*Nota Final:* ${nota} / 1000%0A%0A` +
+        `*Notas das Competências:*%0A` +
+        `• C1: ${ultimoResultado.c1}%0A` +
+        `• C2: ${ultimoResultado.c2}%0A` +
+        `• C3: ${ultimoResultado.c3}%0A` +
+        `• C4: ${ultimoResultado.c4}%0A` +
+        `• C5: ${ultimoResultado.c5}%0A%0A` +
+        `*Resumo do Feedback:* ${ultimoResultado.feedback}%0A%0A` +
+        `_Baixe o relatório completo em PDF no painel do aluno!_`;
+
+      const numWhatsapp = usuarioLogado?.whatsapp ? usuarioLogado.whatsapp.replace(/\D/g,'') : '';
+      const urlWa = numWhatsapp ? `https://wa.me/55${numWhatsapp}?text=${mensagem}` : `https://wa.me/?text=${mensagem}`;
+      window.open(urlWa, '_blank');
+    }
+
+    function compartilharWhatsAppModal() {
+      if (!itemHistoricoAtual) return;
+      const r = itemHistoricoAtual.resultado || itemHistoricoAtual.detalhes || itemHistoricoAtual;
+
+      const mensagem = `*Mestre da Redação⁺ - Histórico de Redação*%0A%0A` +
+        `*Tema:* ${itemHistoricoAtual.tema}%0A` +
+        `*Nota Final:* ${r.nota_final ?? itemHistoricoAtual.notaFinal ?? 0} / 1000%0A%0A` +
+        `*Notas das Competências:*%0A` +
+        `• C1: ${r.c1 || 0}%0A` +
+        `• C2: ${r.c2 || 0}%0A` +
+        `• C3: ${r.c3 || 0}%0A` +
+        `• C4: ${r.c4 || 0}%0A` +
+        `• C5: ${r.c5 || 0}%0A%0A` +
+        `*Resumo do Feedback:* ${r.feedback || 'Sem resumo.'}`;
+
+      const numWhatsapp = usuarioLogado?.whatsapp ? usuarioLogado.whatsapp.replace(/\D/g,'') : '';
+      const urlWa = numWhatsapp ? `https://wa.me/55${numWhatsapp}?text=${mensagem}` : `https://wa.me/?text=${mensagem}`;
+      window.open(urlWa, '_blank');
+    }
+
+    // OUTRAS FUNÇÕES AUXILIARES
+    async function handleRecuperarSenha(e) {
+      e.preventDefault();
+      const feedback = document.getElementById('recFeedback');
+      feedback.innerHTML = '<span class="text-gray-500">Enviando solicitação...</span>';
+
+      const email = document.getElementById('recEmail').value;
+
+      try {
+        const res = await fetch(WEBAPP_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'recuperarSenha', email: email })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          feedback.innerHTML = `<span class="text-green-600 font-medium">${data.message || "Nova senha enviada por e-mail com sucesso!"}</span>`;
+        } else {
+          feedback.innerHTML = `<span class="text-red-600 font-medium">${data.message || "E-mail não encontrado."}</span>`;
+        }
+      } catch (err) {
+        feedback.innerHTML = '<span class="text-red-600">Falha ao processar a solicitação.</span>';
+      }
+    }
+
+    async function handleAlterarSenha(e) {
+      e.preventDefault();
+      const novaSenha = document.getElementById('novaSenha').value;
+
+      try {
+        const res = await fetch(WEBAPP_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'alterarSenha',
+            email: usuarioLogado.email,
+            senhaAtual: senhaAtualDoUsuario,
+            novaSenha: novaSenha
+          })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          senhaAtualDoUsuario = novaSenha;
+          document.getElementById('senhaAtual').value = novaSenha;
+          document.getElementById('novaSenha').value = '';
+          alert("Senha alterada com sucesso!");
+        } else {
+          alert(data.message || "Erro ao alterar a senha.");
+        }
+      } catch (err) {
+        alert("Erro na comunicação com o servidor.");
+      }
+    }
+
+    async function carregarTemas() {
+      const grid = document.getElementById('gridEixos');
+      grid.innerHTML = '<p class="text-xs text-gray-500 italic">Carregando banco de temas...</p>';
+
+      try {
+        const res = await fetch(`${WEBAPP_URL}?action=getTemas`);
+        const data = await res.json();
+
+        if (data.success && data.temas) {
+          bancoDadosTemas = data.temas;
+          eixosAgrupados = {};
+
+          bancoDadosTemas.forEach(t => {
+            const eixo = t.eixo || "Geral";
+            if (!eixosAgrupados[eixo]) eixosAgrupados[eixo] = [];
+            eixosAgrupados[eixo].push(t);
+          });
+
+          renderizarEixos();
+        } else {
+          grid.innerHTML = '<p class="text-xs text-red-500">Erro ao carregar os temas.</p>';
+        }
+      } catch (err) {
+        grid.innerHTML = '<p class="text-xs text-red-500">Erro ao comunicar com o servidor de temas.</p>';
+      }
+    }
+
+    function renderizarEixos() {
+      const grid = document.getElementById('gridEixos');
+      grid.innerHTML = '';
+
+      Object.keys(eixosAgrupados).forEach(eixo => {
+        const qtd = eixosAgrupados[eixo].length;
+        grid.innerHTML += `
+          <div onclick="selecionarEixo('${eixo}')" class="p-5 border rounded-xl bg-white hover:border-[#C4974A] cursor-pointer transition-all shadow-sm flex flex-col justify-between">
+            <div>
+              <h4 class="font-bold text-sm text-[#060E18] mb-1">${eixo}</h4>
+              <p class="text-xs text-gray-500">${qtd} tema(s) disponível(is)</p>
+            </div>
+            <span class="text-xs text-[#4A9BC4] font-medium mt-3 inline-block">Explorar Eixo →</span>
+          </div>
+        `;
+      });
+    }
+
+    function selecionarEixo(eixo) {
+      eixoAtualSelecionado = eixo;
+      document.getElementById('tituloEixoSelecionado').innerText = `Eixo Temático: ${eixo}`;
+      const grid = document.getElementById('gridTemasDoEixo');
+      grid.innerHTML = '';
+
+      eixosAgrupados[eixo].forEach((t, index) => {
+        grid.innerHTML += `
+          <div onclick="selecionarTema(${index})" class="p-4 border rounded-xl bg-white hover:border-[#C4974A] cursor-pointer transition-all shadow-sm">
+            <h4 class="font-bold text-sm text-gray-800 mb-2">${t.titulo}</h4>
+            <span class="text-xs text-[#C4974A] font-semibold">Ver Repertórios e Guias →</span>
+          </div>
+        `;
+      });
+
+      document.getElementById('viewEixos').classList.add('hidden');
+      document.getElementById('viewTemasDoEixo').classList.remove('hidden');
+    }
+
+    function voltarParaEixos() {
+      document.getElementById('viewTemasDoEixo').classList.add('hidden');
+      document.getElementById('viewDetalheTema').classList.add('hidden');
+      document.getElementById('viewEixos').classList.remove('hidden');
+    }
+
+    function voltarParaListaTemas() {
+      document.getElementById('viewDetalheTema').classList.add('hidden');
+      document.getElementById('viewTemasDoEixo').classList.remove('hidden');
+    }
+
+    function selecionarTema(index) {
+      const t = eixosAgrupados[eixoAtualSelecionado][index];
+      temaAtualSelecionado = t;
+
+      document.getElementById('detEixoBadge').innerText = t.eixo;
+      document.getElementById('detTemaTitulo').innerText = t.titulo;
+      document.getElementById('detTeses').innerText = t.teses || 'Não especificado';
+      document.getElementById('detProblematizacoes').innerText = t.problematizacoes || 'Não especificado';
+      document.getElementById('detRepertorios').innerText = t.repertorios || 'Não especificado';
+      document.getElementById('detDicas').innerText = t.dicas || 'Sem dicas adicionais.';
+
+      document.getElementById('viewTemasDoEixo').classList.add('hidden');
+      document.getElementById('viewDetalheTema').classList.remove('hidden');
+    }
+
+    function usarTemaParaRedacao() {
+      if (temaAtualSelecionado) {
+        document.getElementById('redacaoTema').value = temaAtualSelecionado.titulo;
+        document.getElementById('secaoRedacao').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  </script>
+</body>
+</html>
