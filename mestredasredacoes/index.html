@@ -13,6 +13,9 @@
 
   <!-- Biblioteca para geração de PDF (html2pdf) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
+  <!-- Biblioteca para geração de Excel (.xlsx) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
     :root {
@@ -130,7 +133,7 @@
       </div>
 
       <!-- ÁREA IMPRESSA NO PDF/MODAL -->
-      <div id="conteudoModalPDF" class="p-2 space-y-4">
+      <div id="conteudoModalPDF" class="p-2 space-y-4 bg-white">
         <div class="text-center p-4 bg-[#060E18] text-white rounded-xl mb-4">
           <span class="text-xs text-[#7A8FA3] uppercase tracking-wider block">Nota Final</span>
           <div class="text-4xl font-extrabold text-[#C4974A]" id="histNotaFinal">0</div>
@@ -149,10 +152,13 @@
 
       <div class="flex flex-col md:flex-row gap-3 pt-4 border-t mt-4">
         <button onclick="baixarPDFModal()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2">
-          📄 Baixar Relatório em PDF
+          📄 Baixar PDF
+        </button>
+        <button onclick="baixarExcelModal()" class="flex-1 bg-green-700 hover:bg-green-800 text-white font-semibold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2">
+          📊 Baixar Excel
         </button>
         <button onclick="compartilharWhatsAppModal()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2">
-          💬 Enviar para WhatsApp
+          💬 WhatsApp
         </button>
         <button onclick="fecharModalHistorico()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2.5 rounded-lg text-xs font-semibold">
           Fechar
@@ -353,7 +359,7 @@
 
         <!-- MÓDULO 3: RESULTADO CORRIGIDO -->
         <div id="resultadoCorrecao" class="hidden bg-gray-50 border-2 border-[#C4974A] rounded-xl p-6 space-y-6 shadow-md">
-          <div id="conteudoResultadoPDF" class="space-y-6 p-2 bg-white rounded-xl border">
+          <div id="conteudoResultadoPDF" class="space-y-6 p-4 bg-white rounded-xl border">
             <div class="flex justify-between items-center border-b pb-4 px-2">
               <div>
                 <h3 class="text-xl font-bold text-[#060E18]">Relatório de Desempenho Enem 2026</h3>
@@ -380,13 +386,16 @@
             <div id="detalhesCorrecao" class="space-y-4 text-xs leading-relaxed"></div>
           </div>
 
-          <!-- BOTÕES DE AÇÃO: PDF E WHATSAPP -->
-          <div class="flex flex-col md:flex-row gap-4 pt-2">
+          <!-- BOTÕES DE AÇÃO: PDF, EXCEL E WHATSAPP -->
+          <div class="flex flex-col md:flex-row gap-3 pt-2">
             <button onclick="baixarPDFResultado()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg text-sm flex items-center justify-center gap-2 shadow-sm transition-colors">
-              📄 Baixar Relatório Completo em PDF
+              📄 Baixar PDF Completo
+            </button>
+            <button onclick="baixarExcelResultado()" class="flex-1 bg-green-700 hover:bg-green-800 text-white font-semibold py-3 rounded-lg text-sm flex items-center justify-center gap-2 shadow-sm transition-colors">
+              📊 Baixar Planilha Excel
             </button>
             <button onclick="compartilharWhatsAppResultado()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg text-sm flex items-center justify-center gap-2 shadow-sm transition-colors">
-              💬 Enviar Resultado para o WhatsApp
+              💬 Enviar via WhatsApp
             </button>
           </div>
         </div>
@@ -644,7 +653,6 @@
 
       let r = item.resultado || item.detalhes || item;
       
-      // Se r for string JSON, converte
       if (typeof r === 'string') {
         try { r = JSON.parse(r); } catch(e) {}
       }
@@ -767,8 +775,8 @@
     function gerarHTMLFeedbackFormatado(r) {
       const feedbackGeral = r.feedback || "Sem feedback geral.";
       const detalhes = r.detalhes || {};
-      const pontosCriticos = r.pontos_criticos || [];
-      const planoAcao = r.plano_acao || [];
+      const pontosCriticos = Array.isArray(r.pontos_criticos) ? r.pontos_criticos : (r.pontos_criticos ? [r.pontos_criticos] : []);
+      const planoAcao = Array.isArray(r.plano_acao) ? r.plano_acao : (r.plano_acao ? [r.plano_acao] : []);
 
       let html = '';
 
@@ -832,29 +840,81 @@
       return html;
     }
 
-    // DOWNLOAD EM PDF
-    function baixarPDFResultado() {
-      const element = document.getElementById('conteudoResultadoPDF');
+    // DOWNLOAD EM PDF SEM CORTE
+    function exportarParaPDF(idElemento, nomeArquivo) {
+      const element = document.getElementById(idElemento);
+      if (!element) return;
+
+      const originalMaxHeight = element.style.maxHeight;
+      const originalOverflow = element.style.overflow;
+      element.style.maxHeight = 'none';
+      element.style.overflow = 'visible';
+
       const opt = {
-        margin:       10,
-        filename:     `Relatorio_Redacao_ENEM_${new Date().toISOString().slice(0,10)}.pdf`,
+        margin:       [10, 10, 10, 10],
+        filename:     nomeArquivo,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
       };
-      html2pdf().set(opt).from(element).save();
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        element.style.maxHeight = originalMaxHeight;
+        element.style.overflow = originalOverflow;
+      });
+    }
+
+    function baixarPDFResultado() {
+      exportarParaPDF('conteudoResultadoPDF', `Relatorio_Redacao_${new Date().toISOString().slice(0,10)}.pdf`);
     }
 
     function baixarPDFModal() {
-      const element = document.getElementById('conteudoModalPDF');
-      const opt = {
-        margin:       10,
-        filename:     `Relatorio_Redacao_ENEM_Historico.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-      html2pdf().set(opt).from(element).save();
+      exportarParaPDF('conteudoModalPDF', `Relatorio_Redacao_Historico.pdf`);
+    }
+
+    // EXPORTAÇÃO COMPLETA PARA EXCEL (.XLSX)
+    function exportarParaExcel(dadosResultado, temaRedacao) {
+      if (!dadosResultado) return;
+
+      const r = dadosResultado;
+      const detalhes = r.detalhes || {};
+      const pontosCriticos = Array.isArray(r.pontos_criticos) ? r.pontos_criticos.join('; ') : (r.pontos_criticos || '');
+      const planoAcao = Array.isArray(r.plano_acao) ? r.plano_acao.join('; ') : (r.plano_acao || '');
+
+      const data = [
+        { "Campo": "Data do Relatório", "Conteúdo / Avaliação": new Date().toLocaleDateString('pt-BR') },
+        { "Campo": "Aluno", "Conteúdo / Avaliação": usuarioLogado?.nome || "Aluno" },
+        { "Campo": "Escola", "Conteúdo / Avaliação": usuarioLogado?.escola || "N/A" },
+        { "Campo": "Tema da Redação", "Conteúdo / Avaliação": temaRedacao || r.tema || "Tema não informado" },
+        { "Campo": "NOTA FINAL", "Conteúdo / Avaliação": r.nota_final ?? r.notaFinal ?? 0 },
+        { "Campo": "Competência 1 (Norma Culta)", "Conteúdo / Avaliação": `Nota: ${r.c1 ?? 0} | ${detalhes.c1 || 'N/A'}` },
+        { "Campo": "Competência 2 (Compreensão/Repertório)", "Conteúdo / Avaliação": `Nota: ${r.c2 ?? 0} | ${detalhes.c2 || 'N/A'}` },
+        { "Campo": "Competência 3 (Projeto de Texto)", "Conteúdo / Avaliação": `Nota: ${r.c3 ?? 0} | ${detalhes.c3 || 'N/A'}` },
+        { "Campo": "Competência 4 (Coesão/Conectivos)", "Conteúdo / Avaliação": `Nota: ${r.c4 ?? 0} | ${detalhes.c4 || 'N/A'}` },
+        { "Campo": "Competência 5 (Proposta Intervenção)", "Conteúdo / Avaliação": `Nota: ${r.c5 ?? 0} | ${detalhes.c5 || 'N/A'}` },
+        { "Campo": "Feedback Geral", "Conteúdo / Avaliação": r.feedback || "Sem feedback geral." },
+        { "Campo": "Pontos Críticos", "Conteúdo / Avaliação": pontosCriticos || "Nenhum ponto crítico apontado." },
+        { "Campo": "Plano de Ação", "Conteúdo / Avaliação": planoAcao || "Nenhum plano de ação registrado." }
+      ];
+
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      worksheet['!cols'] = [{ wch: 35 }, { wch: 90 }];
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Relatorio_Redacao");
+      XLSX.writeFile(workbook, `Relatorio_Redacao_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    function baixarExcelResultado() {
+      const tema = document.getElementById('redacaoTema').value;
+      exportarParaExcel(ultimoResultado, tema);
+    }
+
+    function baixarExcelModal() {
+      if (!itemHistoricoAtual) return;
+      const r = itemHistoricoAtual.resultado || itemHistoricoAtual.detalhes || itemHistoricoAtual;
+      exportarParaExcel(r, itemHistoricoAtual.tema);
     }
 
     // COMPARTILHAR VIA WHATSAPP
