@@ -91,7 +91,7 @@
         <span class="text-[#EEF0F2]">Mestre da Redação⁺</span>
       </nav>
 
-      <div id="userStatus" class="text-xs text-[#7A8FA3]"></div>
+      <div id="userStatus" class="text-xs text-[#7A8FA3] flex items-center gap-3"></div>
     </div>
   </header>
 
@@ -251,24 +251,24 @@
             <div class="flex items-center gap-3">
               <span class="text-2xl">⏳</span>
               <div>
-                <h3 class="text-sm font-bold text-[#C4974A] uppercase tracking-wide">Período de Degustação Gratuita</h3>
-                <p class="text-xs text-gray-300">Aproveite seus recursos gratuitos para testar a plataforma:</p>
+                <h3 class="text-sm font-bold text-[#C4974A] uppercase tracking-wide">Status da sua Conta</h3>
+                <p class="text-xs text-gray-300">Acompanhe seu saldo e cota de correções disponíveis:</p>
               </div>
             </div>
             
-            <!-- CONTADORES DE LIMITES DA DEGUSTAÇÃO -->
+            <!-- CONTADORES DE LIMITES DA DEGUSTAÇÃO / PLANO -->
             <div class="flex items-center gap-3 w-full md:w-auto justify-around">
               <div class="bg-[#060E18] px-3 py-2 rounded-lg border border-gray-700 text-center min-w-[90px]">
-                <span id="trialDias" class="block text-lg font-extrabold text-[#C4974A]">7</span>
+                <span id="trialDias" class="block text-lg font-extrabold text-[#C4974A]">0</span>
                 <span class="text-[10px] text-gray-400 font-medium uppercase">Dias Restantes</span>
               </div>
               <div class="bg-[#060E18] px-3 py-2 rounded-lg border border-gray-700 text-center min-w-[90px]">
-                <span id="trialTemas" class="block text-lg font-extrabold text-[#4A9BC4]">5</span>
-                <span class="text-[10px] text-gray-400 font-medium uppercase">Temas Liberados</span>
+                <span id="trialTemas" class="block text-lg font-extrabold text-[#4A9BC4]">0</span>
+                <span class="text-[10px] text-gray-400 font-medium uppercase">Temas Lib.</span>
               </div>
               <div class="bg-[#060E18] px-3 py-2 rounded-lg border border-gray-700 text-center min-w-[90px]">
-                <span id="trialRedacoes" class="block text-lg font-extrabold text-green-400">1</span>
-                <span class="text-[10px] text-gray-400 font-medium uppercase">Redação Grátis</span>
+                <span id="trialRedacoes" class="block text-lg font-extrabold text-green-400">0</span>
+                <span class="text-[10px] text-gray-400 font-medium uppercase">Correções Saldo</span>
               </div>
             </div>
 
@@ -286,7 +286,7 @@
             <p class="text-xs text-gray-500">Mestre da Redação⁺ - Preparatório Enem 2026</p>
           </div>
           <form onsubmit="handleAlterarSenha(event)" class="flex flex-wrap md:flex-nowrap items-center gap-2 w-full md:w-auto">
-            <input type="password" id="senhaAtual" placeholder="Senha Atual" required class="p-2 border rounded-lg text-xs bg-gray-100 font-mono" readonly title="Senha atual pré-preenchida">
+            <input type="password" id="senhaAtual" placeholder="Senha Atual" required class="p-2 border rounded-lg text-xs bg-gray-100 font-mono">
             <input type="password" id="novaSenha" placeholder="Digite a Nova Senha" required class="p-2 border rounded-lg text-xs bg-white focus:ring-2 focus:ring-[#C4974A] outline-none">
             <button type="submit" class="bg-[#060E18] text-[#EEF0F2] px-4 py-2 rounded-lg text-xs font-medium hover:bg-[#0A1624] whitespace-nowrap">Atualizar Senha</button>
           </form>
@@ -484,11 +484,9 @@
     </div>
   </footer>
 
-  <!-- LÓGICA JAVASCRIPT COMPLETA E ATUALIZADA -->
+  <!-- LÓGICA JAVASCRIPT COMPLETA E CORRIGIDA -->
   <script>
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx_nxZL6g9rbcLIjJRd8WS-Vpq_LqAmRi3aKRJx5SEp7Zf-skw7Vfu6sXpImGHaLlh2yw/exec";
-    
-    // URL DIRETA PARA CHECKOUT / UPGRADE DE PLANO
     const UPGRADE_URL = "https://wa.me/5527998131806?text=Ola,%20gostaria%20de%20fazer%20o%20upgrade%20do%20meu%20plano%20no%20Mestre%20da%20Redacao";
 
     let usuarioLogado = null;
@@ -504,7 +502,7 @@
     let ultimoResultado = null;
     let itemHistoricoAtual = null;
 
-    // Função auxiliar para envios seguros sem erro de CORS preflight
+    // Função auxiliar de chamadas API via POST
     async function apiPost(payload) {
       const res = await fetch(WEBAPP_URL, {
         method: 'POST',
@@ -519,6 +517,20 @@
     function toggleRecuperarSenha(show) {
       document.getElementById('boxLogin').classList.toggle('hidden', show);
       document.getElementById('boxRecuperar').classList.toggle('hidden', !show);
+    }
+
+    function realizarLogout() {
+      usuarioLogado = null;
+      senhaAtualDoUsuario = "";
+      fotoBase64 = null;
+      fotoMimeType = null;
+      
+      document.getElementById('appSection').classList.add('hidden');
+      document.getElementById('authSection').classList.remove('hidden');
+      document.getElementById('userStatus').innerHTML = '';
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginSenha').value = '';
+      document.getElementById('loginFeedback').innerText = '';
     }
 
     // PRÉ-VISUALIZAÇÃO DA FOTO E CONVERSÃO EM BASE64
@@ -563,7 +575,7 @@
       });
     }
 
-    // CONSULTA E ATUALIZAÇÃO DO CONTADOR DE LIMITES / PERÍODO DE TESTES
+    // CONSULTA E ATUALIZAÇÃO DO CONTADOR DE LIMITES / PLANO
     async function atualizarContadorTrial() {
       if (!usuarioLogado || !usuarioLogado.email) return;
 
@@ -585,31 +597,33 @@
           const btnUpgradeBanner = document.getElementById('btnUpgradeBanner');
           if (btnUpgradeBanner) btnUpgradeBanner.href = UPGRADE_URL;
 
-          const bloqueado = !data.liberado || redacoes <= 0 || dias <= 0 || temas <= 0;
+          const bloqueado = (data.liberado === false) || redacoes <= 0;
 
-          // Se tiver estourado limite, substitui/bloqueia botão de escrita de redação pelo botão direto de Upgrade
+          // Se não houver cota/saldo, substitui o botão por aviso de Upgrade
           const areaEnvio = document.getElementById('areaEnvioRedacao');
-          if (bloqueado) {
-            areaEnvio.innerHTML = `
-              <a href="${UPGRADE_URL}" target="_blank" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg text-sm flex items-center justify-center space-x-2 transition shadow">
-                🔒 Limite Atingido - Clique aqui para Fazer Upgrade
-              </a>
-            `;
-          } else {
-            areaEnvio.innerHTML = `
-              <button type="submit" id="btnCorrigir" class="w-full bg-[#060E18] hover:bg-[#0A1624] text-white py-3 rounded-lg font-semibold text-sm transition-colors">
-                Enviar Foto para Avaliação Inteligente
-              </button>
-            `;
+          if (areaEnvio) {
+            if (bloqueado) {
+              areaEnvio.innerHTML = `
+                <a href="${UPGRADE_URL}" target="_blank" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg text-sm flex items-center justify-center space-x-2 transition shadow">
+                  🔒 Cota Esgotada - Clique aqui para Fazer Upgrade
+                </a>
+              `;
+            } else {
+              areaEnvio.innerHTML = `
+                <button type="submit" id="btnCorrigir" class="w-full bg-[#060E18] hover:bg-[#0A1624] text-white py-3 rounded-lg font-semibold text-sm transition-colors">
+                  Enviar Foto para Avaliação Inteligente
+                </button>
+              `;
+            }
           }
 
-          // Ajusta botão de uso de tema no detalhe
+          // Ajusta botão de envio na tela de detalhe de tema
           const areaAcaoTema = document.getElementById('areaAcaoTema');
           if (areaAcaoTema) {
             if (bloqueado) {
               areaAcaoTema.innerHTML = `
                 <a href="${UPGRADE_URL}" target="_blank" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg text-sm block text-center transition shadow">
-                  🔒 Faça Upgrade para Liberar Novos Envios
+                  🔒 Cota Esgotada - Faça Upgrade para Liberar Novos Envios
                 </a>
               `;
             } else {
@@ -620,7 +634,7 @@
           }
         }
       } catch (err) {
-        console.error("Erro ao carregar dados do período de testes:", err);
+        console.error("Erro ao verificar limites de cota do usuário:", err);
       }
     }
 
@@ -705,10 +719,16 @@
 
           document.getElementById('authSection').classList.add('hidden');
           document.getElementById('appSection').classList.remove('hidden');
-          document.getElementById('userStatus').innerHTML = `Aluno: <b>${usuarioLogado.nome}</b>`;
-          document.getElementById('senhaAtual').value = senhaAtualDoUsuario;
           
-          // Executa o carregamento assíncrono completo das abas
+          document.getElementById('userStatus').innerHTML = `
+            <span>Aluno: <b>${usuarioLogado.nome}</b></span>
+            <button onclick="realizarLogout()" class="text-red-400 hover:underline font-bold text-xs ml-2">Sair</button>
+          `;
+          
+          const elSenhaAtual = document.getElementById('senhaAtual');
+          if (elSenhaAtual) elSenhaAtual.value = senhaAtualDoUsuario;
+          
+          // Executa o carregamento em ordem segura
           await atualizarContadorTrial();
           await carregarTemas();
           await carregarHistoricoAluno();
