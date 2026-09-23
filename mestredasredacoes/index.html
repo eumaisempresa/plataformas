@@ -708,9 +708,10 @@
           document.getElementById('userStatus').innerHTML = `Aluno: <b>${usuarioLogado.nome}</b>`;
           document.getElementById('senhaAtual').value = senhaAtualDoUsuario;
           
+          // Executa o carregamento assíncrono completo das abas
           await atualizarContadorTrial();
-          carregarTemas();
-          carregarHistoricoAluno();
+          await carregarTemas();
+          await carregarHistoricoAluno();
         } else {
           feedback.innerText = data.message || "E-mail ou senha inválidos.";
         }
