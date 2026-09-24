@@ -272,10 +272,10 @@
               </div>
             </div>
 
-            <!-- BOTÃO PARA CONTACTAR/ASSINAR (LINK DIRETO DE CHECKOUT / UPGRADE) -->
-            <a id="btnUpgradeBanner" href="https://wa.me/5527998131806" target="_blank" class="gold-button px-4 py-2 rounded-lg text-xs font-bold shrink-0 text-center">
+            <!-- BOTÃO PARA FAZER UPGRADE (ENVIA SOLICITAÇÃO POR E-MAIL) -->
+            <button id="btnUpgradeBanner" onclick="solicitarUpgradeEmail()" class="gold-button px-4 py-2 rounded-lg text-xs font-bold shrink-0 text-center">
               Fazer Upgrade
-            </a>
+            </button>
           </div>
         </div>
         
@@ -487,7 +487,6 @@
   <!-- LÓGICA JAVASCRIPT COMPLETA E CORRIGIDA -->
   <script>
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx_nxZL6g9rbcLIjJRd8WS-Vpq_LqAmRi3aKRJx5SEp7Zf-skw7Vfu6sXpImGHaLlh2yw/exec";
-    const UPGRADE_URL = "https://wa.me/5527998131806?text=Ola,%20gostaria%20de%20fazer%20o%20upgrade%20do%20meu%20plano%20no%20Mestre%20da%20Redacao";
 
     let usuarioLogado = null;
     let senhaAtualDoUsuario = "";
@@ -575,6 +574,44 @@
       });
     }
 
+    // DISPARO DE E-MAIL DE UPGRADE PARA BRUNORSVIEIRA@GMAIL.COM
+    async function solicitarUpgradeEmail() {
+      if (!usuarioLogado || !usuarioLogado.email) {
+        alert("Por favor, faça login para solicitar o upgrade.");
+        return;
+      }
+
+      const btn = document.getElementById('btnUpgradeBanner');
+      const textoOriginal = btn ? btn.innerText : '';
+      
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = "Enviando solicitação...";
+      }
+
+      try {
+        const data = await apiPost({
+          action: 'solicitarUpgrade',
+          emailAluno: usuarioLogado.email,
+          nomeAluno: usuarioLogado.nome || 'Não informado',
+          destinatario: 'brunorsvieira@gmail.com'
+        });
+
+        if (data.success) {
+          alert("Solicitação de upgrade enviada com sucesso! Em breve entraremos em contacto através do seu e-mail.");
+        } else {
+          alert("Erro ao enviar solicitação: " + (data.message || "Tente novamente."));
+        }
+      } catch (err) {
+        alert("Ocorreu um erro de ligação ao solicitar o upgrade.");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = textoOriginal;
+        }
+      }
+    }
+
     // CONSULTA E ATUALIZAÇÃO DO CONTADOR DE LIMITES / PLANO
     async function atualizarContadorTrial() {
       if (!usuarioLogado || !usuarioLogado.email) return;
@@ -586,27 +623,24 @@
         });
 
         if (data.success) {
-          const dias = data.diasRestantes !== undefined ? data.diasRestantes : 0;
-          const temas = data.temasRestantes !== undefined ? data.temasRestantes : 0;
-          const redacoes = data.redacoesRestantes !== undefined ? data.redacoesRestantes : 0;
+          const dias = data.diasRestantes !== undefined ? data.diasRestantes : (data.dias ?? 0);
+          const temas = data.temasRestantes !== undefined ? data.temasRestantes : (data.temas ?? 0);
+          const redacoes = data.redacoesRestantes !== undefined ? data.redacoesRestantes : (data.redacoes ?? 0);
 
           document.getElementById('trialDias').innerText = dias;
           document.getElementById('trialTemas').innerText = temas;
           document.getElementById('trialRedacoes').innerText = redacoes;
 
-          const btnUpgradeBanner = document.getElementById('btnUpgradeBanner');
-          if (btnUpgradeBanner) btnUpgradeBanner.href = UPGRADE_URL;
-
           const bloqueado = (data.liberado === false) || redacoes <= 0;
 
-          // Se não houver cota/saldo, substitui o botão por aviso de Upgrade
+          // Se não houver cota/saldo, substitui o botão de envio por ação de Upgrade
           const areaEnvio = document.getElementById('areaEnvioRedacao');
           if (areaEnvio) {
             if (bloqueado) {
               areaEnvio.innerHTML = `
-                <a href="${UPGRADE_URL}" target="_blank" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg text-sm flex items-center justify-center space-x-2 transition shadow">
+                <button type="button" onclick="solicitarUpgradeEmail()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg text-sm flex items-center justify-center space-x-2 transition shadow">
                   🔒 Cota Esgotada - Clique aqui para Fazer Upgrade
-                </a>
+                </button>
               `;
             } else {
               areaEnvio.innerHTML = `
@@ -617,14 +651,14 @@
             }
           }
 
-          // Ajusta botão de envio na tela de detalhe de tema
+          // Ajusta botão na tela de detalhe do tema
           const areaAcaoTema = document.getElementById('areaAcaoTema');
           if (areaAcaoTema) {
             if (bloqueado) {
               areaAcaoTema.innerHTML = `
-                <a href="${UPGRADE_URL}" target="_blank" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg text-sm block text-center transition shadow">
+                <button type="button" onclick="solicitarUpgradeEmail()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg text-sm block text-center transition shadow">
                   🔒 Cota Esgotada - Faça Upgrade para Liberar Novos Envios
-                </a>
+                </button>
               `;
             } else {
               areaAcaoTema.innerHTML = `
@@ -933,7 +967,7 @@
       const grid = document.getElementById('gridTemasDoEixo');
       grid.innerHTML = '';
 
-      eixosAgrupados[eixo].forEach((item, index) => {
+      eixosAgrupados[eixo].forEach((item) => {
         const card = document.createElement('div');
         card.className = "bg-white border rounded-xl p-4 cursor-pointer hover:border-[#C4974A] transition-all";
         card.onclick = () => verDetalhesTema(item);
