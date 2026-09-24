@@ -574,7 +574,7 @@
       });
     }
 
-    // DISPARO DE E-MAIL DE UPGRADE PARA BRUNORSVIEIRA@GMAIL.COM
+    // DISPARO DE E-MAIL DE UPGRADE PARA O ADMINISTRADOR
     async function solicitarUpgradeEmail() {
       if (!usuarioLogado || !usuarioLogado.email) {
         alert("Por favor, faça login para solicitar o upgrade.");
@@ -592,18 +592,16 @@
       try {
         const data = await apiPost({
           action: 'solicitarUpgrade',
-          emailAluno: usuarioLogado.email,
-          nomeAluno: usuarioLogado.nome || 'Não informado',
-          destinatario: 'brunorsvieira@gmail.com'
+          email: usuarioLogado.email
         });
 
         if (data.success) {
-          alert("Solicitação de upgrade enviada com sucesso! Em breve entraremos em contacto através do seu e-mail.");
+          alert("Solicitação de upgrade enviada com sucesso! Entraremos em contato em breve.");
         } else {
           alert("Erro ao enviar solicitação: " + (data.message || "Tente novamente."));
         }
       } catch (err) {
-        alert("Ocorreu um erro de ligação ao solicitar o upgrade.");
+        alert("Ocorreu um erro de conexão ao solicitar o upgrade.");
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -612,63 +610,72 @@
       }
     }
 
-    // CONSULTA E ATUALIZAÇÃO DO CONTADOR DE LIMITES / PLANO
+    // FUNÇÃO QUE ATUALIZA A INTERFACE COM OS DADOS DO USUÁRIO VINDOS DO GOOGLE SHEETS
+    function atualizarInterfaceContadores(usr) {
+      if (!usr) return;
+
+      const dias = usr.diasRestantes !== undefined ? usr.diasRestantes : 0;
+      const temas = usr.temasRestantes !== undefined ? usr.temasRestantes : 0;
+      const redacoes = usr.correcoesRestantes !== undefined ? usr.correcoesRestantes : 0;
+
+      document.getElementById('trialDias').innerText = dias;
+      document.getElementById('trialTemas').innerText = temas;
+      document.getElementById('trialRedacoes').innerText = redacoes;
+
+      const bloqueado = (usr.expirado === true) || redacoes <= 0;
+
+      // Ajusta botão na área de envio de redação
+      const areaEnvio = document.getElementById('areaEnvioRedacao');
+      if (areaEnvio) {
+        if (bloqueado) {
+          areaEnvio.innerHTML = `
+            <button type="button" onclick="solicitarUpgradeEmail()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg text-sm flex items-center justify-center space-x-2 transition shadow">
+              🔒 Cota Esgotada - Clique aqui para Fazer Upgrade
+            </button>
+          `;
+        } else {
+          areaEnvio.innerHTML = `
+            <button type="submit" id="btnCorrigir" class="w-full bg-[#060E18] hover:bg-[#0A1624] text-white py-3 rounded-lg font-semibold text-sm transition-colors">
+              Enviar Foto para Avaliação Inteligente
+            </button>
+          `;
+        }
+      }
+
+      // Ajusta botão na área de detalhe do tema
+      const areaAcaoTema = document.getElementById('areaAcaoTema');
+      if (areaAcaoTema) {
+        if (bloqueado) {
+          areaAcaoTema.innerHTML = `
+            <button type="button" onclick="solicitarUpgradeEmail()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg text-sm block text-center transition shadow">
+              🔒 Cota Esgotada - Faça Upgrade para Liberar Novos Envios
+            </button>
+          `;
+        } else {
+          areaAcaoTema.innerHTML = `
+            <button id="btnUsarTema" onclick="usarTemaParaRedacao()" class="w-full gold-button py-2.5 rounded-lg text-sm">Enviar Foto da Redação sobre este Tema</button>
+          `;
+        }
+      }
+    }
+
+    // CONSULTA E RE-AUTENTICAÇÃO PARA ATUALIZAÇÃO DO SALDO COM O GOOGLE APPS SCRIPT
     async function atualizarContadorTrial() {
-      if (!usuarioLogado || !usuarioLogado.email) return;
+      if (!usuarioLogado || !usuarioLogado.email || !senhaAtualDoUsuario) return;
 
       try {
         const data = await apiPost({
-          action: 'verificarAcesso',
-          email: usuarioLogado.email
+          action: 'login',
+          email: usuarioLogado.email,
+          senha: senhaAtualDoUsuario
         });
 
-        if (data.success) {
-          const dias = data.diasRestantes !== undefined ? data.diasRestantes : (data.dias ?? 0);
-          const temas = data.temasRestantes !== undefined ? data.temasRestantes : (data.temas ?? 0);
-          const redacoes = data.redacoesRestantes !== undefined ? data.redacoesRestantes : (data.redacoes ?? 0);
-
-          document.getElementById('trialDias').innerText = dias;
-          document.getElementById('trialTemas').innerText = temas;
-          document.getElementById('trialRedacoes').innerText = redacoes;
-
-          const bloqueado = (data.liberado === false) || redacoes <= 0;
-
-          // Se não houver cota/saldo, substitui o botão de envio por ação de Upgrade
-          const areaEnvio = document.getElementById('areaEnvioRedacao');
-          if (areaEnvio) {
-            if (bloqueado) {
-              areaEnvio.innerHTML = `
-                <button type="button" onclick="solicitarUpgradeEmail()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg text-sm flex items-center justify-center space-x-2 transition shadow">
-                  🔒 Cota Esgotada - Clique aqui para Fazer Upgrade
-                </button>
-              `;
-            } else {
-              areaEnvio.innerHTML = `
-                <button type="submit" id="btnCorrigir" class="w-full bg-[#060E18] hover:bg-[#0A1624] text-white py-3 rounded-lg font-semibold text-sm transition-colors">
-                  Enviar Foto para Avaliação Inteligente
-                </button>
-              `;
-            }
-          }
-
-          // Ajusta botão na tela de detalhe do tema
-          const areaAcaoTema = document.getElementById('areaAcaoTema');
-          if (areaAcaoTema) {
-            if (bloqueado) {
-              areaAcaoTema.innerHTML = `
-                <button type="button" onclick="solicitarUpgradeEmail()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-lg text-sm block text-center transition shadow">
-                  🔒 Cota Esgotada - Faça Upgrade para Liberar Novos Envios
-                </button>
-              `;
-            } else {
-              areaAcaoTema.innerHTML = `
-                <button id="btnUsarTema" onclick="usarTemaParaRedacao()" class="w-full gold-button py-2.5 rounded-lg text-sm">Enviar Foto da Redação sobre este Tema</button>
-              `;
-            }
-          }
+        if (data.success && data.usuario) {
+          usuarioLogado = data.usuario;
+          atualizarInterfaceContadores(usuarioLogado);
         }
       } catch (err) {
-        console.error("Erro ao verificar limites de cota do usuário:", err);
+        console.error("Erro ao sincronizar saldo com a planilha:", err);
       }
     }
 
@@ -747,7 +754,7 @@
       try {
         const data = await apiPost({ action: 'login', email: email, senha: senha });
 
-        if (data.success) {
+        if (data.success && data.usuario) {
           usuarioLogado = data.usuario;
           senhaAtualDoUsuario = senha;
 
@@ -762,8 +769,10 @@
           const elSenhaAtual = document.getElementById('senhaAtual');
           if (elSenhaAtual) elSenhaAtual.value = senhaAtualDoUsuario;
           
-          // Executa o carregamento em ordem segura
-          await atualizarContadorTrial();
+          // Atualiza os contadores na tela diretamente com os dados devolvidos do Sheets
+          atualizarInterfaceContadores(usuarioLogado);
+
+          // Carrega os temas e histórico
           await carregarTemas();
           await carregarHistoricoAluno();
         } else {
@@ -1018,7 +1027,7 @@
 
       if (btn) {
         btn.disabled = true;
-        btn.innerText = "Analisando foto e avaliando com Gemini IA...";
+        btn.innerText = "Analisando foto e avaliando com IA...";
       }
 
       try {
