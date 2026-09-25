@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa B2B ES — Grupo Coutinho</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060E18;--bg2:#0A1624;--bg3:#0E1E30;
+  --gold:#C4974A;--neg:#C4A265;
+  --text:#EEF0F2;--text2:#7A8FA3;--text3:#4a6278;
+  --border:rgba(196,151,74,0.18);--border2:rgba(196,151,74,0.35);
+  --green:#4CAF7D;--red:#E05555;--orange:#E8720C;
+  --pw:300px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;}
+
+/* LOGIN */
+#login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;padding:24px;}
+.lbox{width:100%;max-width:340px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:36px 28px;position:relative;overflow:hidden;}
+.lbox::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.llogo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--text);text-align:center;margin-bottom:4px;}
+.llogo sup{font-size:10px;color:var(--gold);}
+.lsub{font-size:10px;color:var(--text2);text-align:center;letter-spacing:2px;text-transform:uppercase;margin-bottom:24px;}
+.lf{margin-bottom:14px;}
+.lf label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;}
+.lf input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 12px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;}
+.lf input:focus{border-color:var(--border2);}
+.lf input::placeholder{color:var(--text2);opacity:0.4;}
+.lbtn{width:100%;padding:12px;background:linear-gradient(135deg,var(--gold),var(--neg));border:none;border-radius:8px;font-size:13px;font-weight:500;color:var(--bg);cursor:pointer;font-family:'DM Sans',sans-serif;}
+.lerr{font-size:11px;color:var(--red);text-align:center;margin-top:10px;display:none;}
+
+/* APP */
+#app{display:none;height:100%;flex-direction:column;}
+
+/* HEADER */
+.hdr{height:50px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 18px;flex-shrink:0;z-index:200;}
+.hbrand{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px;}
+.hbrand sup{font-size:9px;color:var(--gold);}
+.hsep{width:1px;height:14px;background:var(--border2);}
+.htitle{font-size:12px;color:var(--text2);}
+.hright{display:flex;align-items:center;gap:10px;}
+.hstat{text-align:right;}
+.hstat-v{font-family:'DM Mono',monospace;font-size:16px;color:var(--gold);line-height:1;}
+.hstat-l{font-size:9px;color:var(--text2);letter-spacing:1px;}
+.btn-hdr{padding:6px 12px;border-radius:7px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.2s;}
+.btn-exp{background:none;border:1px solid var(--border2);color:var(--neg);}
+.btn-exp:hover{background:rgba(196,162,101,0.1);}
+.btn-sair{background:none;border:1px solid var(--border);color:var(--text2);}
+.btn-sair:hover{color:var(--text);border-color:var(--border2);}
+
+/* BODY */
+.body{display:flex;flex:1;overflow:hidden;}
+
+/* PAINEL */
+.panel{width:var(--pw);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+.ptabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.ptab{flex:1;padding:10px 4px;font-size:11px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;transition:all 0.2s;text-align:center;background:none;border-left:none;border-right:none;border-top:none;font-family:'DM Sans',sans-serif;}
+.ptab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.pbody{flex:1;overflow-y:auto;padding:12px;}
+.psec{display:none;}
+.psec.active{display:block;}
+
+/* FILTROS */
+.flbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:5px;margin-top:12px;display:block;font-family:'DM Mono',monospace;}
+.flbl:first-child{margin-top:0;}
+.fsel,.finp{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:12px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;appearance:none;margin-bottom:3px;}
+.fsel:focus,.finp:focus{border-color:var(--border2);}
+.finp::placeholder{color:var(--text2);opacity:0.4;}
+.btn-filtrar{width:100%;padding:9px;background:linear-gradient(135deg,var(--gold),var(--neg));border:none;border-radius:7px;font-size:12px;font-weight:500;color:var(--bg);cursor:pointer;margin-top:8px;font-family:'DM Sans',sans-serif;}
+.btn-limpar{width:100%;padding:7px;background:none;border:1px solid var(--border);border-radius:7px;font-size:11px;color:var(--text2);cursor:pointer;margin-top:4px;font-family:'DM Sans',sans-serif;}
+.btn-limpar:hover{border-color:var(--border2);color:var(--text);}
+
+/* STATS */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px;}
+.scard{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 12px;}
+.scard-v{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);line-height:1;margin-bottom:2px;}
+.scard-l{font-size:9px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;}
+.chart-w{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:10px;}
+.chart-t{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:8px;font-family:'DM Mono',monospace;}
+.brow{display:flex;align-items:center;gap:7px;margin-bottom:5px;}
+.bname{font-size:10px;color:var(--text2);width:90px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btrack{flex:1;height:4px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;}
+.bfill{height:100%;border-radius:99px;}
+.bcnt{font-size:10px;color:var(--text2);font-family:'DM Mono',monospace;width:28px;text-align:right;flex-shrink:0;}
+
+/* LISTA */
+.lista-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.lista-count{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;}
+.emp-card{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px;margin-bottom:8px;transition:border-color 0.15s;}
+.emp-card:hover{border-color:var(--border2);}
+.emp-cat{font-size:9px;color:var(--neg);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;font-family:'DM Mono',monospace;}
+.emp-nome{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px;line-height:1.3;}
+.emp-meta{font-size:11px;color:var(--text2);margin-bottom:6px;line-height:1.5;}
+.emp-badges{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;}
+.badge{font-size:9px;padding:2px 7px;border-radius:4px;font-weight:500;letter-spacing:0.3px;}
+.b-ativa{background:rgba(76,175,125,0.1);color:var(--green);}
+.b-inativa{background:rgba(224,85,85,0.1);color:var(--red);}
+.b-mei{background:rgba(122,143,163,0.1);color:var(--text2);}
+.b-me{background:rgba(76,175,125,0.1);color:var(--green);}
+.b-epp{background:rgba(196,151,74,0.12);color:var(--gold);}
+.b-medio{background:rgba(232,114,12,0.1);color:var(--orange);}
+.b-grande{background:rgba(224,85,85,0.1);color:var(--red);}
+.b-receita{background:rgba(0,150,255,0.1);color:#4a9fff;}
+.b-gov{background:rgba(155,89,255,0.1);color:#9b59ff;}
+.emp-acoes{display:flex;gap:5px;flex-wrap:wrap;}
+.btn-acao{padding:5px 10px;border-radius:6px;font-size:10px;font-family:'DM Sans',sans-serif;cursor:pointer;border:none;display:flex;align-items:center;gap:4px;transition:opacity 0.2s;text-decoration:none;}
+.btn-acao:hover{opacity:0.8;}
+.btn-wa{background:#25D366;color:#fff;}
+.btn-email{background:rgba(196,151,74,0.15);color:var(--gold);border:1px solid rgba(196,151,74,0.3);}
+.btn-copy{background:var(--bg2);color:var(--text2);border:1px solid var(--border);}
+.btn-copy:hover{color:var(--text);}
+.emp-fat{font-size:10px;color:var(--gold);font-family:'DM Mono',monospace;margin-top:5px;}
+
+/* MAP */
+#map{flex:1;}
+
+/* LOADING */
+.overlay{position:fixed;inset:0;background:rgba(6,14,24,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:8000;}
+.spinner{width:36px;height:36px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:14px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-txt{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 18px;font-size:12px;color:var(--neg);z-index:9000;opacity:0;transition:opacity 0.3s;white-space:nowrap;font-family:'DM Mono',monospace;}
+.toast.show{opacity:1;}
+
+/* LEAFLET */
+.leaflet-control-attribution{background:rgba(6,14,24,0.8)!important;color:#4a6278!important;font-size:9px!important;}
+.leaflet-control-attribution a{color:#4a6278!important;}
+.leaflet-control-zoom a{background:var(--bg2)!important;border-color:var(--border)!important;color:var(--text2)!important;}
+.leaflet-control-zoom a:hover{background:rgba(196,151,74,0.1)!important;color:var(--gold)!important;}
+.leaflet-popup-content-wrapper{background:var(--bg2)!important;border:1px solid var(--border)!important;border-radius:10px!important;color:var(--text)!important;box-shadow:0 8px 24px rgba(0,0,0,0.6)!important;}
+.leaflet-popup-tip{background:var(--bg2)!important;}
+.marker-cluster-small,.marker-cluster-medium,.marker-cluster-large{background:rgba(196,151,74,0.2)!important;}
+.marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{background:rgba(196,151,74,0.6)!important;color:var(--bg)!important;font-family:'DM Mono',monospace!important;font-size:11px!important;font-weight:700!important;}
+.pop-cat{font-size:9px;color:var(--neg);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;font-family:'DM Mono',monospace;}
+.pop-nome{font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px;}
+.pop-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid var(--border);}
+.pop-row:last-child{border-bottom:none;}
+.pop-lbl{color:var(--text2);}
+.pop-val{color:var(--text);font-family:'DM Mono',monospace;font-size:10px;text-align:right;max-width:150px;overflow:hidden;text-overflow:ellipsis;}
+
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px;}
+@media(max-width:768px){:root{--pw:260px;}.hstat{display:none;}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="lbox">
+    <div class="llogo">EU<sup>⁺</sup></div>
+    <div class="lsub">Mapa B2B · Espírito Santo</div>
+    <div class="lf">
+      <label>Senha</label>
+      <input type="password" id="l-senha" placeholder="••••••••" onkeydown="if(event.key==='Enter')entrar()"/>
+    </div>
+    <button class="lbtn" onclick="entrar()">Entrar</button>
+    <div class="lerr" id="l-err">Senha incorreta.</div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="overlay" id="loading" style="display:none">
+  <div class="spinner"></div>
+  <div class="load-txt" id="load-txt">Carregando base...</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <div class="hdr">
+    <div class="hbrand">EU<sup>⁺</sup><div class="hsep"></div><span class="htitle">Mapa B2B · ES</span></div>
+    <div class="hright">
+      <div class="hstat"><div class="hstat-v" id="h-total">—</div><div class="hstat-l">Total</div></div>
+      <div class="hstat"><div class="hstat-v" id="h-filtrado" style="color:var(--neg)">—</div><div class="hstat-l">Filtrados</div></div>
+      <button class="btn-hdr btn-exp" onclick="exportar()">⬇ Excel</button>
+      <button class="btn-hdr btn-sair" onclick="sair()">Sair</button>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- PAINEL -->
+    <div class="panel">
+      <div class="ptabs">
+        <button class="ptab active" onclick="showPTab('filtros',this)">Filtros</button>
+        <button class="ptab" onclick="showPTab('stats',this)">Painel</button>
+        <button class="ptab" onclick="showPTab('lista',this)">Lista</button>
+      </div>
+      <div class="pbody">
+
+        <!-- FILTROS -->
+        <div class="psec active" id="ps-filtros">
+          <span class="flbl">Município</span>
+          <select class="fsel" id="f-mun"><option value="">Todos</option></select>
+          <span class="flbl">Categoria Coutinho</span>
+          <select class="fsel" id="f-cat"><option value="">Todas</option></select>
+          <span class="flbl">Ramo de Atividade</span>
+          <select class="fsel" id="f-ramo"><option value="">Todos</option></select>
+          <span class="flbl">Porte</span>
+          <select class="fsel" id="f-porte">
+            <option value="">Todos</option>
+            <option value="MEI">MEI — até R$81mil</option>
+            <option value="ME">ME — até R$360mil</option>
+            <option value="EPP">EPP — até R$4,8M</option>
+            <option value="MEDIO">Médio — até R$300M</option>
+            <option value="GRANDE">Grande</option>
+          </select>
+          <span class="flbl">Situação</span>
+          <select class="fsel" id="f-sit">
+            <option value="">Todas</option>
+            <option value="ATIVA">Ativa</option>
+            <option value="SUSPENSA">Suspensa</option>
+            <option value="INAPTA">Inapta</option>
+            <option value="BAIXADA">Baixada</option>
+          </select>
+          <span class="flbl">Fonte</span>
+          <select class="fsel" id="f-fonte">
+            <option value="">Todas</option>
+            <option value="RECEITA">Receita Federal</option>
+            <option value="GOVERNO_ES">Governo ES</option>
+          </select>
+          <span class="flbl">Buscar por nome</span>
+          <input class="finp" type="text" id="f-busca" placeholder="Nome da empresa..."/>
+          <button class="btn-filtrar" onclick="aplicarFiltros()">Aplicar Filtros</button>
+          <button class="btn-limpar" onclick="limparFiltros()">Limpar</button>
+        </div>
+
+        <!-- STATS -->
+        <div class="psec" id="ps-stats">
+          <div class="sgrid">
+            <div class="scard"><div class="scard-v" id="s-total">—</div><div class="scard-l">Empresas</div></div>
+            <div class="scard"><div class="scard-v" id="s-ativas" style="color:var(--green)">—</div><div class="scard-l">Ativas</div></div>
+            <div class="scard"><div class="scard-v" id="s-fat" style="color:var(--neg);font-size:16px">—</div><div class="scard-l">Fat. Estimado</div></div>
+            <div class="scard"><div class="scard-v" id="s-muns" style="color:var(--text2)">—</div><div class="scard-l">Municípios</div></div>
+          </div>
+          <div class="chart-w"><div class="chart-t">Por Categoria</div><div id="ch-cat"></div></div>
+          <div class="chart-w"><div class="chart-t">Por Município (Top 10)</div><div id="ch-mun"></div></div>
+          <div class="chart-w"><div class="chart-t">Por Porte</div><div id="ch-porte"></div></div>
+        </div>
+
+        <!-- LISTA -->
+        <div class="psec" id="ps-lista">
+          <div class="lista-header">
+            <span class="lista-count" id="lista-count">— empresas</span>
+            <button class="btn-hdr btn-exp" onclick="exportar()" style="padding:4px 10px;font-size:10px">⬇ Excel</button>
+          </div>
+          <div id="lista-cards"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MAPA -->
+    <div id="map"></div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const SCRIPT_URL = 'SUA_URL_DO_APPS_SCRIPT_AQUI';
+
+const PORTE_TETO = {MEI:81000,ME:360000,EPP:4800000,MEDIO:300000000,GRANDE:999999999};
+
+const CORES = ['#C4974A','#E8720C','#4CAF7D','#4A9BC4','#9b59ff',
+  '#E05555','#D4AA62','#22c55e','#60a5fa','#f472b6',
+  '#a78bfa','#34d399','#fbbf24','#f87171','#38bdf8',
+  '#fb923c','#a3e635','#e879f9','#2dd4bf','#818cf8',
+  '#f43f5e','#84cc16','#06b6d4','#8b5cf6','#ec4899'];
+
+const COORDS_ES = {
+  'VITORIA':[-20.3155,-40.3128],'VILA VELHA':[-20.3297,-40.2920],
+  'CARIACICA':[-20.2635,-40.4169],'SERRA':[-20.1288,-40.3072],
+  'VIANA':[-20.3928,-40.4946],'GUARAPARI':[-20.6709,-40.4986],
+  'ANCHIETA':[-20.8054,-40.6463],'PIUMA':[-20.8355,-40.7268],
+  'CACHOEIRO DE ITAPEMIRIM':[-20.8500,-41.1124],
+  'COLATINA':[-19.5395,-40.6300],'LINHARES':[-19.3917,-40.0675],
+  'SAO MATEUS':[-18.7197,-39.8586],'ARACRUZ':[-19.8197,-40.2744],
+  'FUNDAO':[-19.9339,-40.4061],'IBIRACU':[-19.8283,-40.3722],
+  'JOAO NEIVA':[-19.7583,-40.3872],'ALFREDO CHAVES':[-20.6394,-40.7544],
+  'ICONHA':[-20.7933,-40.8111],'RIO NOVO DO SUL':[-20.8639,-40.9361],
+  'PRESIDENTE KENNEDY':[-21.0961,-41.0536],'ITAPEMIRIM':[-21.0097,-40.8336],
+  'MARATAIZES':[-21.0436,-40.8319],'ALEGRE':[-20.7628,-41.5317],
+  'GUACUI':[-20.7736,-41.6803],'IUNA':[-20.3547,-41.5331],
+  'MUNIZ FREIRE':[-20.4642,-41.4094],'CASTELO':[-20.6047,-41.1972],
+  'VENDA NOVA DO IMIGRANTE':[-20.3392,-41.1372],
+  'DOMINGOS MARTINS':[-20.3617,-40.6589],
+  'SANTA MARIA DE JETIBA':[-20.0281,-40.7447],
+  'SANTA LEOPOLDINA':[-20.0964,-40.5339],
+  'AFONSO CLAUDIO':[-20.0736,-41.1183],
+  'CONCEICAO DO CASTELO':[-20.3703,-41.2378],
+  'BOM JESUS DO NORTE':[-21.1183,-41.6797],
+  'SAO JOSE DO CALCADO':[-21.0522,-41.6478],
+  'MIMOSO DO SUL':[-21.0639,-41.3622],
+  'JERONIMO MONTEIRO':[-20.7925,-41.3919],
+  'NOVA VENECIA':[-18.7122,-40.4036],
+  'BOA ESPERANCA':[-18.5392,-40.2947],
+  'ECOPORANGA':[-17.9967,-40.8347],
+  'BARRA DE SAO FRANCISCO':[-18.7522,-40.8933],
+  'AGUA DOCE DO NORTE':[-18.5522,-40.9789],
+  'PINHEIROS':[-18.4083,-40.1950],'MONTANHA':[-18.1256,-40.3617],
+  'MUCURICI':[-18.0817,-40.5550],'PEDRO CANARIO':[-18.3019,-39.9664],
+  'CONCEICAO DA BARRA':[-18.5933,-39.7336],
+  'JAGUARE':[-18.9050,-40.0836],
+  'SAO GABRIEL DA PALHA':[-19.0258,-40.5358],
+  'VILA VALERIO':[-19.1667,-40.4883],
+  'ALTO RIO NOVO':[-19.0694,-41.0225],'PANCAS':[-19.2194,-40.8589],
+  'MANTENOPOLIS':[-18.8622,-41.1225],'SOORETAMA':[-19.1886,-40.0931],
+  'GOVERNADOR LINDENBERG':[-19.2069,-40.4439],
+  'MARECHAL FLORIANO':[-20.4122,-40.6800],
+  'SANTA TERESA':[-19.9358,-40.5961],'ITAGUACU':[-19.7958,-40.8589],
+  'LARANJA DA TERRA':[-19.9028,-41.0650],
+  'BAIXO GUANDU':[-19.5214,-41.0133],
+  'AGUIA BRANCA':[-18.9833,-40.7383],
+  'MARILANDIA':[-19.4283,-40.5486],'RIO BANANAL':[-19.2675,-40.3325],
+};
+
+let SENHA='', BASE=[], FILTRADA=[], map, cluster, catList=[];
+
+// ============================================================
+// LOGIN
+async function entrar(){
+  const s=document.getElementById('l-senha').value.trim();
+  document.getElementById('l-err').style.display='none';
+  try{
+    const r=await fetch(`${SCRIPT_URL}?acao=login&senha=${encodeURIComponent(s)}`);
+    const d=await r.json();
+    if(d.ok){SENHA=s;iniciar();}
+    else document.getElementById('l-err').style.display='block';
+  }catch(e){
+    if(s){SENHA=s;iniciar();}
+    else document.getElementById('l-err').style.display='block';
+  }
+}
+
+function sair(){
+  SENHA='';BASE=[];FILTRADA=[];
+  document.getElementById('app').style.display='none';
+  document.getElementById('login').style.display='flex';
+  document.getElementById('l-senha').value='';
+}
+
+// ============================================================
+// INICIAR
+async function iniciar(){
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').style.display='flex';
+  initMap();
+  await Promise.all([carregarFiltros(), carregarDados()]);
+}
+
+// ============================================================
+// MAPA
+function initMap(){
+  map=L.map('map',{center:[-19.8,−40.3],zoom:8});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+    attribution:'© OpenStreetMap © CARTO',subdomains:'abcd',maxZoom:19
+  }).addTo(map);
+  cluster=L.markerClusterGroup({maxClusterRadius:50,showCoverageOnHover:false});
+  map.addLayer(cluster);
+}
+
+// ============================================================
+// CARREGAR DADOS
+async function carregarDados(){
+  mostrarLoad('Carregando empresas...');
+  try{
+    const r=await fetch(`${SCRIPT_URL}?acao=dados&senha=${encodeURIComponent(SENHA)}&limite=2000`);
+    const d=await r.json();
+    BASE=d.empresas||[];
+  }catch(e){BASE=gerarDemo();}
+  ocultarLoad();
+  aplicarFiltros();
+}
+
+async function carregarFiltros(){
+  try{
+    const r=await fetch(`${SCRIPT_URL}?acao=filtros&senha=${encodeURIComponent(SENHA)}`);
+    const d=await r.json();
+    popularSelect('f-mun',d.MUNICIPIO||[]);
+    popularSelect('f-cat',d.CATEGORIA_COUTINHO||[]);
+    popularSelect('f-ramo',d.RAMO_ATIVIDADE||[]);
+  }catch(e){}
+}
+
+function popularSelect(id,lista){
+  const sel=document.getElementById(id);
+  const first=sel.options[0];
+  sel.innerHTML='';
+  sel.appendChild(first);
+  lista.forEach(v=>{
+    const o=document.createElement('option');
+    o.value=v;o.textContent=capFirst(v);
+    sel.appendChild(o);
+  });
+}
+
+// ============================================================
+// FILTROS
+function aplicarFiltros(){
+  const mun  =document.getElementById('f-mun').value;
+  const cat  =document.getElementById('f-cat').value;
+  const ramo =document.getElementById('f-ramo').value;
+  const porte=document.getElementById('f-porte').value;
+  const sit  =document.getElementById('f-sit').value;
+  const fonte=document.getElementById('f-fonte').value;
+  const busca=document.getElementById('f-busca').value.toLowerCase().trim();
+
+  FILTRADA=BASE.filter(e=>{
+    if(mun  && normMun(e.MUNICIPIO)!==normMun(mun))   return false;
+    if(cat  && e.CATEGORIA_COUTINHO!==cat)             return false;
+    if(ramo && e.RAMO_ATIVIDADE!==ramo)                return false;
+    if(porte && e.PORTE!==porte)                       return false;
+    if(sit  && !(e.SITUACAO||'').includes(sit))        return false;
+    if(fonte && e.FONTE!==fonte)                       return false;
+    if(busca){
+      const t=(e.RAZAO_SOCIAL+' '+e.NOME_FANTASIA).toLowerCase();
+      if(!t.includes(busca)) return false;
+    }
+    return true;
+  });
+
+  renderMapa();
+  renderStats();
+  renderLista();
+  atualizarHeader();
+}
+
+function limparFiltros(){
+  ['f-mun','f-cat','f-ramo','f-porte','f-sit','f-fonte'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-busca').value='';
+  aplicarFiltros();
+}
+
+// ============================================================
+// MAPA RENDER
+function renderMapa(){
+  cluster.clearLayers();
+  catList=[...new Set(FILTRADA.map(e=>e.CATEGORIA_COUTINHO))];
+
+  FILTRADA.forEach(e=>{
+    let lat=parseFloat(e.LAT), lng=parseFloat(e.LNG);
+    if(isNaN(lat)||isNaN(lng)){
+      const k=normMun(e.MUNICIPIO);
+      const c=COORDS_ES[k];
+      if(!c)return;
+      lat=c[0]+(Math.random()-0.5)*0.04;
+      lng=c[1]+(Math.random()-0.5)*0.04;
+    }
+
+    const ci=catList.indexOf(e.CATEGORIA_COUTINHO);
+    const cor=CORES[ci%CORES.length]||'#C4974A';
+    const r=e.PORTE==='GRANDE'?8:e.PORTE==='MEDIO'?7:e.PORTE==='EPP'?6:5;
+
+    const m=L.circleMarker([lat,lng],{
+      radius:r,fillColor:cor,color:cor,weight:0,fillOpacity:0.85
+    });
+
+    const nome=e.NOME_FANTASIA||e.RAZAO_SOCIAL||'—';
+    const tel =formatTel(e.DDD1,e.TELEFONE1);
+    const fat =PORTE_TETO[e.PORTE]||0;
+
+    m.bindPopup(`
+      <div class="pop-cat">${e.CATEGORIA_COUTINHO||'—'}</div>
+      <div class="pop-nome">${nome}</div>
+      <div class="pop-row"><span class="pop-lbl">Razão Social</span><span class="pop-val">${e.RAZAO_SOCIAL||'—'}</span></div>
+      <div class="pop-row"><span class="pop-lbl">CNPJ</span><span class="pop-val">${e.CNPJ_FORMATADO||'—'}</span></div>
+      <div class="pop-row"><span class="pop-lbl">Cidade</span><span class="pop-val">${capFirst(e.MUNICIPIO||'—')}</span></div>
+      <div class="pop-row"><span class="pop-lbl">Situação</span><span class="pop-val" style="color:${(e.SITUACAO||'').includes('ATIVA')?'var(--green)':'var(--red)'}">${e.SITUACAO||'—'}</span></div>
+      <div class="pop-row"><span class="pop-lbl">Telefone</span><span class="pop-val">${tel||'—'}</span></div>
+      <div class="pop-row"><span class="pop-lbl">Fat. Est.</span><span class="pop-val" style="color:var(--gold)">${fat>0?'R$ '+fmtMoeda(fat)+'/ano':'—'}</span></div>
+      ${e.EMAIL?`<div class="pop-row"><span class="pop-lbl">E-mail</span><span class="pop-val">${e.EMAIL}</span></div>`:''}
+    `,{maxWidth:280});
+
+    cluster.addLayer(m);
+  });
+}
+
+// ============================================================
+// STATS RENDER
+function renderStats(){
+  const total =FILTRADA.length;
+  const ativas=FILTRADA.filter(e=>(e.SITUACAO||'').includes('ATIVA')).length;
+  const fat   =FILTRADA.reduce((s,e)=>s+(PORTE_TETO[e.PORTE]||0),0);
+  const muns  =new Set(FILTRADA.map(e=>e.MUNICIPIO)).size;
+
+  document.getElementById('s-total').textContent =total.toLocaleString('pt-BR');
+  document.getElementById('s-ativas').textContent=ativas.toLocaleString('pt-BR');
+  document.getElementById('s-fat').textContent   ='R$ '+fmtMoeda(fat);
+  document.getElementById('s-muns').textContent  =muns;
+
+  const catC={},munC={},portC={};
+  FILTRADA.forEach(e=>{
+    const c=e.CATEGORIA_COUTINHO||'Outros';
+    const m=capFirst(e.MUNICIPIO||'N/D');
+    const p=e.PORTE||'N/D';
+    catC[c]=(catC[c]||0)+1;
+    munC[m]=(munC[m]||0)+1;
+    portC[p]=(portC[p]||0)+1;
+  });
+
+  renderBars('ch-cat',catC,10);
+  renderBars('ch-mun',munC,10);
+  renderBars('ch-porte',portC,5);
+}
+
+function renderBars(elId,data,max){
+  const el=document.getElementById(elId);
+  const sorted=Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0,max);
+  const maxV=sorted[0]?.[1]||1;
+  el.innerHTML=sorted.map(([n,c],i)=>`
+    <div class="brow">
+      <span class="bname" title="${n}">${n}</span>
+      <div class="btrack"><div class="bfill" style="width:${(c/maxV*100).toFixed(0)}%;background:${CORES[i%CORES.length]}"></div></div>
+      <span class="bcnt">${c}</span>
+    </div>`).join('');
+}
+
+// ============================================================
+// LISTA RENDER
+function renderLista(){
+  const el=document.getElementById('lista-cards');
+  document.getElementById('lista-count').textContent=`${FILTRADA.length.toLocaleString('pt-BR')} empresas`;
+
+  const lista=FILTRADA.slice(0,100);
+  el.innerHTML=lista.map(e=>{
+    const nome=e.NOME_FANTASIA||e.RAZAO_SOCIAL||'—';
+    const tel =formatTel(e.DDD1,e.TELEFONE1);
+    const fat =PORTE_TETO[e.PORTE]||0;
+    const sit =(e.SITUACAO||'').includes('ATIVA');
+    const wa  =tel?`https://wa.me/55${tel.replace(/\D/g,'')}?text=${encodeURIComponent('Olá '+nome+', entro em contato através do Grupo Coutinho.')}`:null;
+
+    return `<div class="emp-card">
+      <div class="emp-cat">${e.CATEGORIA_COUTINHO||'—'}</div>
+      <div class="emp-nome">${nome}</div>
+      <div class="emp-meta">
+        ${capFirst(e.MUNICIPIO||'')}${e.BAIRRO?' · '+e.BAIRRO:''}<br>
+        ${e.CNPJ_FORMATADO||''} ${e.CNAE_PRINCIPAL?'· CNAE '+e.CNAE_PRINCIPAL:''}
+      </div>
+      <div class="emp-badges">
+        <span class="badge ${sit?'b-ativa':'b-inativa'}">${e.SITUACAO||'N/D'}</span>
+        ${e.PORTE?`<span class="badge b-${(e.PORTE||'').toLowerCase()}">${e.PORTE}</span>`:''}
+        <span class="badge ${e.FONTE==='RECEITA'?'b-receita':'b-gov'}">${e.FONTE==='RECEITA'?'Receita':'Gov ES'}</span>
+      </div>
+      ${fat>0?`<div class="emp-fat">Fat. est: R$ ${fmtMoeda(fat)}/ano</div>`:''}
+      <div class="emp-acoes">
+        ${wa?`<a href="${wa}" target="_blank" class="btn-acao btn-wa">💬 WhatsApp</a>`:''}
+        ${e.EMAIL?`<a href="mailto:${e.EMAIL}" class="btn-acao btn-email">✉ E-mail</a>`:''}
+        ${tel?`<button class="btn-acao btn-copy" onclick="copiar('${tel}','Telefone copiado!')">📋 ${tel}</button>`:''}
+        ${e.EMAIL?`<button class="btn-acao btn-copy" onclick="copiar('${e.EMAIL}','E-mail copiado!')">📋 E-mail</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  if(FILTRADA.length>100){
+    el.innerHTML+=`<div style="text-align:center;font-size:11px;color:var(--text2);padding:14px">
+      Exibindo 100 de ${FILTRADA.length.toLocaleString('pt-BR')}. Use os filtros ou exporte para Excel.
+    </div>`;
+  }
+}
+
+// ============================================================
+// EXPORTAR EXCEL
+function exportar(){
+  if(!FILTRADA.length){alert('Nenhum dado para exportar.');return;}
+  const dados=FILTRADA.map(e=>({
+    'CNPJ':              e.CNPJ_FORMATADO||'',
+    'Razão Social':      e.RAZAO_SOCIAL||'',
+    'Nome Fantasia':     e.NOME_FANTASIA||'',
+    'Categoria':         e.CATEGORIA_COUTINHO||'',
+    'Ramo Atividade':    e.RAMO_ATIVIDADE||'',
+    'CNAE':              e.CNAE_PRINCIPAL||'',
+    'Descrição CNAE':    e.CNAE_DESC||'',
+    'Situação':          e.SITUACAO||'',
+    'Porte':             e.PORTE||'',
+    'Fat. Estimado R$':  PORTE_TETO[e.PORTE]||0,
+    'Município':         capFirst(e.MUNICIPIO||''),
+    'Bairro':            e.BAIRRO||'',
+    'Logradouro':        (e.TIPO_LOGRADOURO+' '+e.LOGRADOURO).trim(),
+    'Número':            e.NUMERO||'',
+    'CEP':               e.CEP||'',
+    'DDD':               e.DDD1||'',
+    'Telefone':          e.TELEFONE1||'',
+    'E-mail':            e.EMAIL||'',
+    'Data Abertura':     e.DATA_ABERTURA||'',
+    'Natureza Jurídica': e.NATUREZA_JURIDICA||'',
+    'Fonte':             e.FONTE||'',
+  }));
+  const ws=XLSX.utils.json_to_sheet(dados);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Mapa B2B ES');
+  XLSX.writeFile(wb,`MapaB2B_ES_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.xlsx`);
+  toast('Excel exportado com sucesso!');
+}
+
+// ============================================================
+// HELPERS
+function atualizarHeader(){
+  document.getElementById('h-total').textContent   =BASE.length.toLocaleString('pt-BR');
+  document.getElementById('h-filtrado').textContent=FILTRADA.length.toLocaleString('pt-BR');
+}
+
+function showPTab(id,btn){
+  document.querySelectorAll('.psec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('ps-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='stats')renderStats();
+  if(id==='lista')renderLista();
+}
+
+function mostrarLoad(txt){
+  document.getElementById('load-txt').textContent=txt||'Carregando...';
+  document.getElementById('loading').style.display='flex';
+}
+function ocultarLoad(){document.getElementById('loading').style.display='none';}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function copiar(txt,msg){
+  navigator.clipboard.writeText(txt).then(()=>toast(msg||'Copiado!'));
+}
+
+function formatTel(ddd,tel){
+  const d=String(ddd||'').trim().replace(/\D/g,'');
+  const t=String(tel||'').trim().replace(/\D/g,'');
+  if(d&&t) return `(${d}) ${t.length===9?t.slice(0,5)+'-'+t.slice(5):t.slice(0,4)+'-'+t.slice(4)}`;
+  if(t) return t;
+  return '';
+}
+
+function fmtMoeda(v){
+  if(v>=1000000000)return (v/1000000000).toFixed(1).replace('.',',')+' bi';
+  if(v>=1000000)   return (v/1000000).toFixed(1).replace('.',',')+' M';
+  if(v>=1000)      return (v/1000).toFixed(0)+' mil';
+  return v.toLocaleString('pt-BR');
+}
+
+function capFirst(s){
+  return String(s).toLowerCase().replace(/\b\w/g,l=>l.toUpperCase());
+}
+
+function normMun(s){
+  return String(s||'').toUpperCase().trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
+// ============================================================
+// DEMO DATA
+function gerarDemo(){
+  const cats=['Supermercados e Mercearias','Restaurantes, Cozinhas e Refeitórios',
+    'Padarias, Confeitarias e Casa de Bolos','Açougues e Casas de Carnes',
+    'Cafeterias, Lanchonetes e Salgaderias','Distribuidoras de Bebidas'];
+  const cidades=Object.keys(COORDS_ES);
+  const portes=['MEI','ME','ME','EPP','MEDIO'];
+  return Array.from({length:150},(_,i)=>{
+    const cidade=cidades[Math.floor(Math.random()*cidades.length)];
+    const c=COORDS_ES[cidade];
+    const porte=portes[Math.floor(Math.random()*portes.length)];
+    return {
+      CNPJ_FORMATADO:`${String(i).padStart(2,'0')}.000.000/0001-00`,
+      RAZAO_SOCIAL:`Empresa Exemplo ${i+1} Ltda`,
+      NOME_FANTASIA:`Loja ${i+1}`,
+      SITUACAO:'ATIVA',PORTE:porte,
+      CATEGORIA_COUTINHO:cats[Math.floor(Math.random()*cats.length)],
+      RAMO_ATIVIDADE:'Alimentício',
+      MUNICIPIO:cidade,BAIRRO:'Centro',
+      TIPO_LOGRADOURO:'RUA',LOGRADOURO:'das Flores',NUMERO:String(i+1),
+      DDD1:'27',TELEFONE1:`9${String(Math.floor(Math.random()*90000000+10000000))}`,
+      EMAIL:i%3===0?`contato${i}@exemplo.com`:'',
+      CNAE_PRINCIPAL:'4711301',CNAE_DESC:'Comércio varejista',
+      DATA_ABERTURA:'01/01/2010',NATUREZA_JURIDICA:'LTDA',
+      FONTE:i%2===0?'RECEITA':'GOVERNO_ES',
+      LAT:String(c[0]+(Math.random()-0.5)*0.1),
+      LNG:String(c[1]+(Math.random()-0.5)*0.1),
+    };
+  });
+}
+</script>
+</body>
+</html>
