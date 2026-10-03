@@ -1,0 +1,3201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1"
+>
+
+<meta
+  name="description"
+  content="EU⁺ Varejo — Inteligência operacional para o varejo."
+>
+
+<title>EU⁺ Varejo</title>
+
+<!--
+  ============================================================
+  EU⁺ VAREJO
+  Frontend V0.1
+  ============================================================
+
+  PRINCÍPIOS
+
+  - Nenhum segredo no frontend.
+  - Nenhuma API Key.
+  - Nenhum ID de Drive.
+  - Nenhum ID de planilha.
+  - Tenant determinado exclusivamente pelo backend.
+  - Corpo operacional predominantemente branco.
+  - API é autoridade para autenticação e dados.
+-->
+
+
+<!-- FONTES OFICIAIS -->
+
+<link
+  rel="preconnect"
+  href="https://fonts.googleapis.com"
+>
+
+<link
+  rel="preconnect"
+  href="https://fonts.gstatic.com"
+  crossorigin
+>
+
+<link
+  href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap"
+  rel="stylesheet"
+>
+
+
+<style>
+
+/* ============================================================
+   TOKENS VISUAIS
+   ============================================================ */
+
+:root {
+
+  /* Institucional */
+
+  --navy: #060E18;
+  --navy-2: #0A1624;
+  --navy-3: #0E1E30;
+
+  --gold: #C4974A;
+  --gold-light: #D4AA62;
+
+  /* EU⁺ Negócio */
+
+  --business: #C4A265;
+
+  /* Área operacional */
+
+  --white: #FFFFFF;
+  --surface: #F7F7F5;
+  --surface-2: #F1F2F0;
+
+  --text: #17212B;
+  --text-secondary: #66717D;
+  --text-light: #EEF0F2;
+
+  --border: #E4E6E8;
+
+  /* Estados */
+
+  --success: #427A57;
+  --warning: #A87524;
+  --danger: #B84A4A;
+
+  /* Estrutura */
+
+  --sidebar-width: 245px;
+  --header-height: 68px;
+
+}
+
+
+/* ============================================================
+   RESET
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+
+  font-family:
+    "DM Sans",
+    sans-serif;
+
+  background: var(--surface);
+
+  color: var(--text);
+
+  font-size: 16px;
+
+  line-height: 1.6;
+
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+
+/* ============================================================
+   UTILIDADES
+   ============================================================ */
+
+.hidden {
+  display: none !important;
+}
+
+
+/* ============================================================
+   LOGOTIPO TIPOGRÁFICO
+   ============================================================ */
+
+.brand {
+
+  font-family:
+    "Cormorant Garamond",
+    serif;
+
+  font-size: 27px;
+
+  font-weight: 600;
+
+  letter-spacing: .02em;
+
+  color: var(--text-light);
+
+  white-space: nowrap;
+
+}
+
+.brand-plus {
+
+  color: var(--gold);
+
+  font-size: .55em;
+
+  vertical-align: super;
+
+  margin-left: 1px;
+
+}
+
+.brand-product {
+
+  font-family:
+    "DM Sans",
+    sans-serif;
+
+  font-size: 13px;
+
+  font-weight: 300;
+
+  color: #AAB3BD;
+
+  margin-left: 8px;
+
+}
+
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+
+#loginPage {
+
+  min-height: 100vh;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(360px, 46%)
+    1fr;
+
+  background: var(--white);
+
+}
+
+
+.login-brand {
+
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(196,151,74,.12),
+      transparent 30%
+    ),
+    linear-gradient(
+      145deg,
+      var(--navy),
+      var(--navy-2)
+    );
+
+  color: var(--text-light);
+
+  padding: 70px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: space-between;
+
+}
+
+
+.login-brand-main {
+  max-width: 540px;
+}
+
+
+.login-brand .brand {
+
+  font-size: 42px;
+
+}
+
+
+.login-kicker {
+
+  margin-top: 80px;
+
+  color: var(--business);
+
+  text-transform: uppercase;
+
+  font-size: 11px;
+
+  letter-spacing: .18em;
+
+}
+
+
+.login-brand h1 {
+
+  font-family:
+    "Cormorant Garamond",
+    serif;
+
+  font-size: 48px;
+
+  font-weight: 300;
+
+  line-height: 1.1;
+
+  margin:
+    18px 0
+    20px;
+
+}
+
+
+.login-brand p {
+
+  color: #AAB3BD;
+
+  max-width: 480px;
+
+  font-weight: 300;
+
+}
+
+
+.login-brand-footer {
+
+  color: #718091;
+
+  font-size: 12px;
+
+}
+
+
+.login-area {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 50px;
+
+  background: var(--white);
+
+}
+
+
+.login-box {
+
+  width: 100%;
+
+  max-width: 410px;
+
+}
+
+
+.login-box h2 {
+
+  font-family:
+    "Cormorant Garamond",
+    serif;
+
+  font-size: 36px;
+
+  line-height: 1.2;
+
+  font-weight: 600;
+
+  margin: 0 0 8px;
+
+}
+
+
+.login-subtitle {
+
+  color: var(--text-secondary);
+
+  font-size: 14px;
+
+  margin-bottom: 32px;
+
+}
+
+
+.form-group {
+
+  margin-bottom: 20px;
+
+}
+
+
+.form-group label {
+
+  display: block;
+
+  margin-bottom: 7px;
+
+  font-size: 12px;
+
+  font-weight: 500;
+
+  letter-spacing: .04em;
+
+  color: var(--text-secondary);
+
+}
+
+
+.form-control {
+
+  width: 100%;
+
+  height: 48px;
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius: 4px;
+
+  padding:
+    0 14px;
+
+  color: var(--text);
+
+  background: var(--white);
+
+  outline: none;
+
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease;
+
+}
+
+
+.form-control:focus {
+
+  border-color:
+    var(--gold);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(196,151,74,.10);
+
+}
+
+
+.primary-button {
+
+  width: 100%;
+
+  min-height: 48px;
+
+  border:
+    1px solid
+    var(--gold);
+
+  border-radius: 4px;
+
+  background: transparent;
+
+  color: var(--gold);
+
+  font-size: 13px;
+
+  font-weight: 500;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1px;
+
+  padding: 12px 24px;
+
+  transition:
+    all .3s ease;
+
+}
+
+
+.primary-button:hover {
+
+  background: var(--gold);
+
+  color: var(--navy);
+
+}
+
+
+.primary-button:disabled {
+
+  opacity: .5;
+
+  cursor: wait;
+
+}
+
+
+.login-error {
+
+  padding: 12px 14px;
+
+  margin-bottom: 20px;
+
+  border-left:
+    2px solid
+    var(--danger);
+
+  background:
+    rgba(184,74,74,.06);
+
+  color: var(--danger);
+
+  font-size: 13px;
+
+}
+
+
+/* ============================================================
+   APLICAÇÃO
+   ============================================================ */
+
+#appPage {
+
+  min-height: 100vh;
+
+  background: var(--white);
+
+}
+
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
+.sidebar {
+
+  position: fixed;
+
+  top: 0;
+
+  left: 0;
+
+  bottom: 0;
+
+  width:
+    var(--sidebar-width);
+
+  background:
+    var(--navy);
+
+  z-index: 30;
+
+  display: flex;
+
+  flex-direction: column;
+
+}
+
+
+.sidebar-header {
+
+  min-height:
+    var(--header-height);
+
+  display: flex;
+
+  align-items: center;
+
+  padding:
+    0 24px;
+
+  border-bottom:
+    1px solid
+    rgba(196,151,74,.14);
+
+}
+
+
+.sidebar-nav {
+
+  flex: 1;
+
+  padding:
+    22px 12px;
+
+  overflow-y: auto;
+
+}
+
+
+.nav-section {
+
+  color: #657487;
+
+  font-size: 10px;
+
+  text-transform: uppercase;
+
+  letter-spacing: .14em;
+
+  padding:
+    14px 12px
+    7px;
+
+}
+
+
+.nav-item {
+
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  min-height: 43px;
+
+  border: 0;
+
+  border-radius: 4px;
+
+  padding:
+    0 12px;
+
+  margin-bottom: 3px;
+
+  background: transparent;
+
+  color: #9EABB9;
+
+  text-align: left;
+
+  font-size: 13px;
+
+  transition:
+    all .2s ease;
+
+}
+
+
+.nav-item:hover {
+
+  background:
+    rgba(255,255,255,.04);
+
+  color:
+    var(--text-light);
+
+}
+
+
+.nav-item.active {
+
+  background:
+    rgba(196,162,101,.09);
+
+  color:
+    var(--business);
+
+}
+
+
+.nav-icon {
+
+  width: 20px;
+
+  height: 20px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+}
+
+
+.nav-icon svg {
+
+  width: 19px;
+
+  height: 19px;
+
+  fill: none;
+
+  stroke: currentColor;
+
+  stroke-width: 1.5;
+
+}
+
+
+.sidebar-footer {
+
+  padding: 18px 24px;
+
+  border-top:
+    1px solid
+    rgba(196,151,74,.12);
+
+  font-size: 10px;
+
+  color: #5F6E7E;
+
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.app-header {
+
+  position: fixed;
+
+  top: 0;
+
+  left:
+    var(--sidebar-width);
+
+  right: 0;
+
+  height:
+    var(--header-height);
+
+  background:
+    rgba(255,255,255,.97);
+
+  border-bottom:
+    1px solid
+    var(--border);
+
+  z-index: 20;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding:
+    0 32px;
+
+}
+
+
+.header-context {
+
+  min-width: 0;
+
+}
+
+
+.company-name {
+
+  font-size: 13px;
+
+  font-weight: 500;
+
+}
+
+
+.company-code {
+
+  color:
+    var(--text-secondary);
+
+  font-size: 11px;
+
+}
+
+
+.user-area {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+}
+
+
+.user-info {
+
+  text-align: right;
+
+}
+
+
+.user-name {
+
+  font-size: 12px;
+
+  font-weight: 500;
+
+}
+
+
+.user-role {
+
+  font-size: 10px;
+
+  color:
+    var(--text-secondary);
+
+}
+
+
+.logout-button {
+
+  border:
+    1px solid
+    var(--border);
+
+  background:
+    var(--white);
+
+  color:
+    var(--text-secondary);
+
+  border-radius: 4px;
+
+  padding:
+    7px 12px;
+
+  font-size: 11px;
+
+}
+
+
+.logout-button:hover {
+
+  border-color:
+    var(--gold);
+
+  color:
+    var(--gold);
+
+}
+
+
+.mobile-menu {
+
+  display: none;
+
+  border: 0;
+
+  background: transparent;
+
+  padding: 5px;
+
+}
+
+
+/* ============================================================
+   CONTEÚDO
+   ============================================================ */
+
+.main {
+
+  margin-left:
+    var(--sidebar-width);
+
+  padding-top:
+    var(--header-height);
+
+  min-height: 100vh;
+
+  background:
+    var(--white);
+
+}
+
+
+.content {
+
+  max-width: 1200px;
+
+  margin: 0 auto;
+
+  padding:
+    42px 40px
+    70px;
+
+}
+
+
+.page-header {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: flex-end;
+
+  gap: 20px;
+
+  margin-bottom: 32px;
+
+}
+
+
+.page-kicker {
+
+  color:
+    var(--business);
+
+  font-size: 10px;
+
+  font-weight: 500;
+
+  letter-spacing: .14em;
+
+  text-transform: uppercase;
+
+  margin-bottom: 4px;
+
+}
+
+
+.page-title {
+
+  font-family:
+    "Cormorant Garamond",
+    serif;
+
+  font-size: 36px;
+
+  font-weight: 600;
+
+  line-height: 1.2;
+
+  margin: 0;
+
+}
+
+
+.page-description {
+
+  color:
+    var(--text-secondary);
+
+  font-size: 13px;
+
+  margin-top: 5px;
+
+}
+
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+
+.cards-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap: 18px;
+
+}
+
+
+.metric-card {
+
+  min-height: 130px;
+
+  padding: 22px;
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius: 5px;
+
+  background:
+    var(--white);
+
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease;
+
+}
+
+
+.metric-card:hover {
+
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 8px 25px
+    rgba(6,14,24,.05);
+
+}
+
+
+.metric-label {
+
+  color:
+    var(--text-secondary);
+
+  font-size: 11px;
+
+  text-transform: uppercase;
+
+  letter-spacing: .08em;
+
+}
+
+
+.metric-value {
+
+  font-family:
+    "Cormorant Garamond",
+    serif;
+
+  font-size: 34px;
+
+  font-weight: 600;
+
+  margin-top: 9px;
+
+}
+
+
+.metric-note {
+
+  color:
+    var(--text-secondary);
+
+  font-size: 11px;
+
+  margin-top: 2px;
+
+}
+
+
+.dashboard-message {
+
+  margin-top: 30px;
+
+  padding: 24px;
+
+  background:
+    var(--surface);
+
+  border-left:
+    2px solid
+    var(--business);
+
+}
+
+
+.dashboard-message-title {
+
+  font-family:
+    "Cormorant Garamond",
+    serif;
+
+  font-size: 21px;
+
+  font-weight: 400;
+
+}
+
+
+.dashboard-message p {
+
+  color:
+    var(--text-secondary);
+
+  font-size: 13px;
+
+  margin:
+    7px 0 0;
+
+}
+
+
+/* ============================================================
+   PRODUTOS
+   ============================================================ */
+
+.toolbar {
+
+  display: flex;
+
+  gap: 12px;
+
+  margin-bottom: 20px;
+
+}
+
+
+.search-input {
+
+  width: 100%;
+
+  max-width: 380px;
+
+  height: 42px;
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius: 4px;
+
+  padding:
+    0 13px;
+
+  outline: none;
+
+}
+
+
+.search-input:focus {
+
+  border-color:
+    var(--gold);
+
+}
+
+
+.table-wrapper {
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius: 5px;
+
+  overflow-x: auto;
+
+}
+
+
+table {
+
+  width: 100%;
+
+  border-collapse:
+    collapse;
+
+  background:
+    var(--white);
+
+  font-size: 13px;
+
+}
+
+
+thead {
+
+  background:
+    var(--surface);
+
+}
+
+
+th {
+
+  text-align: left;
+
+  padding:
+    12px 15px;
+
+  color:
+    var(--text-secondary);
+
+  font-size: 10px;
+
+  font-weight: 500;
+
+  letter-spacing: .06em;
+
+  text-transform: uppercase;
+
+  border-bottom:
+    1px solid
+    var(--border);
+
+  white-space: nowrap;
+
+}
+
+
+td {
+
+  padding:
+    13px 15px;
+
+  border-bottom:
+    1px solid
+    #EFF0F1;
+
+  vertical-align: middle;
+
+}
+
+
+tbody tr:last-child td {
+
+  border-bottom: 0;
+
+}
+
+
+tbody tr:hover {
+
+  background:
+    #FCFCFB;
+
+}
+
+
+.product-name {
+
+  font-weight: 500;
+
+}
+
+
+.product-code {
+
+  color:
+    var(--text-secondary);
+
+  font-size: 11px;
+
+}
+
+
+.status {
+
+  display:
+    inline-flex;
+
+  align-items:
+    center;
+
+  padding:
+    3px 8px;
+
+  border-radius:
+    20px;
+
+  font-size:
+    10px;
+
+}
+
+
+.status-active {
+
+  background:
+    rgba(66,122,87,.08);
+
+  color:
+    var(--success);
+
+}
+
+
+/* ============================================================
+   ESTADOS
+   ============================================================ */
+
+.state-box {
+
+  padding:
+    50px 20px;
+
+  text-align:
+    center;
+
+  color:
+    var(--text-secondary);
+
+}
+
+
+.state-title {
+
+  color:
+    var(--text);
+
+  font-family:
+    "Cormorant Garamond",
+    serif;
+
+  font-size:
+    24px;
+
+  margin-bottom:
+    5px;
+
+}
+
+
+.loader {
+
+  width:
+    28px;
+
+  height:
+    28px;
+
+  border:
+    2px solid
+    var(--border);
+
+  border-top-color:
+    var(--gold);
+
+  border-radius:
+    50%;
+
+  margin:
+    0 auto 14px;
+
+  animation:
+    spin .8s linear infinite;
+
+}
+
+
+@keyframes spin {
+
+  to {
+    transform:
+      rotate(360deg);
+  }
+
+}
+
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.app-footer {
+
+  margin-top:
+    55px;
+
+  padding-top:
+    22px;
+
+  border-top:
+    1px solid
+    var(--border);
+
+  color:
+    var(--text-secondary);
+
+  font-size:
+    11px;
+
+}
+
+
+.footer-hierarchy {
+
+  margin-bottom:
+    8px;
+
+}
+
+
+.footer-slogan {
+
+  font-family:
+    "Cormorant Garamond",
+    serif;
+
+  font-size:
+    16px;
+
+  color:
+    var(--text);
+
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 1024px) {
+
+  .cards-grid {
+    grid-template-columns:
+      repeat(2,1fr);
+  }
+
+}
+
+
+@media (max-width: 768px) {
+
+  #loginPage {
+
+    display: block;
+
+  }
+
+  .login-brand {
+
+    min-height: 250px;
+
+    padding: 35px 25px;
+
+  }
+
+  .login-kicker {
+
+    margin-top: 35px;
+
+  }
+
+  .login-brand h1 {
+
+    font-size: 36px;
+
+  }
+
+  .login-brand-footer {
+
+    display: none;
+
+  }
+
+  .login-area {
+
+    padding:
+      40px 24px;
+
+  }
+
+
+  .sidebar {
+
+    transform:
+      translateX(-100%);
+
+    transition:
+      transform .3s ease;
+
+  }
+
+  .sidebar.open {
+
+    transform:
+      translateX(0);
+
+  }
+
+
+  .app-header {
+
+    left: 0;
+
+    padding:
+      0 20px;
+
+  }
+
+
+  .mobile-menu {
+
+    display: block;
+
+    margin-right: 12px;
+
+  }
+
+
+  .header-context {
+
+    display: flex;
+
+    align-items: center;
+
+  }
+
+
+  .main {
+
+    margin-left: 0;
+
+  }
+
+
+  .content {
+
+    padding:
+      30px 20px
+      60px;
+
+  }
+
+
+  .cards-grid {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+
+  .user-role {
+
+    display: none;
+
+  }
+
+
+  .page-header {
+
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
+
+  }
+
+}
+
+
+/* ============================================================
+   OVERLAY MOBILE
+   ============================================================ */
+
+.sidebar-overlay {
+
+  display: none;
+
+  position: fixed;
+
+  inset: 0;
+
+  background:
+    rgba(6,14,24,.45);
+
+  z-index: 25;
+
+}
+
+
+.sidebar-overlay.active {
+
+  display: block;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- ==========================================================
+     LOGIN
+     ========================================================== -->
+
+<section id="loginPage">
+
+  <div class="login-brand">
+
+    <div class="login-brand-main">
+
+      <div class="brand">
+        EU<span class="brand-plus">⁺</span>
+        <span class="brand-product">Varejo</span>
+      </div>
+
+      <div class="login-kicker">
+        EU⁺ Negócio
+      </div>
+
+      <h1>
+        Mais controle.<br>
+        Mais clareza.<br>
+        Mais gestão.
+      </h1>
+
+      <p>
+        Um ambiente simples para organizar a operação,
+        transformar dados em informação e apoiar decisões
+        melhores no varejo.
+      </p>
+
+    </div>
+
+    <div class="login-brand-footer">
+
+      Ecossistema EU⁺
+      &nbsp;›&nbsp;
+      EU⁺ Empresa
+      &nbsp;›&nbsp;
+      EU⁺ Negócio
+      &nbsp;›&nbsp;
+      EU⁺ Varejo
+
+    </div>
+
+  </div>
+
+
+  <div class="login-area">
+
+    <div class="login-box">
+
+      <h2>Acesse seu ambiente</h2>
+
+      <div class="login-subtitle">
+        Entre com os dados da sua empresa.
+      </div>
+
+
+      <div
+        id="loginError"
+        class="login-error hidden"
+      ></div>
+
+
+      <form
+        id="loginForm"
+        autocomplete="on"
+      >
+
+        <div class="form-group">
+
+          <label for="tenantCode">
+            CÓDIGO DA EMPRESA
+          </label>
+
+          <input
+            id="tenantCode"
+            class="form-control"
+            type="text"
+            autocomplete="organization"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="email">
+            E-MAIL
+          </label>
+
+          <input
+            id="email"
+            class="form-control"
+            type="email"
+            autocomplete="username"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="password">
+            SENHA
+          </label>
+
+          <input
+            id="password"
+            class="form-control"
+            type="password"
+            autocomplete="current-password"
+            required
+          >
+
+        </div>
+
+
+        <button
+          id="loginButton"
+          class="primary-button"
+          type="submit"
+        >
+          Entrar
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+
+<!-- ==========================================================
+     APLICAÇÃO
+     ========================================================== -->
+
+<section
+  id="appPage"
+  class="hidden"
+>
+
+
+  <div
+    id="sidebarOverlay"
+    class="sidebar-overlay"
+  ></div>
+
+
+  <!-- SIDEBAR -->
+
+  <aside
+    id="sidebar"
+    class="sidebar"
+  >
+
+    <div class="sidebar-header">
+
+      <div class="brand">
+
+        EU<span class="brand-plus">⁺</span>
+
+        <span class="brand-product">
+          Varejo
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <nav class="sidebar-nav">
+
+      <div class="nav-section">
+        Gestão
+      </div>
+
+
+      <button
+        class="nav-item active"
+        data-page="dashboard"
+      >
+
+        <span class="nav-icon">
+
+          <svg viewBox="0 0 24 24">
+            <path d="M4 13h6V4H4z"/>
+            <path d="M14 20h6V11h-6z"/>
+            <path d="M14 4h6v3h-6z"/>
+            <path d="M4 20h6v-3H4z"/>
+          </svg>
+
+        </span>
+
+        Dashboard
+
+      </button>
+
+
+      <button
+        class="nav-item"
+        data-page="products"
+      >
+
+        <span class="nav-icon">
+
+          <svg viewBox="0 0 24 24">
+            <path d="M4 7h16"/>
+            <path d="M6 7v13h12V7"/>
+            <path d="M9 11h6"/>
+            <path d="M9 15h6"/>
+            <path d="M8 4h8"/>
+          </svg>
+
+        </span>
+
+        Produtos
+
+      </button>
+
+
+      <button
+        class="nav-item"
+        data-page="suppliers"
+      >
+
+        <span class="nav-icon">
+
+          <svg viewBox="0 0 24 24">
+            <path d="M3 20h18"/>
+            <path d="M5 20V8l7-4 7 4v12"/>
+            <path d="M9 20v-5h6v5"/>
+          </svg>
+
+        </span>
+
+        Fornecedores
+
+      </button>
+
+
+      <div class="nav-section">
+        Operação
+      </div>
+
+
+      <button
+        class="nav-item"
+        data-page="purchases"
+      >
+        Compras
+      </button>
+
+
+      <button
+        class="nav-item"
+        data-page="stock"
+      >
+        Estoque
+      </button>
+
+
+      <button
+        class="nav-item"
+        data-page="inventory"
+      >
+        Inventário
+      </button>
+
+
+      <button
+        class="nav-item"
+        data-page="shelves"
+      >
+        Gôndola
+      </button>
+
+    </nav>
+
+
+    <div class="sidebar-footer">
+
+      Ambiente de Inteligência
+      de Negócios
+
+    </div>
+
+  </aside>
+
+
+
+  <!-- HEADER -->
+
+  <header class="app-header">
+
+    <div class="header-context">
+
+      <button
+        id="mobileMenu"
+        class="mobile-menu"
+        aria-label="Abrir menu"
+      >
+
+        ☰
+
+      </button>
+
+
+      <div>
+
+        <div
+          id="headerCompany"
+          class="company-name"
+        >
+          —
+        </div>
+
+        <div
+          id="headerCompanyCode"
+          class="company-code"
+        >
+          —
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="user-area">
+
+      <div class="user-info">
+
+        <div
+          id="headerUser"
+          class="user-name"
+        >
+          —
+        </div>
+
+        <div
+          id="headerRole"
+          class="user-role"
+        >
+          —
+        </div>
+
+      </div>
+
+
+      <button
+        id="logoutButton"
+        class="logout-button"
+      >
+        Sair
+      </button>
+
+    </div>
+
+  </header>
+
+
+
+  <!-- CONTEÚDO -->
+
+  <main class="main">
+
+    <div
+      id="content"
+      class="content"
+    ></div>
+
+  </main>
+
+
+</section>
+
+
+
+<script>
+
+/* ============================================================
+   CONFIGURAÇÃO
+   ============================================================ */
+
+const API_URL =
+  'https://script.google.com/macros/s/AKfycbxtW8I6IS2HiSjkK4AeohTcDUCAlyOSH7tmfF_aI-U8vcDyCCT1z9a1LeluqoIQ3D24/exec';
+
+
+/*
+ * Sessão mantida somente durante a aba atual.
+ *
+ * Não usamos localStorage nesta versão.
+ *
+ * Ao fechar a aba, o token do navegador desaparece.
+ */
+
+let SESSION = {
+
+  token: null,
+
+  user: null,
+
+  tenant: null
+
+};
+
+
+let CACHE = {
+
+  products: null
+
+};
+
+
+/* ============================================================
+   ELEMENTOS
+   ============================================================ */
+
+const loginPage =
+  document.getElementById('loginPage');
+
+const appPage =
+  document.getElementById('appPage');
+
+const loginForm =
+  document.getElementById('loginForm');
+
+const loginButton =
+  document.getElementById('loginButton');
+
+const loginError =
+  document.getElementById('loginError');
+
+const content =
+  document.getElementById('content');
+
+
+/* ============================================================
+   API
+   ============================================================ */
+
+async function apiRequest(
+  action,
+  payload = {},
+  authenticated = true
+) {
+
+  const body = {
+    action,
+    payload
+  };
+
+
+  if (authenticated) {
+
+    if (!SESSION.token) {
+      throw new Error('AUTH_REQUIRED');
+    }
+
+    body.token =
+      SESSION.token;
+
+  }
+
+
+  let response;
+
+  try {
+
+    response =
+      await fetch(
+        API_URL,
+        {
+
+          method: 'POST',
+
+          headers: {
+
+            'Content-Type':
+              'text/plain;charset=utf-8'
+
+          },
+
+          body:
+            JSON.stringify(body)
+
+        }
+      );
+
+  } catch (error) {
+
+    throw new Error(
+      'NETWORK_ERROR'
+    );
+
+  }
+
+
+  let data;
+
+  try {
+
+    data =
+      await response.json();
+
+  } catch (error) {
+
+    throw new Error(
+      'INVALID_SERVER_RESPONSE'
+    );
+
+  }
+
+
+  if (!data.success) {
+
+    if (
+      data.error === 'INVALID_SESSION' ||
+      data.error === 'SESSION_EXPIRED' ||
+      data.error === 'AUTH_REQUIRED'
+    ) {
+
+      forceLogout();
+
+    }
+
+    throw new Error(
+      data.error ||
+      'REQUEST_FAILED'
+    );
+
+  }
+
+
+  return data.data;
+
+}
+
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+
+loginForm.addEventListener(
+  'submit',
+  async function(event) {
+
+    event.preventDefault();
+
+    hideLoginError();
+
+
+    const tenantCode =
+      document
+        .getElementById('tenantCode')
+        .value
+        .trim();
+
+    const email =
+      document
+        .getElementById('email')
+        .value
+        .trim();
+
+    const password =
+      document
+        .getElementById('password')
+        .value;
+
+
+    if (
+      !tenantCode ||
+      !email ||
+      !password
+    ) {
+
+      showLoginError(
+        'Preencha todos os campos.'
+      );
+
+      return;
+
+    }
+
+
+    loginButton.disabled = true;
+
+    loginButton.textContent =
+      'Entrando...';
+
+
+    try {
+
+      const result =
+        await apiRequest(
+          'auth.login',
+          {
+            tenantCode,
+            email,
+            password
+          },
+          false
+        );
+
+
+      SESSION = {
+
+        token:
+          result.token,
+
+        user:
+          result.user,
+
+        tenant:
+          result.tenant
+
+      };
+
+
+      /*
+       * Removemos a senha imediatamente
+       * do campo após autenticação.
+       */
+
+      document
+        .getElementById('password')
+        .value = '';
+
+
+      openApplication();
+
+
+    } catch (error) {
+
+      if (
+        error.message ===
+        'REQUEST_FAILED'
+      ) {
+
+        showLoginError(
+          'Não foi possível entrar. Verifique os dados informados.'
+        );
+
+      } else if (
+        error.message ===
+        'NETWORK_ERROR'
+      ) {
+
+        showLoginError(
+          'Não foi possível conectar ao serviço.'
+        );
+
+      } else {
+
+        showLoginError(
+          'Não foi possível realizar o acesso.'
+        );
+
+      }
+
+    } finally {
+
+      loginButton.disabled =
+        false;
+
+      loginButton.textContent =
+        'Entrar';
+
+    }
+
+  }
+);
+
+
+/* ============================================================
+   ABRIR APLICAÇÃO
+   ============================================================ */
+
+function openApplication() {
+
+  loginPage.classList.add(
+    'hidden'
+  );
+
+  appPage.classList.remove(
+    'hidden'
+  );
+
+
+  document
+    .getElementById('headerCompany')
+    .textContent =
+      SESSION.tenant.name;
+
+
+  document
+    .getElementById('headerCompanyCode')
+    .textContent =
+      SESSION.tenant.code;
+
+
+  document
+    .getElementById('headerUser')
+    .textContent =
+      SESSION.user.name;
+
+
+  document
+    .getElementById('headerRole')
+    .textContent =
+      roleLabel(
+        SESSION.user.role
+      );
+
+
+  navigateTo(
+    'dashboard'
+  );
+
+}
+
+
+/* ============================================================
+   LOGOUT
+   ============================================================ */
+
+document
+  .getElementById('logoutButton')
+  .addEventListener(
+    'click',
+    logout
+  );
+
+
+async function logout() {
+
+  try {
+
+    if (SESSION.token) {
+
+      await apiRequest(
+        'auth.logout',
+        {}
+      );
+
+    }
+
+  } catch (error) {
+
+    console.warn(
+      'Falha ao encerrar sessão no servidor.'
+    );
+
+  } finally {
+
+    forceLogout();
+
+  }
+
+}
+
+
+function forceLogout() {
+
+  SESSION = {
+    token: null,
+    user: null,
+    tenant: null
+  };
+
+
+  CACHE = {
+    products: null
+  };
+
+
+  appPage.classList.add(
+    'hidden'
+  );
+
+  loginPage.classList.remove(
+    'hidden'
+  );
+
+}
+
+
+/* ============================================================
+   NAVEGAÇÃO
+   ============================================================ */
+
+document
+  .querySelectorAll('.nav-item')
+  .forEach(function(button) {
+
+    button.addEventListener(
+      'click',
+      function() {
+
+        const page =
+          button.dataset.page;
+
+        navigateTo(page);
+
+        closeMobileMenu();
+
+      }
+    );
+
+  });
+
+
+function navigateTo(page) {
+
+  document
+    .querySelectorAll('.nav-item')
+    .forEach(function(item) {
+
+      item.classList.toggle(
+        'active',
+        item.dataset.page === page
+      );
+
+    });
+
+
+  switch (page) {
+
+    case 'dashboard':
+
+      renderDashboard();
+
+      break;
+
+
+    case 'products':
+
+      renderProducts();
+
+      break;
+
+
+    default:
+
+      renderComingSoon(page);
+
+  }
+
+}
+
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+
+async function renderDashboard() {
+
+  content.innerHTML =
+    loadingHTML(
+      'Preparando seu ambiente...'
+    );
+
+
+  try {
+
+    /*
+     * Por enquanto usamos produtos como
+     * primeira informação real.
+     *
+     * Não inventaremos indicadores que
+     * ainda não existem no backend.
+     */
+
+    const products =
+      await loadProducts();
+
+
+    const active =
+      products.filter(function(p) {
+
+        return (
+          p.active === true ||
+          String(p.active)
+            .toUpperCase() ===
+            'TRUE'
+        );
+
+      }).length;
+
+
+    content.innerHTML = `
+
+      <div class="page-header">
+
+        <div>
+
+          <div class="page-kicker">
+            Visão geral
+          </div>
+
+          <h1 class="page-title">
+            Dashboard
+          </h1>
+
+          <div class="page-description">
+            Informações disponíveis do seu ambiente.
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="cards-grid">
+
+        <div class="metric-card">
+
+          <div class="metric-label">
+            Produtos cadastrados
+          </div>
+
+          <div class="metric-value">
+            ${products.length}
+          </div>
+
+          <div class="metric-note">
+            Base atual
+          </div>
+
+        </div>
+
+
+        <div class="metric-card">
+
+          <div class="metric-label">
+            Produtos ativos
+          </div>
+
+          <div class="metric-value">
+            ${active}
+          </div>
+
+          <div class="metric-note">
+            Disponíveis para operação
+          </div>
+
+        </div>
+
+
+        <div class="metric-card">
+
+          <div class="metric-label">
+            Ambiente
+          </div>
+
+          <div
+            class="metric-value"
+            style="font-size:25px"
+          >
+            Ativo
+          </div>
+
+          <div class="metric-note">
+            ${escapeHTML(SESSION.tenant.code)}
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="dashboard-message">
+
+        <div class="dashboard-message-title">
+          Inteligência construída sobre a operação.
+        </div>
+
+        <p>
+          À medida que estoque, compras, inventário
+          e histórico forem incorporados, este painel
+          passará a apresentar indicadores e alertas
+          derivados dos dados reais da empresa.
+        </p>
+
+      </div>
+
+
+      ${footerHTML()}
+
+    `;
+
+
+  } catch (error) {
+
+    renderError(
+      'Não foi possível carregar o dashboard.'
+    );
+
+  }
+
+}
+
+
+/* ============================================================
+   PRODUTOS
+   ============================================================ */
+
+async function loadProducts(
+  force = false
+) {
+
+  if (
+    CACHE.products &&
+    !force
+  ) {
+
+    return CACHE.products;
+
+  }
+
+
+  const products =
+    await apiRequest(
+      'products.list'
+    );
+
+
+  CACHE.products =
+    Array.isArray(products)
+      ? products
+      : [];
+
+
+  return CACHE.products;
+
+}
+
+
+async function renderProducts() {
+
+  content.innerHTML =
+    loadingHTML(
+      'Carregando produtos...'
+    );
+
+
+  try {
+
+    const products =
+      await loadProducts();
+
+
+    renderProductsTable(
+      products
+    );
+
+
+  } catch (error) {
+
+    renderError(
+      'Não foi possível carregar os produtos.'
+    );
+
+  }
+
+}
+
+
+function renderProductsTable(
+  products
+) {
+
+  content.innerHTML = `
+
+    <div class="page-header">
+
+      <div>
+
+        <div class="page-kicker">
+          Cadastro
+        </div>
+
+        <h1 class="page-title">
+          Produtos
+        </h1>
+
+        <div class="page-description">
+
+          ${products.length}
+          produto${products.length === 1 ? '' : 's'}
+          cadastrado${products.length === 1 ? '' : 's'}
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="toolbar">
+
+      <input
+        id="productSearch"
+        class="search-input"
+        type="search"
+        placeholder="Buscar produto, código, GTIN ou marca..."
+      >
+
+    </div>
+
+
+    <div id="productsTableArea">
+
+      ${productsTableHTML(products)}
+
+    </div>
+
+
+    ${footerHTML()}
+
+  `;
+
+
+  document
+    .getElementById('productSearch')
+    .addEventListener(
+      'input',
+      function(event) {
+
+        filterProducts(
+          event.target.value
+        );
+
+      }
+    );
+
+}
+
+
+function filterProducts(term) {
+
+  term =
+    normalizeSearch(term);
+
+
+  if (!term) {
+
+    document
+      .getElementById(
+        'productsTableArea'
+      )
+      .innerHTML =
+        productsTableHTML(
+          CACHE.products
+        );
+
+    return;
+
+  }
+
+
+  const filtered =
+    CACHE.products.filter(
+      function(product) {
+
+        const haystack =
+          normalizeSearch([
+
+            product.productId,
+
+            product.internalCode,
+
+            product.gtin,
+
+            product.description,
+
+            product.category,
+
+            product.subcategory,
+
+            product.brand
+
+          ].join(' '));
+
+
+        return haystack.includes(
+          term
+        );
+
+      }
+    );
+
+
+  document
+    .getElementById(
+      'productsTableArea'
+    )
+    .innerHTML =
+      productsTableHTML(
+        filtered
+      );
+
+}
+
+
+function productsTableHTML(
+  products
+) {
+
+  if (!products.length) {
+
+    return `
+
+      <div class="state-box">
+
+        <div class="state-title">
+          Nenhum produto encontrado
+        </div>
+
+        <div>
+          Não existem registros para esta consulta.
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  const rows =
+    products
+      .map(function(product) {
+
+        return `
+
+          <tr>
+
+            <td>
+
+              <div class="product-name">
+                ${escapeHTML(product.description || '—')}
+              </div>
+
+              <div class="product-code">
+                ${escapeHTML(product.productId || '')}
+              </div>
+
+            </td>
+
+
+            <td>
+              ${escapeHTML(product.internalCode || '—')}
+            </td>
+
+
+            <td>
+              ${escapeHTML(product.gtin || '—')}
+            </td>
+
+
+            <td>
+              ${escapeHTML(product.category || '—')}
+            </td>
+
+
+            <td>
+              ${escapeHTML(product.brand || '—')}
+            </td>
+
+
+            <td>
+
+              <span class="status status-active">
+                ${
+                  isActive(product.active)
+                    ? 'Ativo'
+                    : 'Inativo'
+                }
+              </span>
+
+            </td>
+
+          </tr>
+
+        `;
+
+      })
+      .join('');
+
+
+  return `
+
+    <div class="table-wrapper">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Produto</th>
+
+            <th>Código</th>
+
+            <th>GTIN</th>
+
+            <th>Categoria</th>
+
+            <th>Marca</th>
+
+            <th>Status</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+          ${rows}
+        </tbody>
+
+      </table>
+
+    </div>
+
+  `;
+
+}
+
+
+/* ============================================================
+   MÓDULOS FUTUROS
+   ============================================================ */
+
+function renderComingSoon(page) {
+
+  const labels = {
+
+    suppliers:
+      'Fornecedores',
+
+    purchases:
+      'Compras',
+
+    stock:
+      'Estoque',
+
+    inventory:
+      'Inventário',
+
+    shelves:
+      'Gôndola'
+
+  };
+
+
+  const label =
+    labels[page] ||
+    'Módulo';
+
+
+  content.innerHTML = `
+
+    <div class="page-header">
+
+      <div>
+
+        <div class="page-kicker">
+          EU⁺ Varejo
+        </div>
+
+        <h1 class="page-title">
+          ${escapeHTML(label)}
+        </h1>
+
+      </div>
+
+    </div>
+
+
+    <div class="state-box">
+
+      <div class="state-title">
+        Módulo preparado
+      </div>
+
+      <div>
+        A funcionalidade será conectada
+        ao Core nas próximas etapas.
+      </div>
+
+    </div>
+
+
+    ${footerHTML()}
+
+  `;
+
+}
+
+
+/* ============================================================
+   COMPONENTES
+   ============================================================ */
+
+function loadingHTML(message) {
+
+  return `
+
+    <div class="state-box">
+
+      <div class="loader"></div>
+
+      <div>
+        ${escapeHTML(message)}
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+function renderError(message) {
+
+  content.innerHTML = `
+
+    <div class="state-box">
+
+      <div class="state-title">
+        Não foi possível concluir
+      </div>
+
+      <div>
+        ${escapeHTML(message)}
+      </div>
+
+    </div>
+
+    ${footerHTML()}
+
+  `;
+
+}
+
+
+function footerHTML() {
+
+  return `
+
+    <footer class="app-footer">
+
+      <div class="footer-hierarchy">
+
+        Ecossistema EU⁺
+        &nbsp;›&nbsp;
+        EU⁺ Empresa
+        &nbsp;›&nbsp;
+        EU⁺ Negócio
+        &nbsp;›&nbsp;
+        EU⁺ Varejo
+
+      </div>
+
+      <div class="footer-slogan">
+        Você é o EU. Nós somos o ⁺ que soma com você.
+      </div>
+
+    </footer>
+
+  `;
+
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+const sidebar =
+  document.getElementById('sidebar');
+
+const sidebarOverlay =
+  document.getElementById(
+    'sidebarOverlay'
+  );
+
+
+document
+  .getElementById('mobileMenu')
+  .addEventListener(
+    'click',
+    function() {
+
+      sidebar.classList.add(
+        'open'
+      );
+
+      sidebarOverlay
+        .classList.add(
+          'active'
+        );
+
+    }
+  );
+
+
+sidebarOverlay
+  .addEventListener(
+    'click',
+    closeMobileMenu
+  );
+
+
+function closeMobileMenu() {
+
+  sidebar.classList.remove(
+    'open'
+  );
+
+  sidebarOverlay
+    .classList.remove(
+      'active'
+    );
+
+}
+
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+
+function showLoginError(message) {
+
+  loginError.textContent =
+    message;
+
+  loginError.classList.remove(
+    'hidden'
+  );
+
+}
+
+
+function hideLoginError() {
+
+  loginError.classList.add(
+    'hidden'
+  );
+
+}
+
+
+function roleLabel(role) {
+
+  const labels = {
+
+    OWNER:
+      'Proprietário',
+
+    ADMIN:
+      'Administrador',
+
+    MANAGER:
+      'Gestor',
+
+    OPERATOR:
+      'Operador',
+
+    VIEWER:
+      'Consulta'
+
+  };
+
+
+  return labels[role] || role;
+
+}
+
+
+function isActive(value) {
+
+  return (
+    value === true ||
+    String(value)
+      .toUpperCase() ===
+      'TRUE'
+  );
+
+}
+
+
+function normalizeSearch(value) {
+
+  return String(value || '')
+    .normalize('NFD')
+    .replace(
+      /[\u0300-\u036f]/g,
+      ''
+    )
+    .toLowerCase()
+    .trim();
+
+}
+
+
+function escapeHTML(value) {
+
+  return String(value ?? '')
+    .replace(
+      /&/g,
+      '&amp;'
+    )
+    .replace(
+      /</g,
+      '&lt;'
+    )
+    .replace(
+      />/g,
+      '&gt;'
+    )
+    .replace(
+      /"/g,
+      '&quot;'
+    )
+    .replace(
+      /'/g,
+      '&#039;'
+    );
+
+}
+
+</script>
+
+</body>
+
+</html>
