@@ -1,0 +1,1 @@
+const Data=(()=>{async function dashboard(){return EU.call('getDashboard')}async function list(entity){return EU.call('listEntity',{entity})}async function save(entity,data,id){return EU.call('saveEntity',{entity,data,id})}async function del(entity,id){return EU.call('deleteEntity',{entity,id})}return{dashboard,list,save,del};})();
